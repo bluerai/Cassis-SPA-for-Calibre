@@ -31,15 +31,23 @@ const whitespace_chars = /[\/\,\.\|\ \*\?\!\:\;\(\)\[\]\&\"\+]+/g;  // ohne _ un
 //In der Onleihe: Zeichen zur Abtrennung des Artikels am Anfang von Titeln (für die Sortierung):
 const whitespace_char01 = String.fromCharCode(172);
 
-// Image-Cache einrichten:
-console.log(new Date().toLocaleString('de') + " - " + "Cache for Bookcovers: " + IMGCACHE);
-fs.ensureDirSync(IMGCACHE, (err, exists) => {
+// Bookdir einrichten:
+console.log(new Date().toLocaleString('de') + " - " + "Calibre e-book directory at " + BOOKDIR);
+fs.existsSync(BOOKDIR, (err, exists) => {
   if (err) {
     console.error(err)
     process.exit(1)
   }
 })
 
+// Image-Cache einrichten:
+console.log(new Date().toLocaleString('de') + " - " + "Cache for Bookcovers at " + IMGCACHE);
+fs.ensureDirSync(IMGCACHE, (err, exists) => {
+  if (err) {
+    console.error(err)
+    process.exit(1)
+  }
+})
 
 // Helper functions ***********************
 

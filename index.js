@@ -28,10 +28,10 @@ if (HTTP_PORT > 0) {
   });
 }
 
-if (HTTPS_PORT > 0 && fs.existsSync(process.env.KEY) && fs.existsSync(process.env.CERT)) {
+if (HTTPS_PORT > 0 && fs.existsSync(process.env.KEYFILE) && fs.existsSync(process.env.CERTFILE)) {
   const options = {
-    key: fs.readFileSync(process.env.KEY),
-    cert: fs.readFileSync(process.env.CERT),
+    key: fs.readFileSync(process.env.KEYFILE),
+    cert: fs.readFileSync(process.env.CERTFILE),
   };
   https.createServer(options, app).listen(HTTPS_PORT, () => {
     console.log(new Date().toLocaleString('de') + ' - Https-Server is listening to Port ' + HTTPS_PORT);

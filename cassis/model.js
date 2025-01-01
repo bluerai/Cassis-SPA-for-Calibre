@@ -4,11 +4,13 @@ import { DatabaseSync } from 'node:sqlite';
 import fs from 'fs-extra';
 import { log } from './controller.js';
 
-const METADATA_PATH = process.env.METADATA_PATH || process.env.HOME + "/Documents/Calibre/metadata.db"
+const METADATA_PATH = process.env.METADATA_FILE || process.env.HOME + "/Documents/Calibre/metadata.db"
+
 if (!fs.existsSync(METADATA_PATH)) {
   console.log("Calibre-Datenbank nicht gefunden im Pfad: " + METADATA_PATH);
   process.exit(1);
 }
+
 const METADATA_DB = new DatabaseSync(METADATA_PATH, { open: true });
 if (METADATA_DB) console.log(new Date().toLocaleString('de') + " - " + "Connected to Calibre Database at " + METADATA_PATH)
 
