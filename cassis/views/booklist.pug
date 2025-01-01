@@ -1,0 +1,37 @@
+- for(let book of books)
+
+  div.item
+    div.itemgrid
+      table.container
+        tr.item
+          td.item.serie
+            if book.serie
+              button.text(onclick="setOptionsSerie({ serieId: " + book.serie.seriesId + "})")
+                p.serie.ellipsis(title=book.serie.seriesName + "[" + book.seriesIndex + "]") #{book.serie.seriesName}
+                p=(book.tags[0] === "Zeitschrift") ? "Nr. " : "Band "
+                  span #{book.seriesIndex}
+        tr.item
+          td.img
+            img.itemcover(src="/cassis/cover/list/" + book.bookId
+              onclick="setOptionsBook({bookId: " + book.bookId + ", num: " + book.num + "});")
+            div.containerbox
+              if (book.formats)
+                - for(let format of book.formats)
+                  div(style="margin-bottom: -80px")
+                    a.action(href="/cassis/file/" + format + "/" + book.bookId download=book.title)
+                        i.fa.fa-download(aria-hidden="true")=" " + format.toUpperCase()
+        if (book.tags && book.tags[0] != "Zeitschrift")   
+          tr.item
+            td.item
+              p
+                - for(let author of book.authors)
+                  button.text2(onclick="setOptionsAuthor({authorsId: " + author.authorsId + "})")
+                    p.center(style="margin-bottom:0px;") #{author.authorsName}
+        tr.item
+          td.item
+            button.text2(onclick="setOptionsBook({bookId: " + book.bookId + ", num: " + book.num + "});")
+              p.akzent.center #{book.title}
+
+if pageNav && pageNav.currentpage && pageNav.currentpage.value !== pageNav.lastpage.value
+  div#pagedown(value=pageNav.nextpage.value onClick="setOptionsPage(" + pageNav.nextpage.value + ")" style="display: none")
+    i.fa.fa-caret-down(aria-hidden="true" style="font-size: 60px") 

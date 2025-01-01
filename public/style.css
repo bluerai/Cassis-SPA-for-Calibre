@@ -1,0 +1,883 @@
+:root {
+  /*Farbe: Schrift, Linien bzw. Hintergrund*/
+  --body: #23527c;
+  --body-bg: #e0ded2;
+
+  --link: #23527c;
+  --link-bg: #e0ded2;
+
+  --akzent: #444;
+  --akzent-bg: #337ab7;
+
+  --menu: #23527c;
+  --menu-bg: #b7b7ab;
+
+  --nav: #23527c;
+  --nav-bg: #9b928d;
+
+  --action: #e0ded2;
+  --action-bg: #337ab7;
+
+  --border: 3px solid #337ab7;
+
+  --fontlight: 400;
+  --fontnormal: 1200;
+
+  --shadow-border: 2px solid hsla(200, 3%, 64%, 0.66);
+  --shadow: -12px 12px 5px 0px hsla(200, 3%, 64%, 0.66);
+  /* -12px 12px 5px 0px hsla(198, 6%, 60%, 0.66); */
+  /* -12px 12px 5px 0px hsla(200, 3%, 64%, 0.66); */
+  /* 0px 8px 16px 0px rgba(0, 0, 0, 0.2); */
+}
+
+path {
+  fill: "#ffffff";
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0px;
+  color: var(--body);
+  background-color: var(--body-bg);
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+a,
+li {
+  margin: 0px;
+  line-height: 120%;
+  text-decoration: none;
+  color: var(--body);
+  font-weight: var(--fontlight);
+}
+
+h1 {
+  font-weight: var(--fontbold);
+  padding-top: 12px;
+  margin-bottom: 12px;
+}
+
+h2 {
+  font-weight: var(--fontbold);
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+
+h3 {
+  font-weight: var(--fontlight);
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+h4 {
+  font-weight: var(--fontbold);
+  margin-top: 12px;
+  margin-bottom: 12px;
+
+  padding: 5px;
+  width: 100%;
+  border-bottom: 3px solid var(--menu-bg);
+}
+
+h5 {
+  font-weight: var(--fontbold);
+}
+
+h6 {
+  font-weight: var(--fontlight);
+  margin-top: 0px;
+  margin-bottom: 4px;
+}
+
+p {
+  font-weight: var(--fontlight);
+  margin: 0px;
+}
+
+h1,
+h2 {
+  font-size: 24px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+
+h4,
+h5,
+h6,
+p,
+li,
+a {
+  font-size: 18px !important;
+}
+
+button.nav i {
+  margin-left: -9px;
+}
+
+.navbar button {
+  font-size: 26px;
+}
+
+.menu,
+button.menu:link,
+button.menu:visited {
+  color: var(--menu);
+  background-color: var(--menu-bg);
+}
+
+button.menu:hover,
+button.menu:active {
+  color: var(--menu-bg);
+  background-color: var(--akzent-bg);
+}
+
+
+.nav,
+button.nav:link,
+button.nav:visited {
+  color: var(--nav);
+  background-color: var(--nav-bg);
+}
+
+button.nav:hover,
+button.nav:active {
+  color: var(--nav-bg);
+  background-color: var(--akzent-bg);
+}
+
+.akzent {
+  color: var(--akzent);
+}
+
+.action,
+a.action:link,
+a.action:visited {
+  color: var(--action);
+  background-color: var(--action-bg);
+}
+
+a.action:hover,
+a.action:active {
+  color: var(--action-bg);
+  background-color: var(--menu-bg);
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.center {
+  text-align: center;
+}
+
+.vertical-center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+}
+
+.inline {
+  display: inline-block;
+}
+
+.action {
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 24px;
+  padding-right: 24px;
+
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.info {
+  color: var(--action);
+}
+
+.flex {
+  display: flex;
+  flex-direction: row
+}
+
+input,
+select,
+button {
+  float: left;
+  border-radius: 0px;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+
+input {
+  cursor: text;
+  margin-top: 5px;
+  margin-top: 5px;
+  margin-left: 10px;
+  margin-right: 5px;
+  height: 30px;
+  padding: 10px;
+}
+
+button {
+  margin: 0px;
+  padding: 10px;
+}
+
+button.menu,
+button.info,
+button.nav {
+  width: 40px;
+  height: 40px;
+}
+
+button.two {
+  width: 60px;
+}
+
+button.info,
+button.info:link,
+button.info:visited {
+  background-color: var(--body-bg);
+  color: var(--body);
+}
+
+button.info:hover,
+button.info:active {
+  background-color: var(--body);
+  color: var(--body-bg);
+}
+
+select.info,
+input.info {
+  font-size: 18px;
+  color: var(--body);
+  width: 120px;
+  margin: 10px;
+  float: unset;
+}
+
+button.info {
+  margin-top: 10px;
+}
+
+table.info {
+  background-color: var(--action-bg);
+  border: 3px solid var(--action-bg);
+  margin-left: 25%;
+  margin-right: 25%;
+  margin-top: 20px;
+  width: 50%;
+}
+
+table.info tr,
+table.info td {
+  text-align: center;
+  border: 3px solid var(--action);
+  padding: 10px;
+}
+
+.tags {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: var(--shadow);
+  border: var(--shadow-border);
+  width: 320px;
+  margin-top: 20px;
+}
+
+.tags p {
+  color: var(--body);
+  padding: 8px 12px;
+  border: 3px solid var(--body-bg);
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.tags p:hover {
+  background-color: var(--akzent-bg);
+  color: var(--body-bg);
+}
+
+.tags .selected {
+  background-color: var(--menu-bg);
+}
+
+tr.item,
+td.item {
+  padding: 0px;
+  margin: 0px;
+}
+
+td.img {
+  text-align: center;
+  padding: 0px;
+  margin: 0px;
+}
+
+td.serie {
+  height: 50px
+}
+
+span.enum+span.enum:before {
+  content: ", ";
+}
+
+#app {
+  position: relative;
+  top: 40px;
+}
+
+#books {
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 320px;
+}
+
+div.item {
+  display: block;
+  flex-direction: column;
+  float: none;
+
+  margin-top: 7px;
+  margin-bottom: 10px;
+  margin-left: 3px;
+  margin-right: 3px;
+  padding: 0px;
+
+  /* border: 1px solid black; */
+}
+
+div.itemgrid {
+  display: grid;
+  grid-template-rows: auto auto;
+}
+
+img.itemcover {
+  position: absolute;
+  border: 9px solid transparent;
+  /* var(--body-bg); */
+}
+
+img.itemcover:hover {
+  box-shadow: var(--shadow);
+  background-color: var(--menu-bg);
+  border: 0px;
+  z-index: 50;
+}
+
+.itemserie,
+.itemtitle,
+.itemauthor,
+.itemcover,
+h3.button {
+  cursor: pointer;
+}
+
+div.itemimg {
+  text-align: left;
+}
+
+div.itemtxt {
+  position: left;
+  width: 100%;
+  text-align: left;
+}
+
+
+.inlineBox {
+  width: 100%;
+}
+
+.inlineBox div {
+  margin-bottom: 40px;
+}
+
+.attachedBox {
+  position: absolute;
+  top: 24px;
+  right: 0px;
+}
+
+.attachedBox div {
+  margin-bottom: 32px;
+}
+
+.ellipsis {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+#comment {
+  text-align: left;
+}
+
+.menubar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-width: 320px;
+  z-index: 50;
+  min-height: 42px;
+  /* overflow: hidden; */
+  background-color: var(--menu-bg);
+}
+
+h3.footer {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  height: 48px;
+  width: 100%;
+  min-width: 320px;
+  z-index: 50;
+
+  background-color: var(--menu-bg);
+  text-align: center;
+}
+
+h3.footer {
+  margin-bottom: 0px;
+}
+
+h3.footer .tag {
+  padding-top: 12px;
+}
+
+
+.navbar {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  height: 48px;
+  width: 100%;
+  z-index: 50;
+  background-color: var(--nav-bg);
+  min-width: 320px;
+}
+
+.navbar-sub {
+  width: 42%;
+}
+
+.navbar-center {
+  float: none;
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translate(-50%, -50%)
+}
+
+
+.navbar button {
+  text-align: center;
+  border-radius: 0px;
+  border: none;
+  padding-top: 6px;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+button.text {
+  background-color: var(--body-bg);
+  border: 3px solid var(--menu-bg);
+}
+
+button.text:hover {
+  background-color: var(--menu-bg);
+  border: 3px solid var(--menu-bg);
+}
+
+button.text {
+  padding: 0px 5px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 0px;
+  cursor: pointer;
+  width: 100%;
+}
+
+button.text2,
+button.text3 {
+  color: var(--body);
+  background-color: var(--body-bg);
+}
+
+button.text2:hover,
+button.text3:hover {
+  background-color: var(--menu-bg);
+}
+
+button.text2 {
+  border: none;
+  padding: 0px;
+  padding-right: px;
+  text-align: left;
+  text-decoration: none;
+  margin: 0px;
+  cursor: pointer;
+  width: 100%;
+}
+
+button.text3 {
+  min-width: 100%;
+  margin: 0px;
+  padding: 0px;
+  font-size: 18px;
+}
+
+button.text4 {
+  border: none;
+  padding: 0px;
+  text-align: left;
+  text-decoration: none;
+  margin: 0px;
+  cursor: pointer;
+}
+
+button.text5 {
+  background-color: transparent;
+  color: var(--akzent-bg);
+  float: none;
+  border: none;
+  padding: 0px;
+  text-decoration: none;
+  margin: 0px;
+  cursor: pointer;
+}
+
+/* Style the dropdown content (hidden by default) */
+#dropdown-content {
+  display: none;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background-color: var(--link-bg);
+  min-width: 160px;
+  box-shadow: var(--shadow);
+  border: var(--shadow-border);
+  z-index: 10;
+}
+
+
+/* Style the links inside the dropdown */
+#dropdown-content p {
+  float: none;
+  color: var(--body);
+  padding: 12px 16px;
+  border: 3px solid var(--body-bg);
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+#dropdown-content p:hover {
+  background-color: var(--akzent-bg);
+  color: var(--body-bg);
+}
+
+#pagedown {
+  width: 100%;
+  text-align: center;
+  background-color: var(--menu-bg);
+}
+
+.message {
+  width: 100%;
+  text-align: center;
+  margin-top: 48px;
+}
+
+/*****************************************************************************/
+/********************** Bildschirm: Breite über 1200 px *********************/
+/*****************************************************************************/
+
+div.info {
+  padding-top: 42px;
+  padding-bottom: 60px;
+}
+
+div.bookview {
+  display: flex;
+  margin-top: 10px;
+  width: calc(50% + 400px) !important;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+div.bookcontainer {
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+div.bookhead {
+  height: 50px;
+}
+
+div.book {
+  display: flex;
+  margin-bottom: 60px;
+}
+
+div.bookcolumn {
+  margin-top: 0px;
+  vertical-align: top;
+}
+
+div.columnspace {
+  min-width: 32px;
+}
+
+div.bookbox {
+  text-align: center;
+  width: 100%;
+  vertical-align: top;
+  margin-bottom: 20px;
+}
+
+
+div.item {
+  width: 250px;
+}
+
+/* cover-image Liste */
+td.img {
+  height: 250px;
+}
+
+/* cover-image Liste */
+img.itemcover {
+  height: 250px;
+  top: 55px;
+  left: 50%;
+  transform: translateX(-50%)
+}
+
+/* cover-image Book-Details */
+img.bookcover {
+  box-shadow: var(--shadow);
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+  width: 320px !important;
+}
+
+p.serie {
+  width: 220px;
+}
+
+.container {
+  position: relative;
+}
+
+.containerbox {
+  position: absolute;
+  top: 225px;
+  left: -7px;
+  width: 50%;
+  z-index: 10;
+}
+
+#searchStringGroup {
+  display: flex;
+  flex-direction: row;
+}
+
+#searchInput {
+  width: calc(35% + 80px);
+  max-width: 800px;
+  padding-left: 0px;
+  padding-right: 0px;
+}
+
+div.pageup {
+  width: 100%;
+  padding-top: 36px;
+  padding-bottom: 0px;
+  text-align: center;
+  background-color: var(--menu-bg);
+  height: 84px;
+}
+
+/*****************************************************************************/
+/********************** Bildschirm: Breite unter 1200 px *********************/
+/*****************************************************************************/
+
+@media screen and (max-width: 1200px) {
+
+  div.bookview {
+    width: calc(1200px - 20%) !important;
+  }
+
+  div.item {
+    width: 220px;
+    margin: 10px;
+  }
+
+  /* cover-image Book-Details */
+  img.bookcover {
+    width: 280px !important;
+
+  }
+
+  div.info {
+    padding-top: 40px;
+    padding-bottom: 60px;
+  }
+
+  table.info {
+    margin-left: 20%;
+    margin-right: 20%;
+    width: 60%;
+  }
+
+  .container {
+    position: relative;
+  }
+
+  .containerbox {
+    position: absolute;
+    top: 225px;
+    left: -7px;
+    width: 50%;
+    z-index: 10;
+  }
+
+  /*   .menubar-sub {
+    clear: left;
+  }  */
+
+  #searchInput {
+    width: calc(32% + 50px);
+    max-width: 500px;
+  }
+}
+
+/*****************************************************************************/
+/********************** Bildschirm: Breite unter 720 px **********************/
+/*****************************************************************************/
+
+@media screen and (max-width: 720px) {
+
+  div.bookview {
+    width: 100% !important;
+  }
+
+  div.pageup {
+    padding-top: 74px;
+    height: 120px;
+  }
+
+  #app {
+    top: 80px;
+  }
+
+
+  div.book {
+    display: block;
+  }
+
+  div.item {
+    width: 170px;
+    margin: 8px;
+  }
+
+  div.info {
+    padding-top: 80px;
+    padding-bottom: 60px;
+  }
+
+  /* cover-image Liste */
+  td.img {
+    height: 185px;
+  }
+
+  img.itemcover {
+    height: 200px;
+    top: 45px;
+    left: 50%;
+    transform: translateX(-50%)
+  }
+
+  /* cover-image Book-Details */
+  img.bookcover {
+    width: 220px !important;
+  }
+
+  table.info {
+    margin-left: 5%;
+    margin-right: 5%;
+    width: 90%;
+  }
+
+  p.serie {
+    width: 170px;
+  }
+
+  .containerbox {
+    position: absolute;
+    top: 180px;
+    left: -7px;
+    width: 50%;
+    z-index: 10;
+  }
+
+  .container {
+    position: relative;
+  }
+
+  .menubar-sub {
+    clear: left;
+  }
+
+  #searchInput {
+    width: calc(100% - 100px);
+    max-width: 400px;
+  }
+
+}

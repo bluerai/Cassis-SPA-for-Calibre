@@ -1,0 +1,73 @@
+if options.tags
+  .tags
+    h3.center#tags Genre
+      - for(let tag of options.tags)
+        button.text3(type="button" class=tag.class id="tag" onClick="setOptionsTag({'tagId':" + tag.tagId + "})")
+          p #{tag.tagName} 
+
+
+if options.ccNum && options.custCols
+  .tags
+    h3.center#tags=(options.ccNum == 6) ? "Sachbuch" : "Reiseführer"
+      - for(let col of options.custCols)
+        button.text3(type="button" class=col.class id="cc5" name="cc" value="5" onClick="setOptionsCC({'ccNum': " + options.ccNum + ", 'ccId': " + col.id + "})")
+          p #{col.value} 
+
+
+if options.stats
+  table.info
+    tr 
+      td(style="width: 50%")
+        h1.info Bücher
+        h1.info #{options.stats.books}
+        h1.info
+          i.fa-solid.fa-book(style="font-size: 30px")
+
+      td(style="width: 50%")
+        h1.info Serien 
+        h1.info #{options.stats.series}
+        h1.info
+            span 
+              i.fa-solid.fa-book(style="font-size: 20px")  
+            span 
+              i.fa-solid.fa-book(style="font-size: 20px")  
+            span 
+              i.fa-solid.fa-book(style="font-size: 20px") 
+    tr 
+      td
+        h1.info Autoren 
+        h1.info #{options.stats.authors}
+        h1.info
+          i.fa-solid.fa-people-group(style="font-size: 30px")
+      td
+        h1.info Verlage
+        h1.info #{options.stats.publishers}
+        h1.info
+          i.fa-regular.fa-building(style="font-size: 20px")
+          i.fa-regular.fa-building(style="font-size: 30px")
+          i.fa-regular.fa-building(style="font-size: 20px")
+
+
+  table.info
+    tr 
+      td(style="width: 50%")
+        h3.info Datenbank
+      td
+        h3.info
+          button.text3(onclick="connectDb(true)" style="padding: 3px 0px; margin: 7px 0px") Verbindung herstellen
+        h3.info
+          button.text3(onclick="connectDb(false)" style="padding: 3px 0px; margin: 7px 0px") Verbindung abbrechen
+
+    tr 
+      td(style="width: 50%")
+        h3.info
+          label(for="loglevel") Log-Level: 
+            span#loglevel-value #{options.LOGLEVEL}
+      td(style="width: 50%; text-align:center")
+          select.info(id="loglevel" size="1" onchange="setLogLevel()")
+            option(value="0" selected=(options.LOGLEVEL === 0) && "selected") 0: debug
+            option(value="1" selected=(options.LOGLEVEL === 1) && "selected") 1: info
+            option(value="2" selected=(options.LOGLEVEL === 2) && "selected") 2: warn
+    tr
+      td(colspan=2)
+        h3.info(id='appInfo') #{appInfo}
