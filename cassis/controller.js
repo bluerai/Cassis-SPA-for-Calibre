@@ -36,7 +36,7 @@ fs.existsSync(BOOKDIR, (err, exists) => {
 })
 
 // Image-Cache einrichten:
-console.log(new Date().toLocaleString('de') + " - " + "Cache for Bookcovers at " + IMGCACHE);
+console.log(new Date().toLocaleString('de') + " - " + "Cache for bookcovers at " + IMGCACHE);
 fs.ensureDirSync(IMGCACHE, (err, exists) => {
   if (err) {
     console.error(err)
@@ -188,12 +188,9 @@ export async function listAction(request, response) {
           break;
       }
 
-      //log("listAction: count=" + count);
-
-      if (count === 0) {
-        const message = "Keine Bücher/Zeitschriften gefunden!";
-        const html = "<div class='message'><h3>" + message + "</h3></div>";
-        response.send({ html });
+      if (count <= 0) {
+        const message = (count === 0) ? "Keine Bücher/Zeitschriften gefunden!" : "Fehler beim Zugriff auf die Datenbank!";
+        response.send({ "html": "<div class='message'><h3>" + message + "</h3></div>" });
         return;
       }
 
@@ -204,9 +201,8 @@ export async function listAction(request, response) {
       log("listAction: pageNav=" + JSON.stringify({ pageNav }), -1);
       response.render(dirname(fileURLToPath(import.meta.url)) + '/views/booklist', { books, pageNav }, function (error, html) {
         if (error) {
-          console.log(error);
+          errorHandler(error, response, 'render booklist page');
         } else {
-          //log("listAction: html.length=" + html.length);
           response.send({ html });
         }
       });
@@ -317,9 +313,8 @@ export async function bookAction(request, response) {
       //log("bookAction: nextBook=" + JSON.stringify(nextBook));
       response.render(dirname(fileURLToPath(import.meta.url)) + '/views/book', { book, prevBook, nextBook }, function (error, html) {
         if (error) {
-          console.log(error);
+          errorHandler(error, response, 'render book page');
         } else {
-          log("bookAction: html.length=" + html.length, -1);
           response.send({ html });
         }
       });
@@ -339,9 +334,8 @@ export async function tagsAction(request, response) {
     log("tagsAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options), -1);
     response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
-        console.log(error);
+        errorHandler(error, response, 'render info page');
       } else {
-        log("infoAction: html.length=" + html.length, -1);
         response.send({ html });
       }
     });
@@ -362,9 +356,8 @@ export async function ccAction(request, response) {
     log("ccAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options), -1);
     response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
-        console.log(error);
+        errorHandler(error, response, 'render info page');
       } else {
-        log("infoAction: html.length=" + html.length, -1);
         response.send({ html });
       }
     });
@@ -454,9 +447,8 @@ export async function infoAction(request, response) {
     log("*** infoAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
     response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
-        console.log(error);
+        errorHandler(error, response, 'render info page');
       } else {
-        log("infoAction: html.length=" + html.length);
         response.send({ html });
       }
     });
@@ -545,7 +537,7 @@ async function pushover(msg, title, prio, sound) {
 
 function errorHandler(error, response, actionName) {
   console.error(error);
-  const message = "Cassis: Interner Server-Fehler in '" + actionName + "': " + error.message;
+  const message = "Cassis: Internal server error in '" + actionName + "': " + error.message;
   log(message, 2);
   response.writeHead(500, message, { 'content-type': 'text/html' });
   response.end();

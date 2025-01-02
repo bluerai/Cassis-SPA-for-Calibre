@@ -291,7 +291,7 @@ export function countBooks(searchArray) {
   } catch (error) {
     log("countBooks: query=" + countBooksQuery(searchArray), 1);
     console.error(error);
-    return 0;
+    return -1;
   }
 }
 
@@ -313,7 +313,7 @@ export function countBooksWithTags(searchArray, tagIdString) {
   } catch (error) {
     log("countBooks: query=" + countBooksWithTagsQuery(searchArray, tagIdString), 1);
     console.error(error);
-    return 0;
+    return -1;
   }
 }
 
@@ -335,7 +335,7 @@ export function countBooksWithCC(ccNum, searchArray, ccIdString) {
   } catch (error) {
     log("countBooks: query=" + countBooksWithCCQuery(ccNum, searchArray, ccIdString), 1);
     console.error(error);
-    return 0;
+    return -1;
   }
 }
 
@@ -357,7 +357,7 @@ export function countBooksBySerie(seriesId) {
   } catch (error) {
     log("countBooksBySerieQuery: " + countBooksBySerieQuery, 1);
     console.error(error);
-    return 0;
+    return -1;
   }
 }
 
@@ -380,7 +380,7 @@ export function countBooksByAuthor(authorsId) {
   } catch (error) {
     log("countBooksByAuthorQuery: " + countBooksByAuthorQuery, 1);
     console.error(error);
-    return 0;
+    return -1;
   }
 }
 

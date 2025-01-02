@@ -262,8 +262,8 @@ function sendMail(authors, title, bookId, tagName) {
     'subject=' + encodeURIComponent('"' + title + ((tagName === 'Zeitschrift') ? '"' : '" von ' + authors)) +
     '&body=' + encodeURIComponent('... mit besten Empfehlungen aus der Cassis-Bibliothek:\n\n'
       + '"' + title + ((tagName === 'Zeitschrift') ? '"' : '" von ' + authors) + '\n\n'
-      + 'http://' + location.host + '/cassis/book/' + bookId + '\n\n'
-      + 'http://' + location.host + '/cassis/cover/book/' + bookId);
+      + location.protocol + '//' + location.host + '/cassis/book/' + bookId + '\n\n'
+      + location.protocol + '//' + location.host + '/cassis/cover/book/' + bookId);
 }
 
 function submitInputOnEnter() {
