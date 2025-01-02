@@ -9,7 +9,7 @@
     "dev": "node --env-file=.env.dev index.js"
   },
   "keywords": [],
-  "author": "raiblue72",
+  "author": "GitHub: bluerai, DockerHub: raiblue72",
   "license": "MIT",
   "dependencies": {
     "cookie-parser": "^1.4.7",

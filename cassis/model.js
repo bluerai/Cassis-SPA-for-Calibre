@@ -275,91 +275,124 @@ export function unconnectDb() {  // close database
 
 export function findBooks(searchArray, sortString, limit, offset) {
   try {
-    log("findBooks: query=" + findBooksQuery(searchArray, sortString) + " [" + limit + ", " + offset + "]", -1)
     const selectAllStmt = METADATA_DB.prepare(findBooksQuery(searchArray, sortString));
     return selectAllStmt.all(limit, offset);
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) {
+    log("findBooks: query=" + findBooksQuery(searchArray, sortString) + " [" + limit + ", " + offset + "]", 1)
+    console.error(error);
+    return {};
+  }
 }
 
 export function countBooks(searchArray) {
   try {
-    log("countBooks: query=" + countBooksQuery(searchArray), -1);
     const selectOneStmt = METADATA_DB.prepare(countBooksQuery(searchArray));
     return selectOneStmt.get().count;
-  } catch (error) { console.error(error); return 0; }
+  } catch (error) {
+    log("countBooks: query=" + countBooksQuery(searchArray), 1);
+    console.error(error);
+    return 0;
+  }
 }
 
 export function findBooksWithTags(searchArray, sortString, tagIdString, limit, offset) {
   try {
-    log("findBooksWithTags: query=" + findBooksWithTagsQuery(searchArray, sortString, tagIdString) + " [" + limit + ", " + offset + "]", -1)
     const selectAllStmt = METADATA_DB.prepare(findBooksWithTagsQuery(searchArray, sortString, tagIdString));
     return selectAllStmt.all(limit, offset);
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) {
+    log("findBooksWithTags: query=" + findBooksWithTagsQuery(searchArray, sortString, tagIdString) + " [" + limit + ", " + offset + "]", 1);
+    console.error(error);
+    return {};
+  }
 }
 
 export function countBooksWithTags(searchArray, tagIdString) {
   try {
-    log("countBooks: query=" + countBooksWithTagsQuery(searchArray, tagIdString), -1);
     const selectOneStmt = METADATA_DB.prepare(countBooksWithTagsQuery(searchArray, tagIdString));
     return selectOneStmt.get().count;
-  } catch (error) { console.error(error); return 0; }
+  } catch (error) {
+    log("countBooks: query=" + countBooksWithTagsQuery(searchArray, tagIdString), 1);
+    console.error(error);
+    return 0;
+  }
 }
 
 export function findBooksWithCC(ccNum, searchArray, sortString, ccIdString, limit, offset) {
   try {
-    log("findBooksWithCC: query=" + findBooksWithCCQuery(ccNum, searchArray, sortString, ccIdString) + " [" + limit + ", " + offset + "]", -1)
     const selectAllStmt = METADATA_DB.prepare(findBooksWithCCQuery(ccNum, searchArray, sortString, ccIdString));
     return selectAllStmt.all(limit, offset);
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) {
+    log("findBooksWithCC: query=" + findBooksWithCCQuery(ccNum, searchArray, sortString, ccIdString) + " [" + limit + ", " + offset + "]", 1);
+    console.error(error);
+    return {};
+  }
 }
 
 export function countBooksWithCC(ccNum, searchArray, ccIdString) {
   try {
-    log("countBooks: query=" + countBooksWithCCQuery(ccNum, searchArray, ccIdString), -1);
     const selectOneStmt = METADATA_DB.prepare(countBooksWithCCQuery(ccNum, searchArray, ccIdString));
     return selectOneStmt.get().count;
-  } catch (error) { console.error(error); return 0; }
+  } catch (error) {
+    log("countBooks: query=" + countBooksWithCCQuery(ccNum, searchArray, ccIdString), 1);
+    console.error(error);
+    return 0;
+  }
 }
 
 export function findBooksBySerie(seriesId, sortString, limit, offset) {
   try {
-    log("queryBooksBySerie: " + findBooksBySerieQuery(sortString) + " [" + seriesId + ", " + limit + ", " + offset + "]", -1)
     const selectAllStmt = METADATA_DB.prepare(findBooksBySerieQuery(sortString));
     return selectAllStmt.all(seriesId, limit, offset);
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) {
+    log("queryBooksBySerie: " + findBooksBySerieQuery(sortString) + " [" + seriesId + ", " + limit + ", " + offset + "]", 1);
+    console.error(error);
+    return {};
+  }
 }
 
 export function countBooksBySerie(seriesId) {
   try {
-    log("countBooksBySerieQuery: " + countBooksBySerieQuery, -1);
     const selectOneStmt = METADATA_DB.prepare(countBooksBySerieQuery);
     return selectOneStmt.get(seriesId).count;
-  } catch (error) { console.error(error); return 0; }
+  } catch (error) {
+    log("countBooksBySerieQuery: " + countBooksBySerieQuery, 1);
+    console.error(error);
+    return 0;
+  }
 }
 
 
 export function findBooksByAuthor(authorsId, sortString, limit, offset) {
   try {
-    log("findBooksByAuthor: " + findBooksByAuthorQuery(sortString) + " [" + authorsId + ", " + limit + ", " + offset + "]", -1)
     const selectAllStmt = METADATA_DB.prepare(findBooksByAuthorQuery(sortString));
     return selectAllStmt.all(authorsId, limit, offset);
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) {
+    log("findBooksByAuthor: " + findBooksByAuthorQuery(sortString) + " [" + authorsId + ", " + limit + ", " + offset + "]", 1);
+    console.error(error);
+    return {};
+  }
 }
 
 export function countBooksByAuthor(authorsId) {
   try {
-    log("countBooksByAuthorQuery: " + countBooksByAuthorQuery, -1);
     const selectOneStmt = METADATA_DB.prepare(countBooksByAuthorQuery);
     return selectOneStmt.get(authorsId).count;
-  } catch (error) { console.error(error); return 0; }
+  } catch (error) {
+    log("countBooksByAuthorQuery: " + countBooksByAuthorQuery, 1);
+    console.error(error);
+    return 0;
+  }
 }
 
 export function getBook(bookId) {
   try {
-    log("getBook: queryBook=" + queryBook + ' [' + bookId + ', ' + bookId + ']', -1);
     const selectOneStmt = METADATA_DB.prepare(queryBook);
     return selectOneStmt.get(bookId, bookId);
-  } catch (error) { console.error(error); return null; }
+  } catch (error) {
+    log("getBook: queryBook=" + queryBook + ' [' + bookId + ', ' + bookId + ']', 1);
+    console.error(error);
+    return null;
+  }
 }
 
 export function getAuthorsOfBooks(bookIdString) {
@@ -399,10 +432,13 @@ export function getPublisherOfBooks(bookIdString) {
 
 export function getCustomColumnOfBooks(colId, bookIdString) {
   try {
-    log("getCustomColumnOfBooks: query=" + queryCustomColumnsOfBooks(colId, bookIdString), -1);
     const selectAllStmt = METADATA_DB.prepare(queryCustomColumnsOfBooks(colId, bookIdString));
     return selectAllStmt.all().map(res => res.value);
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) {
+    log("getCustomColumnOfBooks: query=" + queryCustomColumnsOfBooks(colId, bookIdString), 1);
+    console.error(error);
+    return {};
+  }
 }
 
 export function getTags() {

@@ -12,10 +12,10 @@ import {
   getStatistics, connectDb, unconnectDb, getCustomColumnOfBooks, getTags, getCustomColumns
 } from './model.js';
 
-const appInfo = packagejson.name.toUpperCase()
-  + ", Version " + packagejson.version
-  + " (2024), Author: " + packagejson.author
-  + " (License " + packagejson.license + ")";
+const appInfo = {
+  "version": packagejson.name.toUpperCase() + ", Version " + packagejson.version + " (2024)",
+  "author": packagejson.author + " (License " + packagejson.license + ")"
+};
 
 const BOOKDIR = process.env.BOOKDIR || process.env.HOME + "/Documents/Calibre"
 const IMGCACHE = process.env.IMGCACHE || "./Cache";
@@ -25,11 +25,6 @@ const PUSHOVER_TOKEN = process.env.PUSHOVER_TOKEN;
 const PUSHOVER_USER = process.env.PUSHOVER_USER;
 
 let LOGLEVEL = parseInt(process.env.LOGLEVEL) || 0;  //0 debug, 1 info, 2 warn
-
-const whitespace_chars = /[\/\,\.\|\ \*\?\!\:\;\(\)\[\]\&\"\+]+/g;  // ohne _ und %
-
-//In der Onleihe: Zeichen zur Abtrennung des Artikels am Anfang von Titeln (für die Sortierung):
-const whitespace_char01 = String.fromCharCode(172);
 
 // Bookdir einrichten:
 console.log(new Date().toLocaleString('de') + " - " + "Calibre e-book directory at " + BOOKDIR);
@@ -165,7 +160,7 @@ export async function listAction(request, response) {
         default:
           const searchArray =
             (options.searchString)
-              ? options.searchString.trim().toLowerCase().replaceAll(whitespace_char01, " ").replaceAll(whitespace_chars, " ").split(" ")
+              ? searchStringToArray(options.searchString)
               : null;
 
           const tagId = (!options.tagId || isNaN(options.tagId)) ? 0 : parseInt(options.tagId, 10);
@@ -264,7 +259,7 @@ export async function bookAction(request, response) {
           default:
             const searchArray =
               (options.searchString)
-                ? options.searchString.trim().toLowerCase().replaceAll(whitespace_char01, " ").replaceAll(whitespace_chars, " ").split(" ")
+                ? searchStringToArray(options.searchString)
                 : null;
             const tagId = (!options.tagId || isNaN(options.tagId)) ? 0 : parseInt(options.tagId, 10);
             const ccNum = (!options.ccNum || isNaN(options.ccNum)) ? 0 : parseInt(options.ccNum, 10);
@@ -488,7 +483,7 @@ export async function countAction(request, response) {
   try {
     log("countAction: request.url=" + request.url, 1);
     const searchString = parse(request.url, true).query.search || "";
-    const searchArray = searchString.trim().toLowerCase().replaceAll(whitespace_char01, " ").replaceAll(whitespace_chars, " ").split(" ");
+    const searchArray = searchStringToArray(searchString);
     const count = countBooks(searchArray);
     response.json({ count, searchArray, healthy: true });
   }
@@ -505,6 +500,16 @@ export async function dbAction(request, response) {
 }
 
 // Helper functions ***********************
+
+
+const whitespace_chars = /[\/\,\.\|\ \*\?\!\:\;\(\)\[\]\&\"\+]+/g;  // ohne _ und %
+
+//In der Onleihe: Zeichen zur Abtrennung des Artikels am Anfang von Titeln (für die Sortierung):
+const whitespace_char01 = String.fromCharCode(172);
+
+function searchStringToArray(s) {
+  return s.trim().toLowerCase().replaceAll(whitespace_char01, " ").replaceAll(whitespace_chars, " ").replaceAll("'", "''").split(" ")
+}
 
 export function log(msg, level) { //level: -1= more debug, 0=debug, 1=info, 2=warn
   level = parseInt(level) || 0;

@@ -23,7 +23,6 @@ function pushOptions(options) {
   OPTIONS_COUNTER = OPTIONS_COUNTER + 1;
   sessionStorage.setItem("cassis" + OPTIONS_COUNTER, JSON.stringify(options));
   sessionStorage.setItem("cassis_OPTIONS_COUNTER", OPTIONS_COUNTER);
-  //alert("pushOptions(): OPTIONS_COUNTER=" + OPTIONS_COUNTER + ", options=" + JSON.stringify(options));
   if (OPTIONS_COUNTER > 1) {
     let n = OPTIONS_COUNTER;
     let optionsString;

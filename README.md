@@ -17,4 +17,4 @@ Cassis ist in Javascript geschrieben. Der Server läuft auf Basis von Node.js mi
 # Selbsterstelltes Zertifikat:
 openssl genrsa -out server.key 2048
 
-openssl req -new -x509 -key server.key -out server.cert -days 9999 -subj /CN=localhost
+openssl req -new -x509 -key server.key -out server.crt -days 9999 -subj /CN=localhost
