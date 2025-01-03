@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { router as cassisRouter } from './cassis/index.js';
 import https from 'https';
 import fs from 'fs-extra';
+import { logger } from './log.js';
 
 const app = express();
 const HTTP_PORT = parseInt(process.env.HTTP_PORT) || 80;
@@ -24,7 +25,7 @@ app.get('/', (request, response) => response.redirect('/cassis'));
 
 if (HTTP_PORT > 0) {
   app.listen(HTTP_PORT, () => {
-    console.log(new Date().toLocaleString('de') + ' - Http-Server is listening to Port ' + HTTP_PORT);
+    logger.info('Http-Server is listening to Port ' + HTTP_PORT);
   });
 }
 
@@ -34,6 +35,6 @@ if (HTTPS_PORT > 0 && fs.existsSync(process.env.KEYFILE) && fs.existsSync(proces
     cert: fs.readFileSync(process.env.CERTFILE),
   };
   https.createServer(options, app).listen(HTTPS_PORT, () => {
-    console.log(new Date().toLocaleString('de') + ' - Https-Server is listening to Port ' + HTTPS_PORT);
+    logger.info('Https-Server is listening to Port ' + HTTPS_PORT);
   });
 }

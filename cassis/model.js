@@ -2,17 +2,17 @@
 
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'fs-extra';
-import { log } from './controller.js';
+import { logger, errorLogger } from '../log.js';
 
 const METADATA_PATH = process.env.METADATA_FILE || process.env.HOME + "/Documents/Calibre/metadata.db"
 
 if (!fs.existsSync(METADATA_PATH)) {
-  console.log("Calibre-Datenbank nicht gefunden im Pfad: " + METADATA_PATH);
+  logger.error("Calibre-Datenbank nicht gefunden im Pfad: " + METADATA_PATH);
   process.exit(1);
 }
 
 const METADATA_DB = new DatabaseSync(METADATA_PATH, { open: true });
-if (METADATA_DB) console.log(new Date().toLocaleString('de') + " - " + "Connected to Calibre Database at " + METADATA_PATH)
+if (METADATA_DB) logger.info("Connected to Calibre Database at " + METADATA_PATH)
 
 // SQL 
 const bookColumns = ' t1.id as bookId, t1.title, t1.sort, t1.timestamp, t1.pubdate, t1.timestamp, t1.series_index as seriesIndex, t1.path ';
@@ -90,7 +90,7 @@ const queryCounts = `
     (select count(*) from tags) as tags`
 
 function searchClause(searchArray) {
-  //log("searchClause: searchArray=" + searchArray);
+  //logger.debug("searchClause: searchArray=" + searchArray);
   if (searchArray && searchArray.length > 0) {
     let clause = "";
     searchArray.forEach(element => {
@@ -246,18 +246,21 @@ const countBooksBySerieQuery = 'select count(*) as count from books, series, boo
   + ' where series.id = ? and books_series_link.series = series.id and books_series_link.book = books.id ';
 
 // Global prepared STMTs (for better performance of often used prepared STMTs)
-let COVERDATA_STMT = METADATA_DB.prepare(queryCoverData);
-
+let COVERDATA_STMT;
+try {
+  COVERDATA_STMT = METADATA_DB.prepare(queryCoverData);
+} catch (error) {
+  errorLogger(error);
+  process.exit(1);
+}
 
 // Exported functions **************************************
 export function connectDb() {  // open database 
   try {
     METADATA_DB.open();
-    log("connectDb: DB opened", 1);
+    logger.info("connectDb: DB opened");
     return { state: true, msg: "Calibre Database connected." }
   } catch (error) {
-    //DB already open
-    //console.error(error)
     return { state: false, msg: error.message };
   }
 }
@@ -265,201 +268,159 @@ export function connectDb() {  // open database
 export function unconnectDb() {  // close database 
   try {
     METADATA_DB.close();
-    log("unconnectDb: DB closed", 1);
+    logger.warn("unconnectDb: DB closed");
     return { state: true, msg: "Calibre Database closed" }
   } catch (error) {
-    //console.error(error);
     return { state: false, msg: error.message };
   }
 }
 
 export function findBooks(searchArray, sortString, limit, offset) {
+  logger.debug("findBooks: searchArray=" + searchArray + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset)
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksQuery(searchArray, sortString));
     return selectAllStmt.all(limit, offset);
-  } catch (error) {
-    log("findBooks: query=" + findBooksQuery(searchArray, sortString) + " [" + limit + ", " + offset + "]", 1)
-    console.error(error);
-    return {};
-  }
+  } catch (error) { errorLogger(error); return [] }
 }
 
 export function countBooks(searchArray) {
+  logger.debug("countBooks: searchArray=" + searchArray);
   try {
     const selectOneStmt = METADATA_DB.prepare(countBooksQuery(searchArray));
     return selectOneStmt.get().count;
-  } catch (error) {
-    log("countBooks: query=" + countBooksQuery(searchArray), 1);
-    console.error(error);
-    return -1;
-  }
+  } catch (error) { errorLogger(error); return -1 }
 }
 
 export function findBooksWithTags(searchArray, sortString, tagIdString, limit, offset) {
+  logger.debug("findBooksWithTags: searchArray=" + searchArray + ", sortString=" + sortString + ", tagIdString=" + tagIdString + ", limit=" + limit + ", offset=" + offset)
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksWithTagsQuery(searchArray, sortString, tagIdString));
     return selectAllStmt.all(limit, offset);
-  } catch (error) {
-    log("findBooksWithTags: query=" + findBooksWithTagsQuery(searchArray, sortString, tagIdString) + " [" + limit + ", " + offset + "]", 1);
-    console.error(error);
-    return {};
-  }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function countBooksWithTags(searchArray, tagIdString) {
+  logger.debug("countBooksWithTags: searchArray=" + searchArray + ", tagIdString=" + tagIdString);
   try {
     const selectOneStmt = METADATA_DB.prepare(countBooksWithTagsQuery(searchArray, tagIdString));
     return selectOneStmt.get().count;
-  } catch (error) {
-    log("countBooks: query=" + countBooksWithTagsQuery(searchArray, tagIdString), 1);
-    console.error(error);
-    return -1;
-  }
+  } catch (error) { errorLogger(error); return -1; }
 }
 
 export function findBooksWithCC(ccNum, searchArray, sortString, ccIdString, limit, offset) {
+  logger.debug("findBooksWithCC: ccNum=" + ccNum + ", searchArray=" + searchArray + ", sortString=" + sortString + ", ccIdString=" + ccIdString + ", limit=" + limit + ", offset=" + offset)
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksWithCCQuery(ccNum, searchArray, sortString, ccIdString));
     return selectAllStmt.all(limit, offset);
-  } catch (error) {
-    log("findBooksWithCC: query=" + findBooksWithCCQuery(ccNum, searchArray, sortString, ccIdString) + " [" + limit + ", " + offset + "]", 1);
-    console.error(error);
-    return {};
-  }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function countBooksWithCC(ccNum, searchArray, ccIdString) {
+  logger.debug("countBooksWithCC: ccNum=" + ccNum + ", searchArray=" + searchArray + ", ccIdString=" + ccIdString);
   try {
     const selectOneStmt = METADATA_DB.prepare(countBooksWithCCQuery(ccNum, searchArray, ccIdString));
     return selectOneStmt.get().count;
-  } catch (error) {
-    log("countBooks: query=" + countBooksWithCCQuery(ccNum, searchArray, ccIdString), 1);
-    console.error(error);
-    return -1;
-  }
+  } catch (error) { errorLogger(error); return -1; }
 }
 
 export function findBooksBySerie(seriesId, sortString, limit, offset) {
+  logger.debug("findBooksBySerie: seriesId=" + seriesId + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset);
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksBySerieQuery(sortString));
     return selectAllStmt.all(seriesId, limit, offset);
-  } catch (error) {
-    log("queryBooksBySerie: " + findBooksBySerieQuery(sortString) + " [" + seriesId + ", " + limit + ", " + offset + "]", 1);
-    console.error(error);
-    return {};
-  }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function countBooksBySerie(seriesId) {
   try {
     const selectOneStmt = METADATA_DB.prepare(countBooksBySerieQuery);
     return selectOneStmt.get(seriesId).count;
-  } catch (error) {
-    log("countBooksBySerieQuery: " + countBooksBySerieQuery, 1);
-    console.error(error);
-    return -1;
-  }
+  } catch (error) { errorLogger(error); return -1; }
 }
 
-
-export function findBooksByAuthor(authorsId, sortString, limit, offset) {
+export function findBooksByAuthor(ç, sortString, limit, offset) {
+  logger.debug("findBooksByAuthor: findBooksByAuthor=" + findBooksByAuthor + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset);
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksByAuthorQuery(sortString));
     return selectAllStmt.all(authorsId, limit, offset);
-  } catch (error) {
-    log("findBooksByAuthor: " + findBooksByAuthorQuery(sortString) + " [" + authorsId + ", " + limit + ", " + offset + "]", 1);
-    console.error(error);
-    return {};
-  }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function countBooksByAuthor(authorsId) {
   try {
     const selectOneStmt = METADATA_DB.prepare(countBooksByAuthorQuery);
     return selectOneStmt.get(authorsId).count;
-  } catch (error) {
-    log("countBooksByAuthorQuery: " + countBooksByAuthorQuery, 1);
-    console.error(error);
-    return -1;
-  }
+  } catch (error) { errorLogger(error); return -1; }
 }
 
 export function getBook(bookId) {
   try {
     const selectOneStmt = METADATA_DB.prepare(queryBook);
     return selectOneStmt.get(bookId, bookId);
-  } catch (error) {
-    log("getBook: queryBook=" + queryBook + ' [' + bookId + ', ' + bookId + ']', 1);
-    console.error(error);
-    return null;
-  }
+  } catch (error) { errorLogger(error); return null; }
 }
 
 export function getAuthorsOfBooks(bookIdString) {
   try {
     const selectAllStmt = METADATA_DB.prepare(queryAuthorsOfBooks(bookIdString));
     return selectAllStmt.all();
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function getFormatsOfBooks(bookIdString) {
   try {
     const selectAllStmt = METADATA_DB.prepare(queryFormatsOfBooks(bookIdString));
     return selectAllStmt.all();
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function getSeriesOfBooks(bookIdString) {
   try {
     const selectAllStmt = METADATA_DB.prepare(querySeriesOfBooks(bookIdString));
     return selectAllStmt.all();
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function getTagsOfBooks(bookIdString) {
   try {
     const selectAllStmt = METADATA_DB.prepare(queryTagsOfBook(bookIdString));
     return selectAllStmt.all();
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function getPublisherOfBooks(bookIdString) {
   try {
     const selectOneStmt = METADATA_DB.prepare(queryPublisherOfBook(bookIdString));
     return selectOneStmt.all();
-  } catch (error) { console.error(error); return null; }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function getCustomColumnOfBooks(colId, bookIdString) {
   try {
     const selectAllStmt = METADATA_DB.prepare(queryCustomColumnsOfBooks(colId, bookIdString));
     return selectAllStmt.all().map(res => res.value);
-  } catch (error) {
-    log("getCustomColumnOfBooks: query=" + queryCustomColumnsOfBooks(colId, bookIdString), 1);
-    console.error(error);
-    return {};
-  }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function getTags() {
   try {
     const selectAllStmt = METADATA_DB.prepare(queryTags);
     return selectAllStmt.all();
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function getCustomColumnsIds() {
   try {
     const selectAllStmt = METADATA_DB.prepare(queryCustomColumnsIds);
     return selectAllStmt.all();
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function getCustomColumns(ccNum) {
   try {
     const selectAllStmt = METADATA_DB.prepare(queryCustomColumns(ccNum));
     return selectAllStmt.all();
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) { errorLogger(error); return []; }
 }
 
 export function getCoverData(bookId) {
@@ -468,25 +429,23 @@ export function getCoverData(bookId) {
   } catch (error) {
     if (error.code === "ERR_INVALID_STATE") {
       try {
-        log("*** getCoverData: re-prepared global STMT");
+        logger.warn("*** getCoverData: re-prepared global STMT");
         COVERDATA_STMT = METADATA_DB.prepare(queryCoverData);
         return COVERDATA_STMT.get(bookId);
-      } catch (error) { console.error(error); return null }
-    } else {
-      console.error(error); return null
-    }
+      } catch (error) { errorLogger(error); return null; }
+    } else { errorLogger(error); return null; }
   }
 }
 
 export function getFileData(bookId, format) {
   try {
     return METADATA_DB.prepare(queryFileData,).get(bookId, format);
-  } catch (error) { console.error(error); return null; }
+  } catch (error) { errorLogger(error); return null; }
 }
 
 export function getStatistics() {
   try {
     return METADATA_DB.prepare(queryCounts).get();
-  } catch (error) { console.error(error); return {}; }
+  } catch (error) { errorLogger(error); return {}; }
 }
 

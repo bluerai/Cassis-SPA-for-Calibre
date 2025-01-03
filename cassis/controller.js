@@ -4,8 +4,9 @@ import { dirname } from 'path';
 import { fileURLToPath, parse } from 'url';
 import fs from 'fs-extra';
 import sharp from 'sharp';
-import packagejson from '../package.json' with {type: 'json'}
 
+import { logger, errorLogger } from '../log.js';
+import packagejson from '../package.json' with {type: 'json'}
 import {
   findBooks, countBooks, findBooksWithTags, countBooksWithTags, findBooksWithCC, countBooksWithCC, findBooksBySerie, countBooksBySerie, findBooksByAuthor, countBooksByAuthor,
   getSeriesOfBooks, getAuthorsOfBooks, getFormatsOfBooks, getPublisherOfBooks, getTagsOfBooks, getBook, getCoverData, getFileData,
@@ -20,28 +21,17 @@ const appInfo = {
 const BOOKDIR = process.env.BOOKDIR || process.env.HOME + "/Documents/Calibre"
 const IMGCACHE = process.env.IMGCACHE || "./Cache";
 const PAGE_LIMIT = parseInt(process.env.PAGE_LIMIT) || 30;
-const PUSHOVER_URL = process.env.PUSHOVER_URL;
-const PUSHOVER_TOKEN = process.env.PUSHOVER_TOKEN;
-const PUSHOVER_USER = process.env.PUSHOVER_USER;
-
-let LOGLEVEL = parseInt(process.env.LOGLEVEL) || 0;  //0 debug, 1 info, 2 warn
 
 // Bookdir einrichten:
-console.log(new Date().toLocaleString('de') + " - " + "Calibre e-book directory at " + BOOKDIR);
-fs.existsSync(BOOKDIR, (err, exists) => {
-  if (err) {
-    console.error(err)
-    process.exit(1)
-  }
+logger.info("Calibre e-book directory found at " + BOOKDIR);
+fs.existsSync(BOOKDIR, (error, exists) => {
+  if (error) { errorLogger(error); process.exit(1) }
 })
 
 // Image-Cache einrichten:
-console.log(new Date().toLocaleString('de') + " - " + "Cache for bookcovers at " + IMGCACHE);
-fs.ensureDirSync(IMGCACHE, (err, exists) => {
-  if (err) {
-    console.error(err)
-    process.exit(1)
-  }
+logger.info("Cache for bookcovers found at " + IMGCACHE);
+fs.ensureDirSync(IMGCACHE, (error, exists) => {
+  if (error) { errorLogger(error); process.exit(1) }
 })
 
 // Helper functions ***********************
@@ -113,7 +103,7 @@ function addFields(books) {
 // Actions **************************
 
 export async function startAction(request, response) {
-  log("*** startAction: request.params=" + JSON.stringify(request.params));
+  logger.debug("*** startAction: request.params=" + JSON.stringify(request.params));
   try {
     const type = request.params.type;
     const id = request.params.id;
@@ -132,7 +122,7 @@ export async function listAction(request, response) {
       body += temp !== null ? temp : '';
     });
     request.on('end', async () => {
-      log("*** listAction:: body=" + body);
+      logger.debug("*** listAction:: body=" + body);
       if (body) options = JSON.parse(body);
 
       const page = (!options.page || isNaN(options.page)) ? 0 : parseInt(options.page, 10);
@@ -168,13 +158,13 @@ export async function listAction(request, response) {
           const ccId = (!options.ccId || isNaN(options.ccId)) ? 0 : parseInt(options.ccId, 10);
 
           if (tagId && tagId > 0) {
-            log("listAction: tagId: " + tagId);
+            logger.debug("listAction: tagId: " + tagId);
             count = countBooksWithTags(searchArray, tagId);
             if (count !== 0) books = findBooksWithTags(searchArray, sortString, tagId, PAGE_LIMIT, page * PAGE_LIMIT);
 
           } else {
             if (ccNum && ccNum > 0) {
-              log("listAction: ccNum: " + ccNum + ", ccId: " + ccId);
+              logger.debug("listAction: ccNum: " + ccNum + ", ccId: " + ccId);
               count = countBooksWithCC(ccNum, searchArray, ccId);
               if (count !== 0) books = findBooksWithCC(ccNum, searchArray, sortString, ccId, PAGE_LIMIT, page * PAGE_LIMIT);
 
@@ -188,7 +178,7 @@ export async function listAction(request, response) {
           break;
       }
 
-      if (count <= 0) {
+      if (count <= 0 || books.length === 0) {
         const message = (count === 0) ? "Keine Bücher/Zeitschriften gefunden!" : "Fehler beim Zugriff auf die Datenbank!";
         response.send({ "html": "<div class='message'><h3>" + message + "</h3></div>" });
         return;
@@ -197,8 +187,9 @@ export async function listAction(request, response) {
       books = addFields(books);
       const pageNav = getPageNavigation(page, count);
 
-      log("listAction: books=" + JSON.stringify({ books }), -1);
-      log("listAction: pageNav=" + JSON.stringify({ pageNav }), -1);
+      logger.silly("listAction: books=" + JSON.stringify(books));
+      logger.silly("listAction: pageNav=" + JSON.stringify(pageNav));
+
       response.render(dirname(fileURLToPath(import.meta.url)) + '/views/booklist', { books, pageNav }, function (error, html) {
         if (error) {
           errorHandler(error, response, 'render booklist page');
@@ -221,12 +212,12 @@ export async function bookAction(request, response) {
       body += temp !== null ? temp : '';
     });
     request.on('end', async () => {
-      log("*** bookAction: body=" + body);
+      logger.debug("*** bookAction: body=" + body);
       if (body) options = JSON.parse(body);
 
       const bookId = parseInt(options.bookId, 10);
       const book = getBook(bookId);
-      log("*** bookAction: book=" + JSON.stringify(book), -1);
+      logger.silly("*** bookAction: book=" + JSON.stringify(book));
 
       let nextBook;
       let prevBook;
@@ -308,9 +299,9 @@ export async function bookAction(request, response) {
       if (series[0]) { series[0].seriesName = decode(series[0].seriesName); book.serie = series[0] }
       if (book.pubdate.substr(0, 1) == "0") { book.pubdate = null };
 
-      log("bookAction: " + JSON.stringify(book), -1);
-      //log("bookAction: prevBook=" + JSON.stringify(prevBook));
-      //log("bookAction: nextBook=" + JSON.stringify(nextBook));
+      logger.silly("bookAction: " + JSON.stringify(book));
+      logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook));
+      logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
       response.render(dirname(fileURLToPath(import.meta.url)) + '/views/book', { book, prevBook, nextBook }, function (error, html) {
         if (error) {
           errorHandler(error, response, 'render book page');
@@ -325,13 +316,13 @@ export async function bookAction(request, response) {
 
 export async function tagsAction(request, response) {
   try {
-    log("*** tagsAction: request.params=" + JSON.stringify(request.params));
+    logger.debug("*** tagsAction: request.params=" + JSON.stringify(request.params));
     const selectedId = (!request.params.tagId || isNaN(request.params.tagId)) ? 0 : parseInt(request.params.tagId, 10);
     let tags = getTags();
     tags = tags.map(tag => { tag.class = (tag.tagId === selectedId) ? "selected" : ""; return tag });
 
     const options = { tags };
-    log("tagsAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options), -1);
+    logger.silly("tagsAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
     response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
@@ -345,7 +336,7 @@ export async function tagsAction(request, response) {
 
 export async function ccAction(request, response) {
   try {
-    log("*** ccAction: request.params=" + JSON.stringify(request.params));
+    logger.debug("*** ccAction: request.params=" + JSON.stringify(request.params));
     const ccNum = (!request.params.ccNum || isNaN(request.params.ccNum)) ? 0 : parseInt(request.params.ccNum, 10);
     const selectedId = (!request.params.ccId || isNaN(request.params.ccId)) ? 0 : parseInt(request.params.ccId, 10);
 
@@ -353,7 +344,7 @@ export async function ccAction(request, response) {
     custCols = custCols.map(cc => { cc.class = (cc.id === selectedId) ? "selected" : ""; return cc });
 
     const options = { ccNum, custCols };
-    log("ccAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options), -1);
+    logger.silly("ccAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
     response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
@@ -368,22 +359,22 @@ export async function ccAction(request, response) {
 function sendResizedCover(response, source, targetDir, targetFile, resizeData) {
   try {
     const options = { root: targetDir, headers: { 'Content-Type': 'image/jpeg' } }
-    fs.pathExists(targetDir + "/" + targetFile, (err, exists) => {
-      if (err) { log(err) }
+    fs.pathExists(targetDir + "/" + targetFile, (error, exists) => {
+      if (error) { errorLogger(error) }
       else {
         if (exists) {
           response.sendFile(targetFile, options, function (err) {
-            if (err) { log(err, 2); }
+            if (error) { errorLogger(error) }
           })
         } else {
           sharp(source)
             .resize(resizeData)
             .toFile(targetDir + "/" + targetFile, function (err, info) {
-              if (!err) {
+              if (!error) {
                 response.sendFile(targetFile, options, function (err) {
-                  if (err) { log(err, 2); }
+                  if (error) { errorLogger(error) }
                 })
-              } else { log(err, 2); }
+              } else { errorLogger(error) }
             });
         }
       }
@@ -395,11 +386,13 @@ function sendResizedCover(response, source, targetDir, targetFile, resizeData) {
 export async function coverListAction(request, response) {
   try {
     let fileData = getCoverData(parseInt(request.params.id, 10));
-    log("*** coverListAction: fileData=" + JSON.stringify(fileData), -1);
-    const source = BOOKDIR + "/" + fileData.path + "/cover.jpg";
-    const targetDir = IMGCACHE + "/1" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
-    fs.ensureDirSync(targetDir);
-    sendResizedCover(response, source, targetDir, fileData.bookId + ".jpg", { height: 250 });
+    if (fileData) {
+      logger.silly("*** coverListAction: fileData=" + JSON.stringify(fileData));
+      const source = BOOKDIR + "/" + fileData.path + "/cover.jpg";
+      const targetDir = IMGCACHE + "/1" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
+      fs.ensureDirSync(targetDir);
+      sendResizedCover(response, source, targetDir, fileData.bookId + ".jpg", { height: 250 });
+    }
   }
   catch (error) { errorHandler(error, response, 'coverListAction') }
 }
@@ -407,7 +400,7 @@ export async function coverListAction(request, response) {
 export async function coverBookAction(request, response) {
   try {
     let fileData = getCoverData(parseInt(request.params.id, 10));
-    log("*** coverBookAction: fileData=" + JSON.stringify(fileData), -1);
+    logger.debug("*** coverBookAction: fileData=" + JSON.stringify(fileData));
     const source = BOOKDIR + "/" + fileData.path + "/cover.jpg";
     const targetDir = IMGCACHE + "/0" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
     fs.ensureDirSync(targetDir);
@@ -419,7 +412,7 @@ export async function coverBookAction(request, response) {
 export async function fileAction(request, response) {
   try {
     let fileData = getFileData(parseInt(request.params.id, 10), request.params.format);
-    log("*** fileAction: fileData=" + JSON.stringify(fileData), -1);
+    logger.debug("*** fileAction: fileData=" + JSON.stringify(fileData));
     const options = {
       root: BOOKDIR + "/" + fileData.path,
       dotfiles: 'deny',
@@ -432,7 +425,7 @@ export async function fileAction(request, response) {
       if (error)
         errorHandler(error, response, 'response.sendFile');
       else
-        log('response.sendFile: filename=' + fileData.filename, -1);
+        logger.debug('response.sendFile: filename=' + fileData.filename);
     })
   }
   catch (error) { errorHandler(error, 'fileAction') }
@@ -444,7 +437,7 @@ export async function infoAction(request, response) {
   try {
     const stats = getStatistics();
     const options = { stats, LOGLEVEL }
-    log("*** infoAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
+    logger.debug("*** infoAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
     response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
@@ -458,12 +451,12 @@ export async function infoAction(request, response) {
 
 export async function logLevelAction(request, response) {
   try {
-    log("*** logLevelAction: request.params=" + JSON.stringify(request.params), -1);
+    logger.debug("*** logLevelAction: request.params=" + JSON.stringify(request.params));
     const level = parseInt(request.params.level) || 0;
     if ("012".indexOf(level) != -1 && LOGLEVEL !== level) {
       LOGLEVEL = level;
     }
-    log(LOGLEVEL);
+    logger.debug(LOGLEVEL);
     response.send({ LOGLEVEL });
   }
   catch (error) { errorHandler(error, response, 'logLevelAction') }
@@ -473,7 +466,7 @@ export async function logLevelAction(request, response) {
 
 export async function countAction(request, response) {
   try {
-    log("countAction: request.url=" + request.url, 1);
+    logger.debug("countAction: request.url=" + request.url);
     const searchString = parse(request.url, true).query.search || "";
     const searchArray = searchStringToArray(searchString);
     const count = countBooks(searchArray);
@@ -484,7 +477,7 @@ export async function countAction(request, response) {
 
 export async function dbAction(request, response) {
   try {
-    log("dbAction: request.url=" + request.url, -1);
+    logger.debug("dbAction: request.url=" + request.url);
     const result = (request.url === "/unconnectdb") ? unconnectDb() : connectDb();
     response.json(result);
   }
@@ -503,42 +496,10 @@ function searchStringToArray(s) {
   return s.trim().toLowerCase().replaceAll(whitespace_char01, " ").replaceAll(whitespace_chars, " ").replaceAll("'", "''").split(" ")
 }
 
-export function log(msg, level) { //level: -1= more debug, 0=debug, 1=info, 2=warn
-  level = parseInt(level) || 0;
-  if (LOGLEVEL <= level) console.log(new Date().toLocaleString('de') + " " + msg);
-  if (level == 2 && LOGLEVEL >= 1) pushover(msg, "Warnung", 0, "pushover");
-}
-
-async function pushover(msg, title, prio, sound) {
-  try {
-    if (!PUSHOVER_URL || !PUSHOVER_TOKEN || !PUSHOVER_USER) {
-      log("pushover: No pushover url or no credentials defined.", 0)
-      return;
-    }
-    const headers = { "Content-Type": "application/json" };
-    const body = JSON.stringify({
-      token: PUSHOVER_TOKEN,
-      user: PUSHOVER_USER,
-      title: title,
-      priority: prio,
-      sound: sound,
-      message: msg,
-    });
-    const response = fetch(PUSHOVER_URL, {
-      method: "POST", headers, body
-    });
-    if (!response.ok) {
-      throw new Error("Sending Pushover message failed: " + response.status, 2);
-    }
-    const data = response.json();
-    log("Pushover message successfully sent: " + JSON.stringify(data), 0);
-  } catch (error) { console.error(error) }
-}
-
 function errorHandler(error, response, actionName) {
-  console.error(error);
   const message = "Cassis: Internal server error in '" + actionName + "': " + error.message;
-  log(message, 2);
+  logger.error(message);
+  errorLogger(error);
   response.writeHead(500, message, { 'content-type': 'text/html' });
   response.end();
 }
