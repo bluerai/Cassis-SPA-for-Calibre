@@ -5,7 +5,7 @@ import { fileURLToPath, parse } from 'url';
 import fs from 'fs-extra';
 import sharp from 'sharp';
 
-import { logger, errorLogger } from '../log.js';
+import { logger, fileTransport, errorLogger } from '../log.js';
 import packagejson from '../package.json' with {type: 'json'}
 import {
   findBooks, countBooks, findBooksWithTags, countBooksWithTags, findBooksWithCC, countBooksWithCC, findBooksBySerie, countBooksBySerie, findBooksByAuthor, countBooksByAuthor,
@@ -123,7 +123,7 @@ export async function listAction(request, response) {
       body += temp !== null ? temp : '';
     });
     request.on('end', async () => {
-      logger.debug("*** listAction:: body=" + body);
+      logger.debug("*** listAction: body=" + body);
       if (body) options = JSON.parse(body);
 
       const page = (!options.page || isNaN(options.page)) ? 0 : parseInt(options.page, 10);
@@ -432,8 +432,6 @@ export async function fileAction(request, response) {
   catch (error) { errorHandler(error, 'fileAction') }
 }
 
-const cookieAge = 360 * 24 * 60 * 60 * 1000;  //360 Tage
-
 export async function infoAction(request, response) {
   try {
     const stats = getStatistics();
@@ -454,11 +452,11 @@ export async function logLevelAction(request, response) {
   try {
     logger.debug("*** logLevelAction: request.params=" + JSON.stringify(request.params));
     const level = request.params.level;
-    if (LOG_LEVELS.indexOf(level) && logger.level !== level) {
-      logger.level = level;
-      logger.info("*** logLevelAction: Loglevel auf  " + logger.level +  "gesetzt.")
+    if (LOG_LEVELS.indexOf(level) && fileTransport.level !== level) {
+      fileTransport.level = level;
+      logger.info("*** logLevelAction: Loglevel auf  " + fileTransport.level +  "gesetzt.")
     }
-    response.send({ level: logger.level });
+    response.send({ level: fileTransport.level });
   }
   catch (error) { errorHandler(error, response, 'logLevelAction') }
 }

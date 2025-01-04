@@ -9,12 +9,21 @@ const consoleLogSilent = process.env.CONSOLELOG_SILENT || false;
 const errorLogSilent = process.env.ERRORLOG_SILENT || false;
 
 const consoleTransport = new winston.transports.Console({
+  level: 'info',
+  format: combine(
+    colorize({ all: true }),
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+    printf((info) => `[${info.timestamp}] ${info.level}: ${info.message}`)
+  ),
   silent: consoleLogSilent,
 });
 
-const fileRotateTransport = new winston.transports.DailyRotateFile({
-  level: 'debug',
-  format: winston.format.uncolorize(),
+export const fileTransport = new winston.transports.DailyRotateFile({
+  level: process.env.LOGLEVEL || 'info',
+  format: combine(
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
+    printf((info) => `[${info.timestamp}] ${info.level}: ${info.message}`)
+  ),
   filename: logdir + '/full_%DATE%.log',
   datePattern: 'YYYY-MM-DD',
   maxFiles: '14d',
@@ -31,15 +40,9 @@ const errorTransport = new winston.transports.File({
 })
 
 export const logger = winston.createLogger({
-  level: process.env.LOGLEVEL || 'info',
-  format: combine(
-    colorize({ all: true }),
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
-    printf((info) => `[${info.timestamp}] ${info.level}: ${info.message}`)
-  ),
   transports: [
     consoleTransport,
-    fileRotateTransport,
+    fileTransport,
     errorTransport
   ],
 });
