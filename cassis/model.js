@@ -4,7 +4,9 @@ import { DatabaseSync } from 'node:sqlite';
 import fs from 'fs-extra';
 import { logger, errorLogger } from '../log.js';
 
-const METADATA_PATH = process.env.METADATA_FILE || process.env.HOME + "/Documents/Calibre/metadata.db"
+logger.info('========== Cassis started ===========');
+
+const METADATA_PATH = process.env.METADATA_PATH || process.env.HOME + "/Documents/Calibre/metadata.db"
 
 if (!fs.existsSync(METADATA_PATH)) {
   logger.error("Calibre-Datenbank nicht gefunden im Pfad: " + METADATA_PATH);

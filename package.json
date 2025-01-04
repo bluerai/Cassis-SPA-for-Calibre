@@ -20,6 +20,7 @@
     "npm": "^11.0.0",
     "pug": "^3.0.2",
     "sharp": "^0.33.5",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   }
 }

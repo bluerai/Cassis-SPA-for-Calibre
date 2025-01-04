@@ -2,9 +2,10 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { router as cassisRouter } from './cassis/index.js';
 import https from 'https';
 import fs from 'fs-extra';
+
+import { router as cassisRouter } from './cassis/index.js';
 import { logger } from './log.js';
 
 const app = express();
