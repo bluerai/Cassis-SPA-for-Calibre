@@ -340,7 +340,7 @@ export function countBooksBySerie(seriesId) {
   } catch (error) { errorLogger(error); return -1; }
 }
 
-export function findBooksByAuthor(ç, sortString, limit, offset) {
+export function findBooksByAuthor(authorsId, sortString, limit, offset) {
   logger.debug("findBooksByAuthor: findBooksByAuthor=" + findBooksByAuthor + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset);
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksByAuthorQuery(sortString));
