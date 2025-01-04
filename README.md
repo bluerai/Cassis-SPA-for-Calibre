@@ -7,14 +7,15 @@ Als Server sind einfache Ein-Platinen-Rechner (ab ca. Raspberry PI 3 oä.) vollk
 
 Calibre⁠, das Programm zum E-Book-Mangement von KOVID GOYAL, stellt die Basisdaten für den Webserver zur Verfügung: ein Verzeichnis mit Publikationen und eine sqlite-Datenbank mit den Metadaten.
 
-Cassis ist in Javascript geschrieben. Der Server läuft auf Basis von Node.js mit Express und PUG und rendert den HTML-Code. Die App ist noch in der Entwicklung, kann aber schon verwendet und getestet werden. Die Sprache der Oberfläche ist zurzeit ausschließlich Deutsch.
+Cassis ist in Javascript geschrieben. Der Server läuft auf Basis von Node.js mit Express und PUG und rendert den HTML-Code. Die Sprache der Oberfläche ist zurzeit ausschließlich Deutsch.
 
 -- under Construction --
 
 
 
 
-# Selbsterstelltes Zertifikat:
+Selbsterstelltes Zertifikat:
+
 openssl genrsa -out server.key 2048
 
 openssl req -new -x509 -key server.key -out server.crt -days 9999 -subj /CN=localhost

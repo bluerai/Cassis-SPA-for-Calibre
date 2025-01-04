@@ -252,9 +252,8 @@ async function setLogLevel() {
   confirm("Bitte bestätigen:\nDas Log-Level wird auf den Wert " + loglevel +
     "  gesetzt.\n\nBeim nächsten Neustart wird das Log-Level auf den Standardwert zurückgesetzt.");
   const response = await fetch("/cassis/log/" + loglevel);
-
   const data = await response.json();
-  document.getElementById('loglevel-value').innerHTML = data.LOGLEVEL;
+  document.getElementById('loglevel-value').innerHTML = data.level;
 }
 
 function sendMail(authors, title, bookId, tagName) {

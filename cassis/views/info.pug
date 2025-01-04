@@ -62,12 +62,11 @@ if options.stats
       td(style="width: 50%")
         h3.info
           label(for="loglevel") Log-Level: 
-            span#loglevel-value #{options.LOGLEVEL}
+            span#loglevel-value #{options.logger.level}
       td(style="width: 50%; text-align:center")
           select.info(id="loglevel" size="1" onchange="setLogLevel()")
-            option(value="0" selected=(options.LOGLEVEL === 0) && "selected") 0: debug
-            option(value="1" selected=(options.LOGLEVEL === 1) && "selected") 1: info
-            option(value="2" selected=(options.LOGLEVEL === 2) && "selected") 2: warn
+            - for(let loglevel of options.logger.levels)
+              option(selected=(options.logger.level === loglevel) && "selected") #{loglevel}
     tr
       td(colspan=2)
         h3.info #{appInfo.version}

@@ -19,3 +19,4 @@ export function errorLogger(error) {
   logger.error(error.message + " " + JSON.stringify(error));
   logger.debug(error.stack);
 }
+

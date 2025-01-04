@@ -21,6 +21,7 @@ const appInfo = {
 const BOOKDIR = process.env.BOOKDIR || process.env.HOME + "/Documents/Calibre"
 const IMGCACHE = process.env.IMGCACHE || "./Cache";
 const PAGE_LIMIT = parseInt(process.env.PAGE_LIMIT) || 30;
+const LOG_LEVELS = ['error', 'info', 'debug', 'silly'];
 
 // Bookdir einrichten:
 logger.info("Calibre e-book directory found at " + BOOKDIR);
@@ -436,7 +437,7 @@ const cookieAge = 360 * 24 * 60 * 60 * 1000;  //360 Tage
 export async function infoAction(request, response) {
   try {
     const stats = getStatistics();
-    const options = { stats, LOGLEVEL }
+    const options = { stats, logger: {level: logger.level, levels: LOG_LEVELS }};
     logger.debug("*** infoAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
     response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
@@ -452,12 +453,12 @@ export async function infoAction(request, response) {
 export async function logLevelAction(request, response) {
   try {
     logger.debug("*** logLevelAction: request.params=" + JSON.stringify(request.params));
-    const level = parseInt(request.params.level) || 0;
-    if ("012".indexOf(level) != -1 && LOGLEVEL !== level) {
-      LOGLEVEL = level;
+    const level = request.params.level;
+    if (LOG_LEVELS.indexOf(level) && logger.level !== level) {
+      logger.level = level;
+      logger.info("*** logLevelAction: Loglevel auf  " + logger.level +  "gesetzt.")
     }
-    logger.debug(LOGLEVEL);
-    response.send({ LOGLEVEL });
+    response.send({ level: logger.level });
   }
   catch (error) { errorHandler(error, response, 'logLevelAction') }
 }
