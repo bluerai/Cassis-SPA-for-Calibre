@@ -21,7 +21,7 @@ const appInfo = {
 const BOOKDIR = process.env.BOOKDIR || process.env.HOME + "/Documents/Calibre"
 const IMGCACHE = process.env.IMGCACHE || "./Cache";
 const PAGE_LIMIT = parseInt(process.env.PAGE_LIMIT) || 30;
-const LOG_LEVELS = ['error', 'info', 'debug', 'silly'];
+const LOG_LEVELS = ['error', 'warn', 'info', 'debug', 'silly'];
 
 // Bookdir einrichten:
 logger.info("Calibre e-book directory found at " + BOOKDIR);
