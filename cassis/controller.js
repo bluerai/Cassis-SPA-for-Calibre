@@ -34,25 +34,14 @@ fs.ensureDirSync(IMGCACHE, (error, exists) => {
   if (error) { errorLogger(error); process.exit(1) }
 })
 
-// Helper functions ***********************
-
-function decode(str) {
-  if (str) {
-    str = str.toString().replaceAll('|', ',');
-  } else {
-    str = "";
-  }
-  return str;
-};
-
+// Base functions ***********************
+/* 
 function getPageNavigation(page, count) {
   if (count <= PAGE_LIMIT) {
     const pageNav = { size: count };
     return pageNav;
   }
-
   const lastpage = Math.ceil(count / PAGE_LIMIT) - 1;  // Nummerierung beginnt mit 0
-
   if (page < 0) { page = 0 }
   else if (page > lastpage) { page = lastpage }
 
@@ -64,8 +53,24 @@ function getPageNavigation(page, count) {
     nextpage: (page < lastpage) ? { value: (page + 1), class: "" } : { value: "", class: "disabled" },
     lastpage: (page <= lastpage) ? { value: lastpage, class: "" } : { value: "", class: "disabled" }
   }
-
   return pageNav;
+} */
+
+function getPageNavigation(page, count) {
+  if (count <= PAGE_LIMIT) return { size: count };
+
+  const lastpage = Math.ceil(count / PAGE_LIMIT) - 1;  // Nummerierung beginnt mit 0
+  if (page < 0) { page = 0 }
+  else if (page > lastpage) { page = lastpage }
+
+  return {
+    size: count,
+    currentpage: page,
+    firstpage: (0 < page) ? "0" : null,
+    prevpage: (page > 0) ? (page - 1) : null,
+    nextpage: (page < lastpage) ? (page + 1) : null,
+    lastpage: (page <= lastpage) ? lastpage : null
+  }
 }
 
 function addFields(books) {
@@ -435,7 +440,7 @@ export async function infoAction(request, response) {
   try {
     const stats = getStatistics();
     const options = { stats, logger: { level: logger.level, levels: log_levels, consoleOn: !consoleTransport.silent, fileOn: !fileTransport.silent } };
-    logger.debug("*** infoAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
+    logger.debug("*** infoAction: appInfo=" + JSON.stringify(appInfo) + ", " + "options=" + JSON.stringify(options));
     response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
@@ -446,20 +451,6 @@ export async function infoAction(request, response) {
   }
   catch (error) { errorHandler(error, response, 'infoAction') }
 }
-
-/* export async function logLevelAction(request, response) {
-  try {
-    logger.debug("*** logLevelAction: request.params=" + JSON.stringify(request.params));
-    const level = request.params.level;
-    if (log_levels.indexOf(level) && fileTransport.level !== level) {
-      fileTransport.level = level;
-      logger.info("*** logLevelAction: Loglevel für Logdatei gesetzt auf: " + fileTransport.level);
-    }
-    response.send({ level: fileTransport.level });
-  }
-  catch (error) { errorHandler(error, response, 'logLevelAction') }
-} */
-
 
 export async function logAction(request, response) {
   try {
@@ -509,13 +500,14 @@ export async function dbAction(request, response) {
 
 // Helper functions ***********************
 
-
-const whitespace_chars = /[\/\,\.\|\ \*\?\!\:\;\(\)\[\]\&\"\+]+/g;  // ohne _ und %
-
-//In der Onleihe: Zeichen zur Abtrennung des Artikels am Anfang von Titeln (für die Sortierung):
-const whitespace_char01 = String.fromCharCode(172);
+function decode(str) {
+  return (str) ? str.toString().replaceAll('|', ',') : "";
+}
 
 function searchStringToArray(s) {
+  const whitespace_chars = /[\/\,\.\|\ \*\?\!\:\;\(\)\[\]\&\"\+]+/g;  // ohne _ und %
+  //whitespace_char01: In der Onleihe Zeichen zur Abtrennung des Artikels am Anfang von Titeln (für die Sortierung):
+  const whitespace_char01 = String.fromCharCode(172);
   return s.trim().toLowerCase().replaceAll(whitespace_char01, " ").replaceAll(whitespace_chars, " ").replaceAll("'", "''").split(" ")
 }
 

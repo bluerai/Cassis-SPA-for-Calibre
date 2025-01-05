@@ -32,6 +32,6 @@
             button.text2(onclick="setOptionsBook({bookId: " + book.bookId + ", num: " + book.num + "});")
               p.akzent.center #{book.title}
 
-if pageNav && pageNav.currentpage && pageNav.currentpage.value !== pageNav.lastpage.value
-  div#pagedown(value=pageNav.nextpage.value onClick="setOptionsPage(" + pageNav.nextpage.value + ")" style="display: none")
+if pageNav && pageNav.currentpage !== pageNav.lastpage
+  div#pagedown(value=pageNav.nextpage onClick="setOptionsPage(" + pageNav.nextpage + ")" style="display: none")
     i.fa.fa-caret-down(aria-hidden="true" style="font-size: 60px") 
