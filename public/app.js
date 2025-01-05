@@ -248,12 +248,15 @@ async function connectDb(connect) {
 }
 
 async function setLogLevel() {
-  const loglevel = document.getElementById('loglevel').value;
-  confirm("Bitte bestätigen:\nDas Log-Level wird auf den Wert " + loglevel +
-    "  gesetzt.\n\nBeim nächsten Neustart wird das Log-Level auf den Standardwert zurückgesetzt.");
+  let loglevel = document.getElementById('loglevel').value;
+  if (!confirm("Bitte bestätigen:\nDas Log-Level wird auf den Wert " + loglevel +
+    "  gesetzt.\n\nBeim nächsten Neustart wird das Log-Level auf den Standardwert zurückgesetzt.")) {
+    loglevel = document.getElementById('loglevel-value').innerHTML; //=old value
+  }
   const response = await fetch("/cassis/log/" + loglevel);
   const data = await response.json();
   document.getElementById('loglevel-value').innerHTML = data.level;
+  document.getElementById('loglevel').value = data.level;
 }
 
 function sendMail(authors, title, bookId, tagName) {
