@@ -249,14 +249,26 @@ async function connectDb(connect) {
 
 async function setLogLevel() {
   let loglevel = document.getElementById('loglevel').value;
-  if (!confirm("Bitte bestätigen:\nDas Log-Level wird auf den Wert " + loglevel +
-    "  gesetzt.\n\nBeim nächsten Neustart wird das Log-Level auf den Standardwert zurückgesetzt.")) {
-    loglevel = document.getElementById('loglevel-value').innerHTML; //=old value
-  }
-  const response = await fetch("/cassis/log/" + loglevel);
+  const response = await fetch("/cassis/log/level/" + loglevel);
   const data = await response.json();
   document.getElementById('loglevel-value').innerHTML = data.level;
-  document.getElementById('loglevel').value = data.level;
+  document.getElementById('loglevel').value = "0";
+}
+
+async function setLogConTransport() {
+  let checked = document.getElementById('logToConsole').checked;
+  const response = await fetch("/cassis/log/con/" + (checked ? "1" : "0"));
+  const data = await response.json();
+  //alert(JSON.stringify(data));
+  document.getElementById('logToConsole').checked = data.consoleOn;
+}
+
+async function setLogFilTransport() {
+  let checked = document.getElementById('logToFile').checked;
+  const response = await fetch("/cassis/log/fil/" + (checked ? "1" : "0"));
+  const data = await response.json();
+  //alert(JSON.stringify(data));
+  document.getElementById('logToFile').checked = data.fileOn;
 }
 
 function sendMail(authors, title, bookId, tagName) {

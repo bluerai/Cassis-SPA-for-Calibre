@@ -1,51 +1,40 @@
 import winston from 'winston';
 import 'winston-daily-rotate-file';
 
+export const log_levels = ['error', 'warn', 'info', 'debug', 'silly'];
+
 const { combine, timestamp, printf, colorize } = winston.format;
 
 const logdir = process.env.LOGDIR || "./logs";
-const fileLogSilent = (process.env.FILELOG === "false") || false;
-const consoleLogSilent = (process.env.CONSOLELOG === "false") || false;
-const errorLogSilent = (process.env.ERRORLOG === "false") || false;
+const consoleSilent = !(process.env.LOG_TO_CONSOLE !== "false") || false;
+const fileSilent = !(process.env.LOG_TO_FILE !== "false") || true;
 
-const consoleTransport = new winston.transports.Console({
-  level: 'info',
-  format: combine(
-    colorize({ all: true }),
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
-    printf((info) => `[${info.timestamp}] ${info.level}: ${info.message}`)
-  ),
-  silent: consoleLogSilent,
+export const consoleTransport = new winston.transports.Console({
+  format: colorize({ all: true }),
+  silent: consoleSilent,
 });
 
 export const fileTransport = new winston.transports.DailyRotateFile({
+  filename: logdir + '/full_%DATE%.log',
+  datePattern: 'YYYY-MM-DD',
+  maxFiles: '14d',
+  lazy: true,
+  silent: fileSilent,
+});
+
+export const logger = winston.createLogger({
   level: process.env.LOGLEVEL || 'info',
   format: combine(
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
     printf((info) => `[${info.timestamp}] ${info.level}: ${info.message}`)
   ),
-  filename: logdir + '/full_%DATE%.log',
-  datePattern: 'YYYY-MM-DD',
-  maxFiles: '14d',
-  silent: fileLogSilent
-});
-
-const errorTransport = new winston.transports.File({
-  level: 'error',
-  format: winston.format.uncolorize(),
-  filename: logdir + "/error.log",
-  lazy: true,
-  maxsize: '10m',
-  silent: errorLogSilent
-})
-
-export const logger = winston.createLogger({
   transports: [
     consoleTransport,
-    fileTransport,
-    errorTransport
+    fileTransport
   ],
 });
+
+logger.info("Logging level: " + logger.level + ", logging to console: " + !consoleTransport.silent + ", logging to file: " + !fileTransport.silent);
 
 export function errorLogger(error) {
   logger.error(error.message + " " + JSON.stringify(error));

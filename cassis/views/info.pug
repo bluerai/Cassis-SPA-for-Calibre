@@ -59,14 +59,29 @@ if options.stats
           button.text3(onclick="connectDb(false)" style="padding: 3px 0px; margin: 7px 0px") Verbindung abbrechen
 
     tr 
-      td(style="width: 50%")
-        h3.info
-          label(for="loglevel") Log-Level: 
-            span#loglevel-value #{options.logger.level}
       td(style="width: 50%; text-align:center")
-          select.info(id="loglevel" size="1" onchange="setLogLevel()")
-            - for(let loglevel of options.logger.levels)
-              option(selected=(options.logger.level === loglevel) && "selected") #{loglevel}
+        h3.info Log-Ausgabe auf: 
+        
+        div(style="width: 150px; margin-left:auto; margin-right:auto")
+          h3.info.left(style="margin-bottom: 0px")
+            input(type="checkbox" id="logToConsole" value="Console" checked=options.logger.consoleOn onClick="setLogConTransport()")
+            label(for="logToConsole") Console
+
+        div(style="width: 150px; margin-left:auto; margin-right:auto")
+          h3.info.left(style="margin-top: 0px")
+              input(type="checkbox" id="logToFile" value="Datei" checked=options.logger.fileOn  onClick="setLogFilTransport()")
+              label(for="logToFile") Datei
+                
+
+      td(style="width: 50%; text-align:center")
+        h3.info Log-Level: 
+        h3.info#loglevel-value #{options.logger.level}
+
+        select.info(id="loglevel" size="1" onchange="setLogLevel()")
+          option(selected="selected" value="0") Level ändern
+          - for(let loglevel of options.logger.levels)
+            option #{loglevel}
+         
     tr
       td(colspan=2)
         h3.info #{appInfo.version}

@@ -5,12 +5,12 @@ import { fileURLToPath, parse } from 'url';
 import fs from 'fs-extra';
 import sharp from 'sharp';
 
-import { logger, fileTransport, errorLogger } from '../log.js';
+import { logger, consoleTransport, fileTransport, errorLogger, log_levels } from '../log.js';
 import packagejson from '../package.json' with {type: 'json'}
 import {
-  findBooks, countBooks, findBooksWithTags, countBooksWithTags, findBooksWithCC, countBooksWithCC, findBooksBySerie, countBooksBySerie, findBooksByAuthor, countBooksByAuthor,
-  getSeriesOfBooks, getAuthorsOfBooks, getFormatsOfBooks, getPublisherOfBooks, getTagsOfBooks, getBook, getCoverData, getFileData,
-  getStatistics, connectDb, unconnectDb, getCustomColumnOfBooks, getTags, getCustomColumns
+  findBooks, countBooks, findBooksWithTags, countBooksWithTags, findBooksWithCC, countBooksWithCC, findBooksBySerie, countBooksBySerie,
+  findBooksByAuthor, countBooksByAuthor, getSeriesOfBooks, getAuthorsOfBooks, getFormatsOfBooks, getPublisherOfBooks, getTagsOfBooks, getBook,
+  getCoverData, getFileData, getStatistics, connectDb, unconnectDb, getCustomColumnOfBooks, getTags, getCustomColumns
 } from './model.js';
 
 const appInfo = {
@@ -21,7 +21,6 @@ const appInfo = {
 const BOOKDIR = process.env.BOOKDIR || process.env.HOME + "/Documents/Calibre"
 const IMGCACHE = process.env.IMGCACHE || "./Cache";
 const PAGE_LIMIT = parseInt(process.env.PAGE_LIMIT) || 30;
-const LOG_LEVELS = ['error', 'warn', 'info', 'debug', 'silly'];
 
 // Bookdir einrichten:
 logger.info("Calibre e-book directory found at " + BOOKDIR);
@@ -435,7 +434,7 @@ export async function fileAction(request, response) {
 export async function infoAction(request, response) {
   try {
     const stats = getStatistics();
-    const options = { stats, logger: {level: logger.level, levels: LOG_LEVELS }};
+    const options = { stats, logger: { level: logger.level, levels: log_levels, consoleOn: !consoleTransport.silent, fileOn: !fileTransport.silent } };
     logger.debug("*** infoAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
     response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
@@ -448,15 +447,40 @@ export async function infoAction(request, response) {
   catch (error) { errorHandler(error, response, 'infoAction') }
 }
 
-export async function logLevelAction(request, response) {
+/* export async function logLevelAction(request, response) {
   try {
     logger.debug("*** logLevelAction: request.params=" + JSON.stringify(request.params));
     const level = request.params.level;
-    if (LOG_LEVELS.indexOf(level) && fileTransport.level !== level) {
+    if (log_levels.indexOf(level) && fileTransport.level !== level) {
       fileTransport.level = level;
       logger.info("*** logLevelAction: Loglevel für Logdatei gesetzt auf: " + fileTransport.level);
     }
     response.send({ level: fileTransport.level });
+  }
+  catch (error) { errorHandler(error, response, 'logLevelAction') }
+} */
+
+
+export async function logAction(request, response) {
+  try {
+    logger.info("*** logAction: request.params=" + JSON.stringify(request.params));
+    const key = request.params.key;
+    switch (key) {
+      case 'level':
+        const level = request.params.value;
+        if (log_levels.indexOf(level) && logger.level !== level) logger.level = level;
+        response.send({ level: fileTransport.level });
+        break;
+      case 'con':
+        consoleTransport.silent = (request.params.value === "1") ? false : true;
+        response.send({ consoleOn: !consoleTransport.silent });
+        break;
+      case 'fil':
+        fileTransport.silent = (request.params.value === "1") ? false : true;
+        response.send({ fileOn: !fileTransport.silent });
+        break;
+    }
+    logger.debug("Logging level: " + logger.level + ", logging to console: " + !consoleTransport.silent + ", logging to file: " + !fileTransport.silent);
   }
   catch (error) { errorHandler(error, response, 'logLevelAction') }
 }

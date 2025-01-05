@@ -281,7 +281,7 @@ select.info,
 input.info {
   font-size: 18px;
   color: var(--body);
-  width: 120px;
+  width: 150px;
   margin: 10px;
   float: unset;
 }
@@ -289,6 +289,12 @@ input.info {
 button.info {
   margin-top: 10px;
 }
+
+input[type=checkbox] {
+  position: relative;
+  bottom: 8px
+}
+
 
 table.info {
   background-color: var(--action-bg);
