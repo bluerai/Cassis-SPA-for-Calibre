@@ -62,12 +62,12 @@ if options.stats
       td(style="width: 50%; text-align:center")
         h3.info Log-Ausgabe auf: 
         
-        div(style="width: 150px; margin-left:auto; margin-right:auto")
+        div(style="width: 120px; margin-left:auto; margin-right:auto")
           h3.info.left(style="margin-bottom: 0px")
             input(type="checkbox" id="logToConsole" value="Console" checked=options.logger.consoleOn onClick="setLogConTransport()")
             label(for="logToConsole") Console
 
-        div(style="width: 150px; margin-left:auto; margin-right:auto")
+        div(style="width: 120px; margin-left:auto; margin-right:auto")
           h3.info.left(style="margin-top: 0px")
               input(type="checkbox" id="logToFile" value="Datei" checked=options.logger.fileOn  onClick="setLogFilTransport()")
               label(for="logToFile") Datei
@@ -78,7 +78,7 @@ if options.stats
         h3.info#loglevel-value #{options.logger.level}
 
         select.info(id="loglevel" size="1" onchange="setLogLevel()")
-          option(selected="selected" value="0") Level ändern
+          option(selected="selected" value="0") -ändern-
           - for(let loglevel of options.logger.levels)
             option #{loglevel}
          

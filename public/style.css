@@ -281,7 +281,7 @@ select.info,
 input.info {
   font-size: 18px;
   color: var(--body);
-  width: 150px;
+  width: 125px;
   margin: 10px;
   float: unset;
 }
