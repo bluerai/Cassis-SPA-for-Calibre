@@ -469,7 +469,7 @@ export async function logAction(request, response) {
       case 'level':
         const level = request.params.value;
         if (log_levels.indexOf(level) && logger.level !== level) logger.level = level;
-        response.send({ level: fileTransport.level });
+        response.send({ level: logger.level });
         break;
       case 'con':
         consoleTransport.silent = (request.params.value === "1") ? false : true;
