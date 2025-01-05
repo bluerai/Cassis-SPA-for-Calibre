@@ -454,7 +454,7 @@ export async function logLevelAction(request, response) {
     const level = request.params.level;
     if (LOG_LEVELS.indexOf(level) && fileTransport.level !== level) {
       fileTransport.level = level;
-      logger.info("*** logLevelAction: Loglevel auf  " + fileTransport.level +  "gesetzt.")
+      logger.info("*** logLevelAction: Loglevel für Logdatei gesetzt auf: " + fileTransport.level);
     }
     response.send({ level: fileTransport.level });
   }

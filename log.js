@@ -4,9 +4,9 @@ import 'winston-daily-rotate-file';
 const { combine, timestamp, printf, colorize } = winston.format;
 
 const logdir = process.env.LOGDIR || "./logs";
-const fileLogSilent = process.env.FILELOG_SILENT || false;
-const consoleLogSilent = process.env.CONSOLELOG_SILENT || false;
-const errorLogSilent = process.env.ERRORLOG_SILENT || false;
+const fileLogSilent = (process.env.FILELOG === "false") || false;
+const consoleLogSilent = (process.env.CONSOLELOG === "false") || false;
+const errorLogSilent = (process.env.ERRORLOG === "false") || false;
 
 const consoleTransport = new winston.transports.Console({
   level: 'info',
