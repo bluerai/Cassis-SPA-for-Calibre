@@ -95,7 +95,7 @@ function searchClause(searchArray) {
   //logger.debug("searchClause: searchArray=" + searchArray);
   if (searchArray && searchArray.length > 0) {
     let clause = "";
-    searchArray.forEach(element => {
+    searchArray.sort((a, b) => { return b.length - a.length }).forEach(element => {
       clause += " and search like '%" + element + "%'";
     });
     return " where " + clause.substring(4);

@@ -505,7 +505,7 @@ function decode(str) {
 }
 
 function searchStringToArray(s) {
-  const whitespace_chars = /[\/\,\.\|\ \*\?\!\:\;\(\)\[\]\&\"\+]+/g;  // ohne _ und %
+  const whitespace_chars = /[\/\,\.\|\ \*\?\!\:\;\(\)\[\]\&\"\+\-\_\%]+/g;  // ohne _ und %
   //whitespace_char01: In der Onleihe Zeichen zur Abtrennung des Artikels am Anfang von Titeln (für die Sortierung):
   const whitespace_char01 = String.fromCharCode(172);
   return s.trim().toLowerCase().replaceAll(whitespace_char01, " ").replaceAll(whitespace_chars, " ").replaceAll("'", "''").split(" ")
