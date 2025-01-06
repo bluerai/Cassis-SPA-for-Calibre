@@ -1,5 +1,5 @@
 # CASSIS - Single Page App (SPA) for Calibre
- The single page app CASSIS is provided by a node web server that accesses the Calibre e-book management. Technically it is based on Node, Express & PUG with server-side rendering and is written in Javascript.
+The single page app CASSIS is provided by a node web server that accesses the Calibre e-book management. Technically it is based on Node, Express & PUG with server-side rendering and is written in Javascript.
 
 The CASSIS Web Server provides a single page app that can be used to download publications from a Calibre library. The client on which the single-page app runs can be any device with sufficiently modern browsers: smartphone, tablet, e-reader, desktop or laptop PC. A prerequisite for reading the publication is a corresponding reading program.
 
