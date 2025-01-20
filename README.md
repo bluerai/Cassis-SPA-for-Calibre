@@ -26,3 +26,9 @@ CASSIS ist in Javascript geschrieben. Der Server läuft auf Basis von Node.js mi
 Die Sprache der Oberfläche ist zurzeit ausschließlich Deutsch.
 
 =========================================================
+
+TODOs:
+
+I18n
+
+Docu

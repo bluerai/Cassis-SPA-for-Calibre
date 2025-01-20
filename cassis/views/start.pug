@@ -4,6 +4,8 @@ block content
 
   - appname = "Cassis"
 
+  #transparent(onclick="hideDropdownMenu()")
+
   div.menubar
     button.menu(type="text" onClick="setOptionsHome()" title="Home")
       i.fa.fa-home(aria-hidden="true")
@@ -14,11 +16,7 @@ block content
     div#dropdown.menu.right
       button.menu.right(type="button" title="Menü" onClick="showDropdownMenu()")
         i.fa.fa-bars(aria-hidden="true")
-      div#dropdown-content
-        p(onClick="getPage('/cassis/tags/' + getOption('tagId'))" title="Auswahl des Genres") Genre
-        p(onClick="getPage('/cassis/cc/5/' + getOption('ccId'))" title="Reiseführer: Auswahl des Landes") Reiseführer
-        p(onClick="getPage('/cassis/cc/6/' + getOption('ccId'))" title="Sachbücher: Auswahl der Sachgebiets") Sachbücher
-        p(onClick="getPage('/cassis/info')" title="Info") Info
+
     button.two.menu.right(type="text" onClick="setSortString('timestamp')" title="Sortieren nach Zeitstempel")
       i.fa.fa-clock(aria-hidden="true")
       i.fa.fa-arrows-v(aria-hidden="true")
@@ -36,8 +34,15 @@ block content
       button.menu(type="text" id="submitSearch" onClick="setOptionsSearch()" title="Suche starten")
         i.fa.fa-search(aria-hidden="true")
         
-  #app(onClick="getElementById('dropdown-content').style.display='none'")
+  div#dropdown-content
+    p(onClick="getPage('/cassis/tags/' + getOption('tagId'))" title="Auswahl des Genres") Genre
+    p(onClick="getPage('/cassis/cc/5/' + getOption('ccId'))" title="Reiseführer: Auswahl des Landes") Reiseführer
+    p(onClick="getPage('/cassis/cc/6/' + getOption('ccId'))" title="Sachbücher: Auswahl der Sachgebiets") Sachbücher
+    p(onClick="getPage('/cassis/info')" title="Info") Info
 
+  #app
+
+    //- Inserted here: booklist / single book view / info page 
     noscript
       div.message
         h3 Zur Anzeige wird Javascript benötigt. Bitte einschalten.

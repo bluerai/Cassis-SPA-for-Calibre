@@ -605,7 +605,7 @@ button.text5 {
   min-width: 160px;
   box-shadow: var(--shadow);
   border: var(--shadow-border);
-  z-index: 10;
+  z-index: 60;
 }
 
 
@@ -635,6 +635,16 @@ button.text5 {
   width: 100%;
   text-align: center;
   margin-top: 48px;
+}
+
+#transparent {
+  opacity: 0.3;
+  display: none;
+  background-color: var(--akzent-bg);
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-Index: 59; 
 }
 
 /*****************************************************************************/

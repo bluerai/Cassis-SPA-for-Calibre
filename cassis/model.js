@@ -116,7 +116,7 @@ sortArray["serie.desc"] = "order by t1.series_index desc";
 function findBooksQuery(searchArray, sortString) {
   return `
     select row_number() over win as num, ` + bookColumns + `,
-      t1.name || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search 
+      t1.sort || ' ' || t1.title || ' ' || coalesce(t2.sort, '') || ' ' || t1.path as search 
       from (select books.*, group_concat(authors.name) name from authors, books, books_authors_link 
       where authors.id = books_authors_link.author and books.id = books_authors_link.book group by books.id
     ) as t1 

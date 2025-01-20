@@ -231,13 +231,19 @@ async function getPage(url) {
   const data = await response.json();
   document.getElementById("books").innerHTML = data.html;
   setTimeout(() => {
-    document.getElementById('dropdown-content').style.display = 'none';
+    hideDropdownMenu();
     document.body.scrollIntoView();
-  }, 200);
+  }, 100);
 }
 
 function showDropdownMenu() {
   document.getElementById('dropdown-content').style.display = 'block';
+  document.getElementById('transparent').style.display = 'block';
+}
+
+function hideDropdownMenu() {
+  document.getElementById('transparent').style.display = 'none';
+  document.getElementById('dropdown-content').style.display = 'none';
 }
 
 async function connectDb(connect) {
