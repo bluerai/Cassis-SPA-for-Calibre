@@ -361,10 +361,10 @@ export async function ccAction(request, response) {
   catch (error) { errorHandler(error, response, 'ccAction') }
 }
 
-function sendResizedCover(response, source, targetDir, targetFile, resizeData) {
+function sendResizedCover(response, source, targetDir, targetFile, resizeOptions) {
   try {
     const options = { root: targetDir, headers: { 'Content-Type': 'image/jpeg' } }
-    fs.pathExists(targetDir + "/" + targetFile, (error, exists) => {
+    fs.pathExists(targetDir + "/" + targetFile, async (error, exists) => {
       if (error) { errorLogger(error) }
       else {
         if (exists) {
@@ -373,7 +373,7 @@ function sendResizedCover(response, source, targetDir, targetFile, resizeData) {
           })
         } else {
           sharp(source)
-            .resize(resizeData)
+            .resize(resizeOptions)
             .toFile(targetDir + "/" + targetFile, function (err, info) {
               if (!error) {
                 response.sendFile(targetFile, options, function (err) {

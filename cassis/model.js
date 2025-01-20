@@ -121,7 +121,7 @@ function findBooksQuery(searchArray, sortString) {
       where authors.id = books_authors_link.author and books.id = books_authors_link.book group by books.id
     ) as t1 
     left join 
-    (select books.id as bookId, series.name 
+    (select books.id as bookId, series.sort 
       from books, series, books_series_link 
       where bookId = books_series_link.book and books_series_link.series = series.id
     ) as t2 
@@ -278,7 +278,8 @@ export function unconnectDb() {  // close database
 }
 
 export function findBooks(searchArray, sortString, limit, offset) {
-  logger.debug("findBooks: searchArray=" + searchArray + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset)
+  logger.debug("findBooks: searchArray=" + searchArray + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset);
+  logger.silly(findBooksQuery(searchArray, sortString));
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksQuery(searchArray, sortString));
     return selectAllStmt.all(limit, offset);
