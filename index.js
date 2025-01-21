@@ -18,7 +18,9 @@ app.use(express.static(dirname(fileURLToPath(import.meta.url)) + '/public'));
 
 app.use(express.urlencoded({ extended: false }));
 
-app.use(cookieParser())
+app.use(express.json());
+
+app.use(cookieParser());
 
 app.use('/cassis', cassisRouter);
 

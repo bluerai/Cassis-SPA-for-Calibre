@@ -4,8 +4,6 @@ import { DatabaseSync } from 'node:sqlite';
 import fs from 'fs-extra';
 import { logger, errorLogger } from '../log.js';
 
-logger.info('========== Cassis started ===========');
-
 const METADATA_PATH = process.env.METADATA_PATH || process.env.HOME + "/Documents/Calibre/metadata.db"
 
 if (!fs.existsSync(METADATA_PATH)) {

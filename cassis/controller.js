@@ -119,37 +119,117 @@ export async function startAction(request, response) {
 
 export async function listAction(request, response) {
   try {
-    let options = {};
+    const options = request.body;
+    logger.debug("*** listAction: options=" + JSON.stringify(options));
 
-    let body = '';
-    request.on('readable', () => {
-      const temp = request.read();
-      body += temp !== null ? temp : '';
+    const page = (!options.page || isNaN(options.page)) ? 0 : parseInt(options.page, 10);
+    const sortString = (!options.sortString) ? "" : options.sortString;
+    const type = options.type || request.params.type;
+
+    let books = {};
+    let count = 0;
+
+    switch (type) {
+      case "serie":
+        const seriesId = (!options.serieId || isNaN(options.serieId)) ? 0 : parseInt(options.serieId, 10);
+        count = countBooksBySerie(seriesId);
+        if (count !== 0)
+          books = findBooksBySerie(seriesId, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
+        break;
+
+      case "author":
+        const authorsId = (!options.authorsId || isNaN(options.authorsId)) ? 0 : parseInt(options.authorsId, 10);
+        count = countBooksByAuthor(authorsId);
+        if (count !== 0)
+          books = findBooksByAuthor(authorsId, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
+        break
+
+      default:
+        const searchArray =
+          (options.searchString)
+            ? searchStringToArray(options.searchString)
+            : null;
+
+        const tagId = (!options.tagId || isNaN(options.tagId)) ? 0 : parseInt(options.tagId, 10);
+        const ccNum = (!options.ccNum || isNaN(options.ccNum)) ? 0 : parseInt(options.ccNum, 10);
+        const ccId = (!options.ccId || isNaN(options.ccId)) ? 0 : parseInt(options.ccId, 10);
+
+        if (tagId && tagId > 0) {
+          logger.debug("listAction: tagId: " + tagId);
+          count = countBooksWithTags(searchArray, tagId);
+          if (count !== 0) books = findBooksWithTags(searchArray, sortString, tagId, PAGE_LIMIT, page * PAGE_LIMIT);
+
+        } else {
+          if (ccNum && ccNum > 0) {
+            logger.debug("listAction: ccNum: " + ccNum + ", ccId: " + ccId);
+            count = countBooksWithCC(ccNum, searchArray, ccId);
+            if (count !== 0) books = findBooksWithCC(ccNum, searchArray, sortString, ccId, PAGE_LIMIT, page * PAGE_LIMIT);
+
+          } else {
+            if (tagId === 0 && ccNum === 0) {
+              count = countBooks(searchArray);
+              if (count && count !== 0) books = findBooks(searchArray, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
+            }
+          }
+        }
+        break;
+    }
+
+    if (count <= 0 || books.length === 0) {
+      const message = (count === 0) ? "Keine Bücher/Zeitschriften gefunden!" : "Fehler beim Zugriff auf die Datenbank!";
+      response.send({ "html": "<div class='message'><h3>" + message + "</h3></div>" });
+      return;
+    }
+
+    books = addFields(books);
+    const pageNav = getPageNavigation(page, count);
+
+    logger.silly("listAction: books=" + JSON.stringify(books));
+    logger.silly("listAction: pageNav=" + JSON.stringify(pageNav));
+
+    response.render(dirname(fileURLToPath(import.meta.url)) + '/views/booklist', { books, pageNav }, function (error, html) {
+      if (error) {
+        errorHandler(error, response, 'render booklist page');
+      } else {
+        response.send({ html });
+      }
     });
-    request.on('end', async () => {
-      logger.debug("*** listAction: body=" + body);
-      if (body) options = JSON.parse(body);
 
-      const page = (!options.page || isNaN(options.page)) ? 0 : parseInt(options.page, 10);
+  }
+  catch (error) { errorHandler(error, response, 'listAction') }
+}
+
+export async function bookAction(request, response) {
+  try {
+    const options = request.body;
+    logger.debug("*** bookAction: options=" + JSON.stringify(options));
+
+    const bookId = parseInt(options.bookId, 10);
+    const book = getBook(bookId);
+    logger.silly("*** bookAction: book=" + JSON.stringify(book));
+
+    let nextBook;
+    let prevBook;
+
+
+    if (options.bookId !== undefined && options.num) {
+      const rowNum = parseInt(options.num, 10) - 1;
       const sortString = (!options.sortString) ? "" : options.sortString;
-      const type = options.type || request.params.type;
-
-      let books = {};
-      let count = 0;
+      const type = options.type;
+      let nextBookArray;
+      let prevBookArray;
 
       switch (type) {
         case "serie":
           const seriesId = (!options.serieId || isNaN(options.serieId)) ? 0 : parseInt(options.serieId, 10);
-          count = countBooksBySerie(seriesId);
-          if (count !== 0)
-            books = findBooksBySerie(seriesId, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
+          prevBookArray = (rowNum === 0) ? [] : findBooksBySerie(seriesId, sortString, 1, rowNum - 1);
+          nextBookArray = findBooksBySerie(seriesId, sortString, 1, rowNum + 1);
           break;
 
         case "author":
           const authorsId = (!options.authorsId || isNaN(options.authorsId)) ? 0 : parseInt(options.authorsId, 10);
-          count = countBooksByAuthor(authorsId);
-          if (count !== 0)
-            books = findBooksByAuthor(authorsId, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
+          prevBookArray = (rowNum === 0) ? [] : findBooksByAuthor(authorsId, sortString, 1, rowNum - 1);
+          nextBookArray = findBooksByAuthor(authorsId, sortString, 1, rowNum + 1);
           break
 
         default:
@@ -157,163 +237,66 @@ export async function listAction(request, response) {
             (options.searchString)
               ? searchStringToArray(options.searchString)
               : null;
-
           const tagId = (!options.tagId || isNaN(options.tagId)) ? 0 : parseInt(options.tagId, 10);
           const ccNum = (!options.ccNum || isNaN(options.ccNum)) ? 0 : parseInt(options.ccNum, 10);
           const ccId = (!options.ccId || isNaN(options.ccId)) ? 0 : parseInt(options.ccId, 10);
 
           if (tagId && tagId > 0) {
-            logger.debug("listAction: tagId: " + tagId);
-            count = countBooksWithTags(searchArray, tagId);
-            if (count !== 0) books = findBooksWithTags(searchArray, sortString, tagId, PAGE_LIMIT, page * PAGE_LIMIT);
+            prevBookArray = (rowNum === 0) ? [] : findBooksWithTags(searchArray, sortString, tagId, 1, rowNum - 1);
+            nextBookArray = findBooksWithTags(searchArray, sortString, tagId, 1, rowNum + 1);
 
           } else {
             if (ccNum && ccNum > 0) {
-              logger.debug("listAction: ccNum: " + ccNum + ", ccId: " + ccId);
-              count = countBooksWithCC(ccNum, searchArray, ccId);
-              if (count !== 0) books = findBooksWithCC(ccNum, searchArray, sortString, ccId, PAGE_LIMIT, page * PAGE_LIMIT);
+              prevBookArray = (rowNum == 0) ? [] : findBooksWithCC(ccNum, searchArray, sortString, ccId, 1, rowNum - 1);
+              nextBookArray = findBooksWithCC(ccNum, searchArray, sortString, ccId, 1, rowNum + 1);
 
             } else {
               if (tagId === 0 && ccNum === 0) {
-                count = countBooks(searchArray);
-                if (count && count !== 0) books = findBooks(searchArray, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
+                prevBookArray = (rowNum === 0) ? [] : findBooks(searchArray, sortString, 1, rowNum - 1);
+                nextBookArray = findBooks(searchArray, sortString, 1, rowNum + 1);
               }
             }
           }
           break;
       }
+      nextBook = nextBookArray[0];
+      prevBook = prevBookArray[0];
 
-      if (count <= 0 || books.length === 0) {
-        const message = (count === 0) ? "Keine Bücher/Zeitschriften gefunden!" : "Fehler beim Zugriff auf die Datenbank!";
-        response.send({ "html": "<div class='message'><h3>" + message + "</h3></div>" });
-        return;
-      }
+    }
 
-      books = addFields(books);
-      const pageNav = getPageNavigation(page, count);
+    const formats = getFormatsOfBooks(bookId);
+    book.formats = formats.map((format) => decode(format.name));
 
-      logger.silly("listAction: books=" + JSON.stringify(books));
-      logger.silly("listAction: pageNav=" + JSON.stringify(pageNav));
-
-      response.render(dirname(fileURLToPath(import.meta.url)) + '/views/booklist', { books, pageNav }, function (error, html) {
-        if (error) {
-          errorHandler(error, response, 'render booklist page');
-        } else {
-          response.send({ html });
-        }
-      });
-    })
-  }
-  catch (error) { errorHandler(error, response, 'listAction') }
-}
-
-export async function bookAction(request, response) {
-  try {
-    let options = {};
-
-    let body = '';
-    request.on('readable', () => {
-      const temp = request.read();
-      body += temp !== null ? temp : '';
+    const authors = getAuthorsOfBooks(bookId);
+    book.authors = authors.map((author) => {
+      author.authorsName = decode(author.authorsName); return author
     });
-    request.on('end', async () => {
-      logger.debug("*** bookAction: body=" + body);
-      if (body) options = JSON.parse(body);
 
-      const bookId = parseInt(options.bookId, 10);
-      const book = getBook(bookId);
-      logger.silly("*** bookAction: book=" + JSON.stringify(book));
+    const publisher = getPublisherOfBooks(bookId);
+    if (publisher) { publisher.name = decode(publisher.name); book.publisher = publisher }
 
-      let nextBook;
-      let prevBook;
+    const tags = getTagsOfBooks(bookId);
+    for (let t in tags) {
+      tags[t].tagName = decode(tags[t].tagName);
+      if (tags[t].colId) {
+        tags[t].subTags = getCustomColumnOfBooks(tags[t].colId, bookId);
+      };
+    }
+    book.tags = tags
 
+    const series = getSeriesOfBooks(bookId);
+    if (series[0]) { series[0].seriesName = decode(series[0].seriesName); book.serie = series[0] }
+    if (book.pubdate.substr(0, 1) == "0") { book.pubdate = null };
 
-      if (options.bookId !== undefined && options.num) {
-        const rowNum = parseInt(options.num, 10) - 1;
-        const sortString = (!options.sortString) ? "" : options.sortString;
-        const type = options.type;
-        let nextBookArray;
-        let prevBookArray;
-
-        switch (type) {
-          case "serie":
-            const seriesId = (!options.serieId || isNaN(options.serieId)) ? 0 : parseInt(options.serieId, 10);
-            prevBookArray = (rowNum === 0) ? [] : findBooksBySerie(seriesId, sortString, 1, rowNum - 1);
-            nextBookArray = findBooksBySerie(seriesId, sortString, 1, rowNum + 1);
-            break;
-
-          case "author":
-            const authorsId = (!options.authorsId || isNaN(options.authorsId)) ? 0 : parseInt(options.authorsId, 10);
-            prevBookArray = (rowNum === 0) ? [] : findBooksByAuthor(authorsId, sortString, 1, rowNum - 1);
-            nextBookArray = findBooksByAuthor(authorsId, sortString, 1, rowNum + 1);
-            break
-
-          default:
-            const searchArray =
-              (options.searchString)
-                ? searchStringToArray(options.searchString)
-                : null;
-            const tagId = (!options.tagId || isNaN(options.tagId)) ? 0 : parseInt(options.tagId, 10);
-            const ccNum = (!options.ccNum || isNaN(options.ccNum)) ? 0 : parseInt(options.ccNum, 10);
-            const ccId = (!options.ccId || isNaN(options.ccId)) ? 0 : parseInt(options.ccId, 10);
-
-            if (tagId && tagId > 0) {
-              prevBookArray = (rowNum === 0) ? [] : findBooksWithTags(searchArray, sortString, tagId, 1, rowNum - 1);
-              nextBookArray = findBooksWithTags(searchArray, sortString, tagId, 1, rowNum + 1);
-
-            } else {
-              if (ccNum && ccNum > 0) {
-                prevBookArray = (rowNum == 0) ? [] : findBooksWithCC(ccNum, searchArray, sortString, ccId, 1, rowNum - 1);
-                nextBookArray = findBooksWithCC(ccNum, searchArray, sortString, ccId, 1, rowNum + 1);
-
-              } else {
-                if (tagId === 0 && ccNum === 0) {
-                  prevBookArray = (rowNum === 0) ? [] : findBooks(searchArray, sortString, 1, rowNum - 1);
-                  nextBookArray = findBooks(searchArray, sortString, 1, rowNum + 1);
-                }
-              }
-            }
-            break;
-        }
-        nextBook = nextBookArray[0];
-        prevBook = prevBookArray[0];
-
+    logger.silly("bookAction: " + JSON.stringify(book));
+    logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook));
+    logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
+    response.render(dirname(fileURLToPath(import.meta.url)) + '/views/book', { book, prevBook, nextBook }, function (error, html) {
+      if (error) {
+        errorHandler(error, response, 'render book page');
+      } else {
+        response.send({ html });
       }
-
-      const formats = getFormatsOfBooks(bookId);
-      book.formats = formats.map((format) => decode(format.name));
-
-      const authors = getAuthorsOfBooks(bookId);
-      book.authors = authors.map((author) => {
-        author.authorsName = decode(author.authorsName); return author
-      });
-
-      const publisher = getPublisherOfBooks(bookId);
-      if (publisher) { publisher.name = decode(publisher.name); book.publisher = publisher }
-
-      const tags = getTagsOfBooks(bookId);
-      for (let t in tags) {
-        tags[t].tagName = decode(tags[t].tagName);
-        if (tags[t].colId) {
-          tags[t].subTags = getCustomColumnOfBooks(tags[t].colId, bookId);
-        };
-      }
-      book.tags = tags
-
-      const series = getSeriesOfBooks(bookId);
-      if (series[0]) { series[0].seriesName = decode(series[0].seriesName); book.serie = series[0] }
-      if (book.pubdate.substr(0, 1) == "0") { book.pubdate = null };
-
-      logger.silly("bookAction: " + JSON.stringify(book));
-      logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook));
-      logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
-      response.render(dirname(fileURLToPath(import.meta.url)) + '/views/book', { book, prevBook, nextBook }, function (error, html) {
-        if (error) {
-          errorHandler(error, response, 'render book page');
-        } else {
-          response.send({ html });
-        }
-      });
     });
   }
   catch (error) { errorHandler(error, response, 'bookAction') }

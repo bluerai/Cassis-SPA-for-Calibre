@@ -14,7 +14,7 @@
   "dependencies": {
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.5",
-    "express": "^4.17.1",
+    "express": "^4.21.1",
     "fs-extra": "^11.2.0",
     "node": "^23.5.0",
     "npm": "^11.0.0",
