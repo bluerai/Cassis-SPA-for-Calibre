@@ -12,7 +12,7 @@ USER node
 WORKDIR /home/node/apphome
 
 ADD --chown=node:node ./package.json .
-RUN npm install; npm audit fix
+RUN npm install
 ADD --chown=node:node . .
 
 ENV HTTP_PORT=80
