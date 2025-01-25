@@ -1,7 +1,5 @@
 'use strict';
 
-import { dirname } from 'path';
-import { fileURLToPath, parse } from 'url';
 import fs from 'fs-extra';
 import sharp from 'sharp';
 
@@ -112,7 +110,7 @@ export async function startAction(request, response) {
   try {
     const type = request.params.type;
     const id = request.params.id;
-    response.render(dirname(fileURLToPath(import.meta.url)) + '/views/start', { "type": type, "id": id });
+    response.render(import.meta.dirname + '/views/start', { "type": type, "id": id });
   }
   catch (error) { errorHandler(error, response, 'startAction') }
 }
@@ -187,7 +185,7 @@ export async function listAction(request, response) {
     logger.silly("listAction: books=" + JSON.stringify(books));
     logger.silly("listAction: pageNav=" + JSON.stringify(pageNav));
 
-    response.render(dirname(fileURLToPath(import.meta.url)) + '/views/booklist', { books, pageNav }, function (error, html) {
+    response.render(import.meta.dirname + '/views/booklist', { books, pageNav }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render booklist page');
       } else {
@@ -291,7 +289,7 @@ export async function bookAction(request, response) {
     logger.silly("bookAction: " + JSON.stringify(book));
     logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook));
     logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
-    response.render(dirname(fileURLToPath(import.meta.url)) + '/views/book', { book, prevBook, nextBook }, function (error, html) {
+    response.render(import.meta.dirname + '/views/book', { book, prevBook, nextBook }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render book page');
       } else {
@@ -311,7 +309,7 @@ export async function tagsAction(request, response) {
 
     const options = { tags };
     logger.silly("tagsAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
-    response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
+    response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
       } else {
@@ -333,7 +331,7 @@ export async function ccAction(request, response) {
 
     const options = { ccNum, custCols };
     logger.silly("ccAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
-    response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
+    response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
       } else {
@@ -424,7 +422,7 @@ export async function infoAction(request, response) {
     const stats = getStatistics();
     const options = { stats, logger: { level: logger.level, levels: log_levels, consoleOn: !consoleTransport.silent, fileOn: !fileTransport.silent } };
     logger.debug("*** infoAction: appInfo=" + JSON.stringify(appInfo) + ", " + "options=" + JSON.stringify(options));
-    response.render(dirname(fileURLToPath(import.meta.url)) + '/views/info', { appInfo, options }, function (error, html) {
+    response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
       } else {
