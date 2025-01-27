@@ -2,6 +2,7 @@
 
 import fs from 'fs-extra';
 import sharp from 'sharp';
+import { parse } from 'url';
 
 import { logger, consoleTransport, fileTransport, errorLogger, log_levels } from '../log.js';
 import packagejson from '../package.json' with {type: 'json'}
@@ -461,7 +462,6 @@ export async function logAction(request, response) {
 
 export async function countAction(request, response) {
   try {
-    
     logger.debug("countAction: request.url=" + request.url);
     const searchString = parse(request.url, true).query.search || "";
     const searchArray = searchStringToArray(searchString);
