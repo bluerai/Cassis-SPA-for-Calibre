@@ -11,10 +11,7 @@ const router = Router();
 
 router.get('/', startAction);
 
-//API-Calls
-router.get('/count/:search?', countAction);
-router.get('/connectdb', dbAction);
-router.get('/unconnectdb', dbAction);
+
 
 //APP-Calls
 router.post('/list/:type?', listAction);
@@ -27,5 +24,10 @@ router.get('/file/:format/:id', fileAction);
 router.get('/cover/list/:id', coverListAction);
 router.get('/cover/book/:id', coverBookAction);
 router.get('/:type/:id', startAction);
+
+//API-Calls
+router.get('/count', countAction);
+router.get('/connectdb', dbAction);
+router.get('/unconnectdb', dbAction);
 
 export { router };
