@@ -33,26 +33,6 @@ fs.ensureDirSync(IMGCACHE, (error, exists) => {
 })
 
 // Base functions ***********************
-/* 
-function getPageNavigation(page, count) {
-  if (count <= PAGE_LIMIT) {
-    const pageNav = { size: count };
-    return pageNav;
-  }
-  const lastpage = Math.ceil(count / PAGE_LIMIT) - 1;  // Nummerierung beginnt mit 0
-  if (page < 0) { page = 0 }
-  else if (page > lastpage) { page = lastpage }
-
-  const pageNav = {
-    size: count,
-    currentpage: { value: page },
-    firstpage: (0 < page) ? { value: "0", class: "" } : { value: "", class: "disabled" },
-    prevpage: (page > 0) ? { value: (page - 1), class: "" } : { value: "", class: "disabled" },
-    nextpage: (page < lastpage) ? { value: (page + 1), class: "" } : { value: "", class: "disabled" },
-    lastpage: (page <= lastpage) ? { value: lastpage, class: "" } : { value: "", class: "disabled" }
-  }
-  return pageNav;
-} */
 
 function getPageNavigation(page, count) {
   if (count <= PAGE_LIMIT) return { size: count };

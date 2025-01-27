@@ -13,11 +13,6 @@ request(options, (res) => {
     try {
       const response = JSON.parse(body);
 
-/*       if (response.healthy === true) {
-        logger.info('Database closed, no health check: ' + body);
-        process.exit(0);
-      } */
-
       if (response.healthy === true) {
         logger.info('Healthy response received: ' + body);
         process.exit(0);
