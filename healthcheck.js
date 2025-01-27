@@ -1,7 +1,8 @@
 
 import { request } from 'node:http';
+import { logger } from './log.js'
 
-const options = { hostname: 'localhost', port: process.env.PORT, path: '/media/count', method: 'GET' };
+const options = { hostname: 'localhost', port: process.env.PORT, path: '/app/count', method: 'GET' };
 
 request(options, (res) => {
   let body = '';
@@ -12,22 +13,27 @@ request(options, (res) => {
     try {
       const response = JSON.parse(body);
 
+/*       if (response.healthy === true) {
+        logger.info('Database closed, no health check: ' + body);
+        process.exit(0);
+      } */
+
       if (response.healthy === true) {
-        console.log('Healthy response received: ', body);
+        logger.info('Healthy response received: ' + body);
         process.exit(0);
       }
 
-      console.log('Unhealthy response received: ', body);
+      logger.warn('Unhealthy response received: ' + body);
       process.exit(1);
 
     } catch (error) {
-      console.log('Error parsing JSON response body: ', error);
+      logger.error('Error parsing JSON response body: ' + error);
       process.exit(1);
     }
   });
 })
-  .on('error', (err) => {
-    console.log('Error: ', err);
+  .on('error', (error) => {
+    logger.error('Error: ', error);
     process.exit(1);
   })
   .end();

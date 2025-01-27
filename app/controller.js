@@ -461,6 +461,7 @@ export async function logAction(request, response) {
 
 export async function countAction(request, response) {
   try {
+    
     logger.debug("countAction: request.url=" + request.url);
     const searchString = parse(request.url, true).query.search || "";
     const searchArray = searchStringToArray(searchString);

@@ -1,0 +1,76 @@
+
+doctype html
+html(lang="en")
+  head    
+    meta(charset="UTF-8")
+
+    meta(name="mobile-web-app-capable" content="yes")
+    meta(name="apple-mobile-web-app-capable" content="yes")
+    meta(name="apple-mobile-web-app-status-bar-style" content="translucent black")
+
+    meta(name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width")
+    meta(name="viewport" id="vp" content="initial-scale=1.0,user-scalable=no,maximum-scale=1")
+
+    title Cassis Bibliothek
+
+    link(rel="stylesheet" href="/style.css")
+    link(href="/assets/fontawesome/css/all.min.css" rel="stylesheet")
+    link(rel="icon" type="image/x-icon" href="/assets/favicon.ico")
+    link(rel="icon" type="image/x-icon" href="/assets/apple-touch-icon.png")
+    link(rel="apple-touch-icon" href="/assets/apple-touch-icon.png")
+    
+    script(src="/app.js")
+
+  body
+
+    - appname = "Cassis"
+
+    #transparent(onclick="hideDropdownMenu()")
+
+    div.menubar
+      button.menu(type="text" onClick="setOptionsHome()" title="Home")
+        i.fa.fa-home(aria-hidden="true")
+      button.menu(type="button" id="back" onClick="goBack()" title="Zurück")
+        i.fa.fa-chevron-left(aria-hidden="true")
+      button.menu(type="button" id="forward" onClick="goForward()" title="Vorwärts")
+        i.fa.fa-chevron-right(aria-hidden="true")
+      div#dropdown.menu.right
+        button.menu.right(type="button" title="Menü" onClick="showDropdownMenu()")
+          i.fa.fa-bars(aria-hidden="true")
+
+      button.two.menu.right(type="text" onClick="setSortString('timestamp')" title="Sortieren nach Zeitstempel")
+        i.fa.fa-clock(aria-hidden="true")
+        i.fa.fa-arrows-v(aria-hidden="true")
+      button.two.menu.right(type="text" onClick="setSortString('title')" title="Sortieren nach Buchtitel")
+        i.fa.fa-book(aria-hidden="true")
+        i.fa.fa-arrows-v(aria-hidden="true")
+      button.two.menu.right(type="text" id='authorsort' onClick="setSortString('author')" title="Sortieren nach Autorennamen")
+        i.fa.fa-user(aria-hidden="true")
+        i.fa.fa-arrows-v(aria-hidden="true")
+        
+      div.menubar-sub(id='searchInputGroup')
+        input(type="text" id="searchInput" placeholder="Autor / Titel / Serie" value=searchString autofocus title="Eingabe der Suchbegriffe")
+        button.menu(type="button" id="clearInput" onClick="clearSearchInput()" title="Eingabe löschen")
+          i.fa.fa-times(aria-hidden="true")
+        button.menu(type="text" id="submitSearch" onClick="setOptionsSearch()" title="Suche starten")
+          i.fa.fa-search(aria-hidden="true")
+          
+    div#dropdown-content
+      p(onClick="getPage('/app/tags/' + getOption('tagId'))" title="Auswahl des Genres") Genre
+      p(onClick="getPage('/app/cc/5/' + getOption('ccId'))" title="Reiseführer: Auswahl des Landes") Reiseführer
+      p(onClick="getPage('/app/cc/6/' + getOption('ccId'))" title="Sachbücher: Auswahl der Sachgebiets") Sachbücher
+      p(onClick="getPage('/app/info')" title="Info") Info
+
+    #app
+
+      //- Inserted here: booklist / single book view / info page 
+      noscript
+        div.message
+          h3 Zur Anzeige wird Javascript benötigt. Bitte einschalten.
+
+      #books
+
+        script(type='text/javascript').
+          docReady("#{type}", "#{id}");
+
+        

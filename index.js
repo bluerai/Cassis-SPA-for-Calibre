@@ -3,7 +3,7 @@ import https from 'https';
 import http from 'http';
 import fs from 'fs-extra';
 
-import { router } from './cassis/index.js';
+import { router } from './app/index.js';
 import { logger } from './log.js';
 
 const app = express();
@@ -18,11 +18,9 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(express.json());
 
-app.use('/cassis', router);
+app.use('/app', router);
 
-app.get('/', (request, response) => response.redirect('/cassis'));
-
-//app.use((request, response) => response.redirect('/cassis'));
+app.use((request, response) => response.redirect('/app'));
 
 
 if (HTTP_PORT > 0) {

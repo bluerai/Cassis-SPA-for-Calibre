@@ -57,7 +57,10 @@ function restoreOptions() {
     document.getElementById('forward').classList.add("disabled");
   else
     document.getElementById('forward').classList.remove("disabled");
-  if (options.type !== 'search') document.getElementById('authorsort').classList.add("disabled");
+  if (options.type !== 'search') 
+    document.getElementById('authorsort').classList.add("disabled");
+  else
+    document.getElementById('authorsort').classList.remove("disabled");
 }
 
 async function historyMove(num) {
@@ -80,7 +83,7 @@ function goForward() { historyMove(1) }
 
 async function getBooklist(options) {
   options.width = window.innerWidth;
-  const response = await fetch("/cassis/list/", {
+  const response = await fetch("/app/list/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(options)
@@ -92,7 +95,7 @@ async function getBooklist(options) {
 }
 
 async function appendToBooklist(options) {
-  const response = await fetch("/cassis/list/", {
+  const response = await fetch("/app/list/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(options)
@@ -104,7 +107,7 @@ async function appendToBooklist(options) {
 }
 
 async function getBook(options) {
-  const response = await fetch("/cassis/book/", {
+  const response = await fetch("/app/book/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(options)
@@ -247,7 +250,7 @@ function hideDropdownMenu() {
 }
 
 async function connectDb(connect) {
-  const url = (!connect) ? "/cassis/unconnectdb" : "/cassis/connectdb";
+  const url = (!connect) ? "/app/unconnectdb" : "/app/connectdb";
   const response = await fetch(url);
   const data = await response.json();
   alert(data.msg);
@@ -255,7 +258,7 @@ async function connectDb(connect) {
 
 async function setLogLevel() {
   let loglevel = document.getElementById('loglevel').value;
-  const response = await fetch("/cassis/log/level/" + loglevel);
+  const response = await fetch("/app/log/level/" + loglevel);
   const data = await response.json();
   document.getElementById('loglevel-value').innerHTML = data.level;
   document.getElementById('loglevel').value = "0";
@@ -263,7 +266,7 @@ async function setLogLevel() {
 
 async function setLogConTransport() {
   let checked = document.getElementById('logToConsole').checked;
-  const response = await fetch("/cassis/log/con/" + (checked ? "1" : "0"));
+  const response = await fetch("/app/log/con/" + (checked ? "1" : "0"));
   const data = await response.json();
   //alert(JSON.stringify(data));
   document.getElementById('logToConsole').checked = data.consoleOn;
@@ -271,7 +274,7 @@ async function setLogConTransport() {
 
 async function setLogFilTransport() {
   let checked = document.getElementById('logToFile').checked;
-  const response = await fetch("/cassis/log/fil/" + (checked ? "1" : "0"));
+  const response = await fetch("/app/log/fil/" + (checked ? "1" : "0"));
   const data = await response.json();
   //alert(JSON.stringify(data));
   document.getElementById('logToFile').checked = data.fileOn;
@@ -282,8 +285,8 @@ function sendMail(authors, title, bookId, tagName) {
     'subject=' + encodeURIComponent('"' + title + ((tagName === 'Zeitschrift') ? '"' : '" von ' + authors)) +
     '&body=' + encodeURIComponent('... mit besten Empfehlungen aus der Cassis-Bibliothek:\n\n'
       + '"' + title + ((tagName === 'Zeitschrift') ? '"' : '" von ' + authors) + '\n\n'
-      + location.protocol + '//' + location.host + '/cassis/book/' + bookId + '\n\n'
-      + location.protocol + '//' + location.host + '/cassis/cover/book/' + bookId);
+      + location.protocol + '//' + location.host + '/app/book/' + bookId + '\n\n'
+      + location.protocol + '//' + location.host + '/app/cover/book/' + bookId);
 }
 
 function submitInputOnEnter() {
