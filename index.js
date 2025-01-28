@@ -1,6 +1,5 @@
 import express from 'express';
 import https from 'https';
-import http from 'http';
 import fs from 'fs-extra';
 
 import { router } from './app/index.js';
@@ -21,7 +20,6 @@ app.use(express.json());
 app.use('/app', router);
 
 app.use((request, response) => response.redirect('/app'));
-
 
 if (HTTP_PORT > 0) {
   app.listen(HTTP_PORT, () => {

@@ -1,34 +1,38 @@
-
-import { request } from 'node:http';
 import { logger } from './log.js'
 
-const options = { hostname: 'localhost', port: process.env.PORT, path: '/app/count', method: 'GET' };
+if (process.env.HTTP_PORT)
+  try {
+    const response = await fetch("http://localhost:" + process.env.HTTP_PORT + "/app/count/");
+    const data = await response.json();
 
-request(options, (res) => {
-  let body = '';
-  res.on('data', (chunk) => {
-    body += chunk;
-  });
-  res.on('end', () => {
-    try {
-      const response = JSON.parse(body);
-
-      if (response.healthy === true) {
-        logger.info('Healthy response received: ' + body);
-        process.exit(0);
-      }
-
-      logger.warn('Unhealthy response received: ' + body);
-      process.exit(1);
-
-    } catch (error) {
-      logger.error('Error parsing JSON response body: ' + error);
+    if (data.healthy !== true) {
+      logger.warn('HTTP: Unhealthy response received: ' + JSON.stringify(data));
       process.exit(1);
     }
-  });
-})
-  .on('error', (error) => {
-    logger.error('Error: ', error);
+
+    logger.debug('HTTP: Healthy response received: ' + JSON.stringify(data));
+
+  } catch (error) {
+    logger.error('HTTP: Error parsing JSON response body: ' + error);
     process.exit(1);
-  })
-  .end();
+  }
+
+
+if (process.env.HTTPS_PORT)
+  try {
+    const response = await fetch("http://localhost:" + process.env.HTTP_PORT + "/app/count/");
+    const data = await response.json();
+
+    if (data.healthy !== true) {
+      logger.warn('HTTPS: Unhealthy response received: ' + JSON.stringify(data));
+      process.exit(1);
+    }
+
+    logger.debug('HTTPS: Healthy response received: ' + JSON.stringify(data));
+
+  } catch (error) {
+    logger.error('HTTPS: Error parsing JSON response body: ' + error);
+    process.exit(1);
+  }
+
+process.exit(0);

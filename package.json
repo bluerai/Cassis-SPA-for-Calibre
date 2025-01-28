@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node --env-file=.env index.js",
-    "dev": "node --env-file=.env.dev index.js"
+    "dev": "node --env-file=.env.dev index.js",
+    "health": "node --env-file=.env.dev healthcheck.js"
   },
   "keywords": [],
   "author": "GitHub: bluerai, DockerHub: raiblue72",

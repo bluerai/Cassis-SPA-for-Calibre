@@ -441,7 +441,7 @@ export async function logAction(request, response) {
 
 export async function countAction(request, response) {
   try {
-    logger.debug("countAction: request.query=" + request.query);
+    logger.debug("countAction: request.query=" + JSON.stringify(request.query));
     const searchString = request.query.search || "";
     const searchArray = searchStringToArray(searchString);
     const count = countBooks(searchArray);
