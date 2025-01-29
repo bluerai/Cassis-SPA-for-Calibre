@@ -104,7 +104,7 @@ function searchStringToArray(searchString) {
 
 function searchClause(searchString) {
   const searchArray = searchStringToArray(searchString);
-  logger.debug("searchClause: searchString=" + searchString + ", searchArray=" + searchArray);
+  (logger.isLevelEnabled('silly')) && logger.silly("searchClause: searchString=" + searchString + ", searchArray=" + searchArray);
 
   if (searchArray && searchArray.length > 0) {
     let clause = "";
