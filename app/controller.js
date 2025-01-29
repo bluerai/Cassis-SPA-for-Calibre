@@ -123,30 +123,25 @@ export async function listAction(request, response) {
         break
 
       default:
-        const searchArray =
-          (options.searchString)
-            ? searchStringToArray(options.searchString)
-            : null;
-
         const tagId = (!options.tagId || isNaN(options.tagId)) ? 0 : parseInt(options.tagId, 10);
         const ccNum = (!options.ccNum || isNaN(options.ccNum)) ? 0 : parseInt(options.ccNum, 10);
         const ccId = (!options.ccId || isNaN(options.ccId)) ? 0 : parseInt(options.ccId, 10);
 
         if (tagId && tagId > 0) {
           logger.debug("listAction: tagId: " + tagId);
-          count = countBooksWithTags(searchArray, tagId);
-          if (count !== 0) books = findBooksWithTags(searchArray, sortString, tagId, PAGE_LIMIT, page * PAGE_LIMIT);
+          count = countBooksWithTags(options.searchString, tagId);
+          if (count !== 0) books = findBooksWithTags(options.searchString, sortString, tagId, PAGE_LIMIT, page * PAGE_LIMIT);
 
         } else {
           if (ccNum && ccNum > 0) {
             logger.debug("listAction: ccNum: " + ccNum + ", ccId: " + ccId);
-            count = countBooksWithCC(ccNum, searchArray, ccId);
-            if (count !== 0) books = findBooksWithCC(ccNum, searchArray, sortString, ccId, PAGE_LIMIT, page * PAGE_LIMIT);
+            count = countBooksWithCC(ccNum, options.searchString, ccId);
+            if (count !== 0) books = findBooksWithCC(ccNum, options.searchString, sortString, ccId, PAGE_LIMIT, page * PAGE_LIMIT);
 
           } else {
             if (tagId === 0 && ccNum === 0) {
-              count = countBooks(searchArray);
-              if (count && count !== 0) books = findBooks(searchArray, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
+              count = countBooks(options.searchString);
+              if (count && count !== 0) books = findBooks(options.searchString, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
             }
           }
         }
@@ -211,27 +206,23 @@ export async function bookAction(request, response) {
           break
 
         default:
-          const searchArray =
-            (options.searchString)
-              ? searchStringToArray(options.searchString)
-              : null;
           const tagId = (!options.tagId || isNaN(options.tagId)) ? 0 : parseInt(options.tagId, 10);
           const ccNum = (!options.ccNum || isNaN(options.ccNum)) ? 0 : parseInt(options.ccNum, 10);
           const ccId = (!options.ccId || isNaN(options.ccId)) ? 0 : parseInt(options.ccId, 10);
 
           if (tagId && tagId > 0) {
-            prevBookArray = (rowNum === 0) ? [] : findBooksWithTags(searchArray, sortString, tagId, 1, rowNum - 1);
-            nextBookArray = findBooksWithTags(searchArray, sortString, tagId, 1, rowNum + 1);
+            prevBookArray = (rowNum === 0) ? [] : findBooksWithTags(options.searchString, sortString, tagId, 1, rowNum - 1);
+            nextBookArray = findBooksWithTags(options.searchString, sortString, tagId, 1, rowNum + 1);
 
           } else {
             if (ccNum && ccNum > 0) {
-              prevBookArray = (rowNum == 0) ? [] : findBooksWithCC(ccNum, searchArray, sortString, ccId, 1, rowNum - 1);
-              nextBookArray = findBooksWithCC(ccNum, searchArray, sortString, ccId, 1, rowNum + 1);
+              prevBookArray = (rowNum == 0) ? [] : findBooksWithCC(ccNum, options.searchString, sortString, ccId, 1, rowNum - 1);
+              nextBookArray = findBooksWithCC(ccNum, options.searchString, sortString, ccId, 1, rowNum + 1);
 
             } else {
               if (tagId === 0 && ccNum === 0) {
-                prevBookArray = (rowNum === 0) ? [] : findBooks(searchArray, sortString, 1, rowNum - 1);
-                nextBookArray = findBooks(searchArray, sortString, 1, rowNum + 1);
+                prevBookArray = (rowNum === 0) ? [] : findBooks(options.searchString, sortString, 1, rowNum - 1);
+                nextBookArray = findBooks(options.searchString, sortString, 1, rowNum + 1);
               }
             }
           }
@@ -284,8 +275,9 @@ export async function tagsAction(request, response) {
   try {
     logger.debug("*** tagsAction: request.params=" + JSON.stringify(request.params));
     const selectedId = (!request.params.tagId || isNaN(request.params.tagId)) ? 0 : parseInt(request.params.tagId, 10);
-    let tags = getTags();
-    tags = tags.map(tag => { tag.class = (tag.tagId === selectedId) ? "selected" : ""; return tag });
+    const tags =
+      getTags()
+        .map(tag => { tag.class = (tag.tagId === selectedId) ? "selected" : ""; return tag });
 
     const options = { tags };
     logger.silly("tagsAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
@@ -306,8 +298,9 @@ export async function ccAction(request, response) {
     const ccNum = (!request.params.ccNum || isNaN(request.params.ccNum)) ? 0 : parseInt(request.params.ccNum, 10);
     const selectedId = (!request.params.ccId || isNaN(request.params.ccId)) ? 0 : parseInt(request.params.ccId, 10);
 
-    let custCols = getCustomColumns(ccNum);
-    custCols = custCols.map(cc => { cc.class = (cc.id === selectedId) ? "selected" : ""; return cc });
+    const custCols =
+      getCustomColumns(ccNum)
+        .map(cc => { cc.class = (cc.id === selectedId) ? "selected" : ""; return cc });
 
     const options = { ccNum, custCols };
     logger.silly("ccAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
@@ -443,9 +436,8 @@ export async function countAction(request, response) {
   try {
     logger.debug("countAction: request.query=" + JSON.stringify(request.query));
     const searchString = request.query.search || "";
-    const searchArray = searchStringToArray(searchString);
-    const count = countBooks(searchArray);
-    response.json({ count, searchArray, healthy: true });
+    const count = countBooks(searchString);
+    response.json({ count, healthy: true });
   }
   catch (error) { errorHandler(error, response, 'countAction') }
 }
@@ -463,13 +455,6 @@ export async function dbAction(request, response) {
 
 function decode(str) {
   return (str) ? str.toString().replaceAll('|', ',') : "";
-}
-
-function searchStringToArray(s) {
-  const whitespace_chars = /[\/\,\.\|\ \*\?\!\:\;\(\)\[\]\&\"\+\-\_\%]+/g;  // ohne _ und %
-  //whitespace_char01: In der Onleihe Zeichen zur Abtrennung des Artikels am Anfang von Titeln (für die Sortierung):
-  const whitespace_char01 = String.fromCharCode(172);
-  return s.trim().toLowerCase().replaceAll(whitespace_char01, " ").replaceAll(whitespace_chars, " ").replaceAll("'", "''").split(" ")
 }
 
 function errorHandler(error, response, actionName) {

@@ -89,13 +89,26 @@ const queryCounts = `
     (select count(*) from publishers) as publishers,
     (select count(*) from tags) as tags`
 
-function searchClause(searchArray) {
-  //logger.debug("searchClause: searchArray=" + searchArray);
+const whitespace_chars = /[\/\,\.\|\ \*\?\!\:\;\(\)\[\]\&\"\+\-\_\%]+/g;  // ohne _ und %
+//whitespace_char01: In der Onleihe Zeichen zur Abtrennung des Artikels am Anfang von Titeln (für die Sortierung):
+const whitespace_char01 = String.fromCharCode(172);
+
+function searchStringToArray(searchString) {
+  if (!searchString) return null;
+  return (searchString.trim()
+    .replaceAll(whitespace_char01, " ")
+    .replaceAll(whitespace_chars, " ")
+    .replaceAll("'", "''").split(" ")
+    .sort((a, b) => { return b.length - a.length }));
+}
+
+function searchClause(searchString) {
+  const searchArray = searchStringToArray(searchString);
+  logger.debug("searchClause: searchString=" + searchString + ", searchArray=" + searchArray);
+
   if (searchArray && searchArray.length > 0) {
     let clause = "";
-    searchArray.sort((a, b) => { return b.length - a.length }).forEach(element => {
-      clause += " and search like '%" + element + "%'";
-    });
+    searchArray.forEach(element => { clause += " and search like '%" + element + "%'"; });
     return " where " + clause.substring(4);
   }
   return "";
@@ -111,7 +124,7 @@ sortArray["title.desc"] = "order by t1.sort desc";
 sortArray["serie.asc"] = "order by t1.series_index asc";
 sortArray["serie.desc"] = "order by t1.series_index desc";
 
-function findBooksQuery(searchArray, sortString) {
+function findBooksQuery(searchString, sortString) {
   return `
     select row_number() over win as num, ` + bookColumns + `,
       t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.sort, '') || ' ' || t1.path as search
@@ -123,11 +136,11 @@ function findBooksQuery(searchArray, sortString) {
       from books, series, books_series_link 
       where bookId = books_series_link.book and books_series_link.series = series.id
     ) as t2 
-    on t1.id = t2.bookId ` + searchClause(searchArray) + `
+    on t1.id = t2.bookId ` + searchClause(searchString) + `
     group by t1.id window win as (` + (sortArray[sortString] || sortArray['timestamp.desc']) + `) limit ? offset ?`;
 };
 
-function countBooksQuery(searchArray) {
+function countBooksQuery(searchString) {
   return `
     select count(*) as count from 
       (select t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search
@@ -139,11 +152,11 @@ function countBooksQuery(searchArray) {
       (select books.id as bookId, series.name from books, series, books_series_link 
         where bookId = books_series_link.book and books_series_link.series = series.id
       ) as t2 
-        on t1.id = t2.bookId ` + searchClause(searchArray) + `
+        on t1.id = t2.bookId ` + searchClause(searchString) + `
       group by t1.id )`;
 };
 
-function findBooksWithTagsQuery(searchArray, sortString, tagIdString) {
+function findBooksWithTagsQuery(searchString, sortString, tagIdString) {
   return `
     select row_number() over win as num, ` + bookColumns + `, t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' '
      || t1.path as search 
@@ -157,12 +170,12 @@ function findBooksWithTagsQuery(searchArray, sortString, tagIdString) {
         (select books.id as bookId, series.name from books, series, books_series_link 
           where bookId = books_series_link.book and books_series_link.series = series.id) as t2 
         on t1.id = t2.bookId
-      ` + searchClause(searchArray) + `
+      ` + searchClause(searchString) + `
       group by t1.id
       window win as (` + (sortArray[sortString] || sortArray['timestamp.desc']) + `) limit ? offset ?`;
 }
 
-function countBooksWithTagsQuery(searchArray, tagIdString) {
+function countBooksWithTagsQuery(searchString, tagIdString) {
   return `
     select count(*) as count from (select t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search
       from 
@@ -176,11 +189,11 @@ function countBooksWithTagsQuery(searchArray, tagIdString) {
           where bookId = books_series_link.book and books_series_link.series = series.id
         ) as t2 
         on t1.id = t2.bookId
-      ` + searchClause(searchArray) + `
+      ` + searchClause(searchString) + `
       group by t1.id )`;
 }
 
-function findBooksWithCCQuery(ccNum, searchArray, sortString, ccIdString) {
+function findBooksWithCCQuery(ccNum, searchString, sortString, ccIdString) {
   return `
     select row_number() over win as num, ` + bookColumns + `, t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search 
     from 
@@ -195,12 +208,12 @@ function findBooksWithCCQuery(ccNum, searchArray, sortString, ccIdString) {
         where bookId = books_series_link.book and books_series_link.series = series.id
       ) as t2 
       on t1.id = t2.bookId
-      ` + searchClause(searchArray) + `
+      ` + searchClause(searchString) + `
       group by t1.id window win as (` + (sortArray[sortString] || sortArray['timestamp.desc']) + `) limit ? offset ?`;
 }
 
 
-function countBooksWithCCQuery(ccNum, searchArray, ccIdString) {
+function countBooksWithCCQuery(ccNum, searchString, ccIdString) {
   return `
     select count(*) as count 
     from 
@@ -217,7 +230,7 @@ function countBooksWithCCQuery(ccNum, searchArray, ccIdString) {
         where bookId = books_series_link.book and books_series_link.series = series.id
       ) as t2 
       on t1.id = t2.bookId
-      ` + searchClause(searchArray) + `
+      ` + searchClause(searchString) + `
       group by t1.id)`;
 }
 
@@ -275,51 +288,51 @@ export function unconnectDb() {  // close database
   }
 }
 
-export function findBooks(searchArray, sortString, limit, offset) {
-  logger.debug("findBooks: searchArray=" + searchArray + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset);
-  logger.silly(findBooksQuery(searchArray, sortString));
+export function findBooks(searchString, sortString, limit, offset) {
+  logger.debug("findBooks: searchString=" + searchString + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset);
+  logger.silly(findBooksQuery(searchString, sortString));
   try {
-    const selectAllStmt = METADATA_DB.prepare(findBooksQuery(searchArray, sortString));
+    const selectAllStmt = METADATA_DB.prepare(findBooksQuery(searchString, sortString));
     return selectAllStmt.all(limit, offset);
   } catch (error) { errorLogger(error); return [] }
 }
 
-export function countBooks(searchArray) {
-  logger.debug("countBooks: searchArray=" + searchArray);
+export function countBooks(searchString) {
+  logger.debug("countBooks: searchString=" + searchString);
   try {
-    const selectOneStmt = METADATA_DB.prepare(countBooksQuery(searchArray));
+    const selectOneStmt = METADATA_DB.prepare(countBooksQuery(searchString));
     return selectOneStmt.get().count;
   } catch (error) { errorLogger(error); return -1 }
 }
 
-export function findBooksWithTags(searchArray, sortString, tagIdString, limit, offset) {
-  logger.debug("findBooksWithTags: searchArray=" + searchArray + ", sortString=" + sortString + ", tagIdString=" + tagIdString + ", limit=" + limit + ", offset=" + offset)
+export function findBooksWithTags(searchString, sortString, tagIdString, limit, offset) {
+  logger.debug("findBooksWithTags: searchString=" + searchString + ", sortString=" + sortString + ", tagIdString=" + tagIdString + ", limit=" + limit + ", offset=" + offset)
   try {
-    const selectAllStmt = METADATA_DB.prepare(findBooksWithTagsQuery(searchArray, sortString, tagIdString));
+    const selectAllStmt = METADATA_DB.prepare(findBooksWithTagsQuery(searchString, sortString, tagIdString));
     return selectAllStmt.all(limit, offset);
   } catch (error) { errorLogger(error); return []; }
 }
 
-export function countBooksWithTags(searchArray, tagIdString) {
-  logger.debug("countBooksWithTags: searchArray=" + searchArray + ", tagIdString=" + tagIdString);
+export function countBooksWithTags(searchString, tagIdString) {
+  logger.debug("countBooksWithTags: searchString=" + searchString + ", tagIdString=" + tagIdString);
   try {
-    const selectOneStmt = METADATA_DB.prepare(countBooksWithTagsQuery(searchArray, tagIdString));
+    const selectOneStmt = METADATA_DB.prepare(countBooksWithTagsQuery(searchString, tagIdString));
     return selectOneStmt.get().count;
   } catch (error) { errorLogger(error); return -1; }
 }
 
-export function findBooksWithCC(ccNum, searchArray, sortString, ccIdString, limit, offset) {
-  logger.debug("findBooksWithCC: ccNum=" + ccNum + ", searchArray=" + searchArray + ", sortString=" + sortString + ", ccIdString=" + ccIdString + ", limit=" + limit + ", offset=" + offset)
+export function findBooksWithCC(ccNum, searchString, sortString, ccIdString, limit, offset) {
+  logger.debug("findBooksWithCC: ccNum=" + ccNum + ", searchString=" + searchString + ", sortString=" + sortString + ", ccIdString=" + ccIdString + ", limit=" + limit + ", offset=" + offset)
   try {
-    const selectAllStmt = METADATA_DB.prepare(findBooksWithCCQuery(ccNum, searchArray, sortString, ccIdString));
+    const selectAllStmt = METADATA_DB.prepare(findBooksWithCCQuery(ccNum, searchString, sortString, ccIdString));
     return selectAllStmt.all(limit, offset);
   } catch (error) { errorLogger(error); return []; }
 }
 
-export function countBooksWithCC(ccNum, searchArray, ccIdString) {
-  logger.debug("countBooksWithCC: ccNum=" + ccNum + ", searchArray=" + searchArray + ", ccIdString=" + ccIdString);
+export function countBooksWithCC(ccNum, searchString, ccIdString) {
+  logger.debug("countBooksWithCC: ccNum=" + ccNum + ", searchString=" + searchString + ", ccIdString=" + ccIdString);
   try {
-    const selectOneStmt = METADATA_DB.prepare(countBooksWithCCQuery(ccNum, searchArray, ccIdString));
+    const selectOneStmt = METADATA_DB.prepare(countBooksWithCCQuery(ccNum, searchString, ccIdString));
     return selectOneStmt.get().count;
   } catch (error) { errorLogger(error); return -1; }
 }
