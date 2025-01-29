@@ -86,7 +86,7 @@ function addFields(books) {
 // Actions **************************
 
 export async function startAction(request, response) {
-  logger.debug("*** startAction: request.params=" + JSON.stringify(request.params));
+  (logger.isLevelEnabled('debug')) && logger.debug("*** startAction: request.params=" + JSON.stringify(request.params));
   try {
     const type = request.params.type;
     const id = request.params.id;
@@ -98,7 +98,7 @@ export async function startAction(request, response) {
 export async function listAction(request, response) {
   try {
     const options = request.body;
-    logger.debug("*** listAction: options=" + JSON.stringify(options));
+    (logger.isLevelEnabled('debug')) && logger.debug("*** listAction: options=" + JSON.stringify(options));
 
     const page = (!options.page || isNaN(options.page)) ? 0 : parseInt(options.page, 10);
     const sortString = (!options.sortString) ? "" : options.sortString;
@@ -128,13 +128,13 @@ export async function listAction(request, response) {
         const ccId = (!options.ccId || isNaN(options.ccId)) ? 0 : parseInt(options.ccId, 10);
 
         if (tagId && tagId > 0) {
-          logger.debug("listAction: tagId: " + tagId);
+          (logger.isLevelEnabled('debug')) && logger.debug("listAction: tagId: " + tagId);
           count = countBooksWithTags(options.searchString, tagId);
           if (count !== 0) books = findBooksWithTags(options.searchString, sortString, tagId, PAGE_LIMIT, page * PAGE_LIMIT);
 
         } else {
           if (ccNum && ccNum > 0) {
-            logger.debug("listAction: ccNum: " + ccNum + ", ccId: " + ccId);
+            (logger.isLevelEnabled('debug')) && logger.debug("listAction: ccNum: " + ccNum + ", ccId: " + ccId);
             count = countBooksWithCC(ccNum, options.searchString, ccId);
             if (count !== 0) books = findBooksWithCC(ccNum, options.searchString, sortString, ccId, PAGE_LIMIT, page * PAGE_LIMIT);
 
@@ -157,8 +157,9 @@ export async function listAction(request, response) {
     books = addFields(books);
     const pageNav = getPageNavigation(page, count);
 
-    logger.silly("listAction: books=" + JSON.stringify(books));
-    logger.silly("listAction: pageNav=" + JSON.stringify(pageNav));
+    (logger.isLevelEnabled('silly'))
+      && logger.silly("listAction: books=" + JSON.stringify(books))
+      && logger.silly("listAction: pageNav=" + JSON.stringify(pageNav));
 
     response.render(import.meta.dirname + '/views/booklist', { books, pageNav }, function (error, html) {
       if (error) {
@@ -175,11 +176,11 @@ export async function listAction(request, response) {
 export async function bookAction(request, response) {
   try {
     const options = request.body;
-    logger.debug("*** bookAction: options=" + JSON.stringify(options));
+    (logger.isLevelEnabled('debug')) && logger.debug("*** bookAction: options=" + JSON.stringify(options));
 
     const bookId = parseInt(options.bookId, 10);
     const book = getBook(bookId);
-    logger.silly("*** bookAction: book=" + JSON.stringify(book));
+    (logger.isLevelEnabled('silly')) && logger.silly("*** bookAction: book=" + JSON.stringify(book));
 
     let nextBook;
     let prevBook;
@@ -257,9 +258,11 @@ export async function bookAction(request, response) {
     if (series[0]) { series[0].seriesName = decode(series[0].seriesName); book.serie = series[0] }
     if (book.pubdate.substr(0, 1) == "0") { book.pubdate = null };
 
-    logger.silly("bookAction: " + JSON.stringify(book));
-    logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook));
-    logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
+    (logger.isLevelEnabled('silly'))
+    && logger.silly("bookAction: " + JSON.stringify(book))
+    && logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook))
+    && logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
+
     response.render(import.meta.dirname + '/views/book', { book, prevBook, nextBook }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render book page');
@@ -273,14 +276,14 @@ export async function bookAction(request, response) {
 
 export async function tagsAction(request, response) {
   try {
-    logger.debug("*** tagsAction: request.params=" + JSON.stringify(request.params));
+    (logger.isLevelEnabled('debug')) && logger.debug("*** tagsAction: request.params=" + JSON.stringify(request.params));
     const selectedId = (!request.params.tagId || isNaN(request.params.tagId)) ? 0 : parseInt(request.params.tagId, 10);
     const tags =
       getTags()
         .map(tag => { tag.class = (tag.tagId === selectedId) ? "selected" : ""; return tag });
 
     const options = { tags };
-    logger.silly("tagsAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
+    (logger.isLevelEnabled('silly')) && logger.silly("tagsAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
     response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
@@ -294,7 +297,7 @@ export async function tagsAction(request, response) {
 
 export async function ccAction(request, response) {
   try {
-    logger.debug("*** ccAction: request.params=" + JSON.stringify(request.params));
+    (logger.isLevelEnabled('debug')) && logger.debug("*** ccAction: request.params=" + JSON.stringify(request.params));
     const ccNum = (!request.params.ccNum || isNaN(request.params.ccNum)) ? 0 : parseInt(request.params.ccNum, 10);
     const selectedId = (!request.params.ccId || isNaN(request.params.ccId)) ? 0 : parseInt(request.params.ccId, 10);
 
@@ -303,7 +306,7 @@ export async function ccAction(request, response) {
         .map(cc => { cc.class = (cc.id === selectedId) ? "selected" : ""; return cc });
 
     const options = { ccNum, custCols };
-    logger.silly("ccAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
+    (logger.isLevelEnabled('silly')) && logger.silly("ccAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
     response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
@@ -315,22 +318,22 @@ export async function ccAction(request, response) {
   catch (error) { errorHandler(error, response, 'ccAction') }
 }
 
-function sendResizedCover(response, source, targetDir, targetFile, resizeOptions) {
+async function sendResizedCover2(response, source, targetDir, targetFile, resizeOptions) {
   try {
     const options = { root: targetDir, headers: { 'Content-Type': 'image/jpeg' } }
     fs.pathExists(targetDir + "/" + targetFile, async (error, exists) => {
       if (error) { errorLogger(error) }
       else {
         if (exists) {
-          response.sendFile(targetFile, options, function (err) {
+          response.sendFile(targetFile, options, function (error) {
             if (error) { errorLogger(error) }
           })
         } else {
           sharp(source)
             .resize(resizeOptions)
-            .toFile(targetDir + "/" + targetFile, function (err, info) {
+            .toFile(targetDir + "/" + targetFile, function (error, info) {
               if (!error) {
-                response.sendFile(targetFile, options, function (err) {
+                response.sendFile(targetFile, options, function (error) {
                   if (error) { errorLogger(error) }
                 })
               } else { errorLogger(error) }
@@ -342,11 +345,28 @@ function sendResizedCover(response, source, targetDir, targetFile, resizeOptions
   catch (error) { errorHandler(error, response, 'sendResizedCover') }
 }
 
+
+async function sendResizedCover(response, source, targetDir, targetFile, resizeOptions) {
+  try {
+    const options = { root: targetDir, headers: { 'Content-Type': 'image/jpeg' } }
+    const exists = await fs.pathExists(targetDir + "/" + targetFile);
+
+    if (!exists) {
+      await sharp(source)
+        .resize(resizeOptions)
+        .toFile(targetDir + "/" + targetFile);
+    }
+    response.sendFile(targetFile, options);
+  }
+  catch (error) { errorHandler(error, response, 'sendResizedCover') }
+}
+
+
 export async function coverListAction(request, response) {
   try {
     let fileData = getCoverData(parseInt(request.params.id, 10));
     if (fileData) {
-      logger.silly("*** coverListAction: fileData=" + JSON.stringify(fileData));
+      (logger.isLevelEnabled('silly')) && logger.silly("*** coverListAction: fileData=" + JSON.stringify(fileData));
       const source = BOOKDIR + "/" + fileData.path + "/cover.jpg";
       const targetDir = IMGCACHE + "/1" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
       fs.ensureDirSync(targetDir);
@@ -359,7 +379,7 @@ export async function coverListAction(request, response) {
 export async function coverBookAction(request, response) {
   try {
     let fileData = getCoverData(parseInt(request.params.id, 10));
-    logger.debug("*** coverBookAction: fileData=" + JSON.stringify(fileData));
+    (logger.isLevelEnabled('debug')) && logger.debug("*** coverBookAction: fileData=" + JSON.stringify(fileData));
     const source = BOOKDIR + "/" + fileData.path + "/cover.jpg";
     const targetDir = IMGCACHE + "/0" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
     fs.ensureDirSync(targetDir);
@@ -371,7 +391,7 @@ export async function coverBookAction(request, response) {
 export async function fileAction(request, response) {
   try {
     let fileData = getFileData(parseInt(request.params.id, 10), request.params.format);
-    logger.debug("*** fileAction: fileData=" + JSON.stringify(fileData));
+    (logger.isLevelEnabled('debug')) && logger.debug("*** fileAction: fileData=" + JSON.stringify(fileData));
     const options = {
       root: BOOKDIR + "/" + fileData.path,
       dotfiles: 'deny',
@@ -384,7 +404,7 @@ export async function fileAction(request, response) {
       if (error)
         errorHandler(error, response, 'response.sendFile');
       else
-        logger.debug('response.sendFile: filename=' + fileData.filename);
+        (logger.isLevelEnabled('debug')) && logger.debug('response.sendFile: filename=' + fileData.filename);
     })
   }
   catch (error) { errorHandler(error, 'fileAction') }
@@ -394,7 +414,7 @@ export async function infoAction(request, response) {
   try {
     const stats = getStatistics();
     const options = { stats, logger: { level: logger.level, levels: log_levels, consoleOn: !consoleTransport.silent, fileOn: !fileTransport.silent } };
-    logger.debug("*** infoAction: appInfo=" + JSON.stringify(appInfo) + ", " + "options=" + JSON.stringify(options));
+    (logger.isLevelEnabled('debug')) && logger.debug("*** infoAction: appInfo=" + JSON.stringify(appInfo) + ", " + "options=" + JSON.stringify(options));
     response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
@@ -425,7 +445,7 @@ export async function logAction(request, response) {
         response.send({ fileOn: !fileTransport.silent });
         break;
     }
-    logger.debug("Logging level: " + logger.level + ", logging to console: " + !consoleTransport.silent + ", logging to file: " + !fileTransport.silent);
+    (logger.isLevelEnabled('debug')) && logger.debug("Logging level: " + logger.level + ", logging to console: " + !consoleTransport.silent + ", logging to file: " + !fileTransport.silent);
   }
   catch (error) { errorHandler(error, response, 'logLevelAction') }
 }
@@ -434,7 +454,7 @@ export async function logAction(request, response) {
 
 export async function countAction(request, response) {
   try {
-    logger.debug("countAction: request.query=" + JSON.stringify(request.query));
+    (logger.isLevelEnabled('debug')) && logger.debug("countAction: request.query=" + JSON.stringify(request.query));
     const searchString = request.query.search || "";
     const count = countBooks(searchString);
     response.json({ count, healthy: true });
@@ -444,7 +464,7 @@ export async function countAction(request, response) {
 
 export async function dbAction(request, response) {
   try {
-    logger.debug("dbAction: request.url=" + request.url);
+    (logger.isLevelEnabled('debug')) && logger.debug("dbAction: request.url=" + request.url);
     const result = (request.url === "/unconnectdb") ? unconnectDb() : connectDb();
     response.json(result);
   }

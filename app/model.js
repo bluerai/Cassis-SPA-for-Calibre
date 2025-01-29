@@ -290,7 +290,7 @@ export function unconnectDb() {  // close database
 
 export function findBooks(searchString, sortString, limit, offset) {
   logger.debug("findBooks: searchString=" + searchString + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset);
-  logger.silly(findBooksQuery(searchString, sortString));
+  logger.isLevelEnabled('silly') && logger.silly(findBooksQuery(searchString, sortString));
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksQuery(searchString, sortString));
     return selectAllStmt.all(limit, offset);
