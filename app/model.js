@@ -114,7 +114,7 @@ sortArray["serie.desc"] = "order by t1.series_index desc";
 function findBooksQuery(searchArray, sortString) {
   return `
     select row_number() over win as num, ` + bookColumns + `,
-      t1.sort || ' ' || t1.title || ' ' || coalesce(t2.sort, '') || ' ' || t1.path as search 
+      t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.sort, '') || ' ' || t1.path as search
       from (select books.*, group_concat(authors.name) name from authors, books, books_authors_link 
       where authors.id = books_authors_link.author and books.id = books_authors_link.book group by books.id
     ) as t1 
@@ -130,9 +130,9 @@ function findBooksQuery(searchArray, sortString) {
 function countBooksQuery(searchArray) {
   return `
     select count(*) as count from 
-      (select t1.name || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search 
+      (select t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search
         from 
-          (select books.*, group_concat(authors.name)name from authors, books, books_authors_link 
+          (select books.*, group_concat(authors.name) name from authors, books, books_authors_link 
             where authors.id = books_authors_link.author and books.id = books_authors_link.book group by books.id
       ) as t1 
       left join 
@@ -145,7 +145,7 @@ function countBooksQuery(searchArray) {
 
 function findBooksWithTagsQuery(searchArray, sortString, tagIdString) {
   return `
-    select row_number() over win as num, ` + bookColumns + `, t1.name || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' '
+    select row_number() over win as num, ` + bookColumns + `, t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' '
      || t1.path as search 
       from 
         (select books.*, group_concat(authors.name) name
@@ -164,7 +164,7 @@ function findBooksWithTagsQuery(searchArray, sortString, tagIdString) {
 
 function countBooksWithTagsQuery(searchArray, tagIdString) {
   return `
-    select count(*) as count from (select t1.name || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search 
+    select count(*) as count from (select t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search
       from 
         (select books.*, group_concat(authors.name)name 
           from authors, books, books_authors_link, tags, books_tags_link 
@@ -182,7 +182,7 @@ function countBooksWithTagsQuery(searchArray, tagIdString) {
 
 function findBooksWithCCQuery(ccNum, searchArray, sortString, ccIdString) {
   return `
-    select row_number() over win as num, ` + bookColumns + `, t1.name || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search 
+    select row_number() over win as num, ` + bookColumns + `, t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search 
     from 
       (select books.*, group_concat(authors.name)name from authors, books, books_authors_link, 
           custom_column_` + ccNum + ` as cc, books_custom_column_` + ccNum + `_link as ccl 
@@ -204,7 +204,7 @@ function countBooksWithCCQuery(ccNum, searchArray, ccIdString) {
   return `
     select count(*) as count 
     from 
-      (select t1.name || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search from 
+      (select t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search from
         (select books.*, group_concat(authors.name)name 
           from authors, books, books_authors_link, custom_column_` + ccNum + ` as cc, books_custom_column_` + ccNum + `_link as ccl 
           where authors.id = books_authors_link.author and books.id = books_authors_link.book and 
