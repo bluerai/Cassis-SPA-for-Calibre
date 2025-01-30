@@ -15,79 +15,93 @@ const METADATA_DB = new DatabaseSync(METADATA_PATH, { open: true });
 if (METADATA_DB) logger.info("Connected to Calibre Database at " + METADATA_PATH)
 
 // SQL 
-const bookColumns = ' t1.id as bookId, t1.title, t1.sort, t1.timestamp, t1.pubdate, t1.timestamp, t1.series_index as seriesIndex, t1.path ';
+const bookColumns = ' b.id as bookId, b.title, b.sort, b.timestamp, b.pubdate, b.timestamp, b.series_index as seriesIndex, b.path ';
 
-const queryBook = 'select ' + bookColumns + ', (select text from comments where comments.book = ?) as comment '
-  + ' from books as t1 where bookId = ?';
+const queryBook = `
+SELECT ` + bookColumns + `, (SELECT c.text FROM comments c WHERE c.book = b.id LIMIT 1) AS comment
+FROM books b
+WHERE b.id = ?`;
 
 function queryAuthorsOfBooks(bookIdString) {
   return `
-    select books_authors_link.book as bookId, authors.name as authorsName, authors.id as authorsId 
-      from authors, books_authors_link 
-      where bookId in (` + bookIdString + `) and books_authors_link.author = authors.id`;
+SELECT bsl.book AS bookId, a.name AS authorsName, a.id AS authorsId
+FROM books_authors_link bsl
+JOIN authors a ON bsl.author = a.id
+WHERE bsl.book IN (` + bookIdString + `);`;
 };
 
 function querySeriesOfBooks(bookIdString) {
   return `
-    select books.id as bookId, series.id as seriesId, series.name as seriesName
-      from books, books_series_link, series 
-      where bookId in (` + bookIdString + `) and books_series_link.book = bookId  and series.id = books_series_link.series`
+SELECT b.id AS bookId, s.id AS seriesId, s.name AS seriesName
+FROM books b
+JOIN books_series_link bsl ON b.id = bsl.book
+JOIN series s ON bsl.series = s.id
+WHERE b.id IN (` + bookIdString + `)`;
 };
 
 function queryPublisherOfBook(bookIdString) {
   return `
-    select publishers.id, publishers.name 
-      from publishers, books_publishers_link 
-      where books_publishers_link.book in (` + bookIdString + `) and publishers.id = books_publishers_link.publisher`
+SELECT p.id, p.name
+FROM publishers p
+JOIN books_publishers_link bpl ON p.id = bpl.publisher
+WHERE bpl.book IN (` + bookIdString + `);
+`;
 }
 
 function queryTagsOfBook(bookIdString) {
   return `
-    select books.id as bookId, tags.name as tagName, 
-      (select custom_columns.id as colId 
-        from custom_columns 
-        where custom_columns.name = tags.name
-      ) as colId 
-      from books, books_tags_link, tags 
-      where bookId in (` + bookIdString + `) and bookId = books_tags_link.book and books_tags_link.tag = tags.id`
+SELECT b.id AS bookId, t.name AS tagName, cc.id AS colId
+FROM books b
+JOIN books_tags_link btl ON b.id = btl.book
+JOIN tags t ON btl.tag = t.id
+LEFT JOIN custom_columns cc ON cc.name = t.name
+WHERE b.id IN (` + bookIdString + `)`;
 }
 
 function queryFormatsOfBooks(bookIdString) {
   return `
-    select books.id as bookId, LOWER(format) as name 
-      from books, data 
-      where bookId in (` + bookIdString + `) and data.book = bookId`
+SELECT b.id AS bookId, LOWER(d.format) AS name
+FROM books b
+JOIN data d ON d.book = b.id
+WHERE b.id IN (` + bookIdString + `);`
 };
 
 const queryCustomColumnsIds = 'select id as colId, label, name from custom_columns';
 
 function queryCustomColumns(colId) {
-  return 'select id, value from custom_column_' + colId;
+  return 'SELECT id, value FROM custom_column_' + colId;
 }
 
 function queryCustomColumnsOfBooks(colId, bookIdString) {
   return `
-    select books.id as bookId, custom_column_` + colId + `.value 
-      from books, custom_column_` + colId + `, books_custom_column_` + colId + `_link 
-      where bookId in (` + bookIdString + `) and bookId = books_custom_column_` + colId + `_link.book
-        and custom_column_` + colId + `.id = books_custom_column_` + colId + `_link.value`
+SELECT b.id AS bookId, cc.value
+FROM books b
+JOIN books_custom_column_` + colId + `_link bccl ON b.id = bccl.book
+JOIN custom_column_` + colId + ` cc ON cc.id = bccl.value
+WHERE b.id IN(` + bookIdString + `)`;
 }
 
-const queryCoverData = `select books.id as bookId, books.path, 'cover.jpg' as filename from books, data 
-      where bookId = ? and bookId = data.book`
+const queryCoverData = `
+SELECT b.id AS bookId, b.path, 'cover.jpg' AS filename
+FROM books b
+JOIN data d ON b.id = d.book
+WHERE b.id = ?;`
 
-const queryFileData = `select books.path, data.name || '.' || LOWER(data.format) as filename 
-      from books, data where books.id = ? and books.id = data.book and data.format = ?`
+const queryFileData = `
+SELECT b.path, LOWER(d.name || '.' || d.format) AS filename
+FROM books b
+JOIN data d ON b.id = d.book
+WHERE b.id = ? AND d.format = ?;`
 
-const queryTags = 'select id as tagId, name as tagName from tags';
+const queryTags = 'SELECT id AS tagId, name AS tagName FROM tags';
 
 const queryCounts = `
-  select 
-    (select count(*) from books) as books, 
-    (select count(*) from series) as series, 
-    (select count(*) from Authors) as authors, 
-    (select count(*) from publishers) as publishers,
-    (select count(*) from tags) as tags`
+SELECT
+    (SELECT COUNT(*) FROM books) AS books,
+    (SELECT COUNT(*) FROM series) AS series,
+    (SELECT COUNT(*) FROM authors) AS authors,
+    (SELECT COUNT(*) FROM publishers) AS publishers,
+    (SELECT COUNT(*) FROM tags) AS tags;`
 
 const whitespace_chars = /[\/\,\.\|\ \*\?\!\:\;\(\)\[\]\&\"\+\-\_\%]+/g;  // ohne _ und %
 //whitespace_char01: In der Onleihe Zeichen zur Abtrennung des Artikels am Anfang von Titeln (für die Sortierung):
@@ -115,148 +129,259 @@ function searchClause(searchString) {
 }
 
 const sortArray = [];
-sortArray["timestamp.asc"] = "order by t1.timestamp asc";
-sortArray["timestamp.desc"] = "order by t1.timestamp desc";
-sortArray["author.asc"] = "order by t1.author_sort asc, t1.sort asc";
-sortArray["author.desc"] = "order by t1.author_sort desc, t1.sort desc";
-sortArray["title.asc"] = "order by t1.sort asc";
-sortArray["title.desc"] = "order by t1.sort desc";
-sortArray["serie.asc"] = "order by t1.series_index asc";
-sortArray["serie.desc"] = "order by t1.series_index desc";
+sortArray["timestamp.asc"] = "ORDER BY b.timestamp ASC";
+sortArray["timestamp.desc"] = "ORDER BY  b.timestamp DESC";
+sortArray["author.asc"] = "ORDER BY b.author_sort ASC, b.sort ASC";
+sortArray["author.desc"] = "ORDER BY b.author_sort DESC, b.sort DESC";
+sortArray["title.asc"] = "ORDER BY b.sort ASC";
+sortArray["title.desc"] = "ORDER BY b.sort DESC";
+sortArray["serie.asc"] = "ORDER BY b.series_index ASC";
+sortArray["serie.desc"] = "ORDER BY b.series_index DESC";
 
 function findBooksQuery(searchString, sortString) {
   return `
-    select row_number() over win as num, ` + bookColumns + `,
-      t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.sort, '') || ' ' || t1.path as search
-      from (select books.*, group_concat(authors.name) name from authors, books, books_authors_link 
-      where authors.id = books_authors_link.author and books.id = books_authors_link.book group by books.id
-    ) as t1 
-    left join 
-    (select books.id as bookId, series.sort 
-      from books, series, books_series_link 
-      where bookId = books_series_link.book and books_series_link.series = series.id
-    ) as t2 
-    on t1.id = t2.bookId ` + searchClause(searchString) + `
-    group by t1.id window win as (` + (sortArray[sortString] || sortArray['timestamp.desc']) + `) limit ? offset ?`;
+ WITH AuthorNames AS (
+    SELECT books.id AS bookId,
+           GROUP_CONCAT(authors.name, ', ') AS name
+    FROM books
+    JOIN books_authors_link ON books.id = books_authors_link.book
+    JOIN authors ON authors.id = books_authors_link.author
+    GROUP BY books.id
+),
+SeriesInfo AS (
+    SELECT books.id AS bookId, series.sort
+    FROM books
+    JOIN books_series_link ON books.id = books_series_link.book
+    JOIN series ON series.id = books_series_link.series
+)
+SELECT ROW_NUMBER() OVER (ORDER BY b.timestamp DESC) AS num,
+       b.id AS bookId,
+       b.title,
+       b.sort,
+       b.timestamp,
+       b.pubdate,
+       b.series_index AS seriesIndex,
+       b.path,
+       (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || COALESCE(s.sort, '') || ' ' || b.path) AS search
+FROM books b
+LEFT JOIN AuthorNames a ON b.id = a.bookId
+LEFT JOIN SeriesInfo  s ON b.id = s.bookId 
+` + searchClause(searchString) + `
+` + (sortArray[sortString] || sortArray['timestamp.desc']) + `
+limit ? offset ?`;
 };
 
 function countBooksQuery(searchString) {
   return `
-    select count(*) as count from 
-      (select t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search
-        from 
-          (select books.*, group_concat(authors.name) name from authors, books, books_authors_link 
-            where authors.id = books_authors_link.author and books.id = books_authors_link.book group by books.id
-      ) as t1 
-      left join 
-      (select books.id as bookId, series.name from books, series, books_series_link 
-        where bookId = books_series_link.book and books_series_link.series = series.id
-      ) as t2 
-        on t1.id = t2.bookId ` + searchClause(searchString) + `
-      group by t1.id )`;
+WITH AuthorNames AS (
+    SELECT books.id AS bookId,
+           GROUP_CONCAT(authors.name, ', ') AS name
+    FROM books
+    JOIN books_authors_link ON books.id = books_authors_link.book
+    JOIN authors ON authors.id = books_authors_link.author
+    GROUP BY books.id
+),
+SeriesInfo AS (
+    SELECT books.id AS bookId, series.name AS series_name
+    FROM books
+    JOIN books_series_link ON books.id = books_series_link.book
+    JOIN series ON series.id = books_series_link.series
+)
+SELECT COUNT(*) AS count
+FROM (
+    SELECT (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' ||
+            COALESCE(s.series_name, '') || ' ' || b.path) AS search
+    FROM books b
+    LEFT JOIN AuthorNames a ON b.id = a.bookId
+    LEFT JOIN SeriesInfo s ON b.id = s.bookId
+    ` + searchClause(searchString) + `
+)`;
 };
 
 function findBooksWithTagsQuery(searchString, sortString, tagIdString) {
   return `
-    select row_number() over win as num, ` + bookColumns + `, t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' '
-     || t1.path as search 
-      from 
-        (select books.*, group_concat(authors.name) name
-          from authors, books, books_authors_link, tags, books_tags_link 
-          where authors.id = books_authors_link.author and books.id = books_authors_link.book and 
-            books.id = books_tags_link.book and books_tags_link.tag = tags.id and tags.id in (` + tagIdString + `)
-            group by books.id ) as t1 
-        left join 
-        (select books.id as bookId, series.name from books, series, books_series_link 
-          where bookId = books_series_link.book and books_series_link.series = series.id) as t2 
-        on t1.id = t2.bookId
-      ` + searchClause(searchString) + `
-      group by t1.id
-      window win as (` + (sortArray[sortString] || sortArray['timestamp.desc']) + `) limit ? offset ?`;
+WITH AuthorNames AS (
+    SELECT books.id AS bookId,
+           GROUP_CONCAT(authors.name, ', ') AS name
+    FROM books
+    JOIN books_authors_link ON books.id = books_authors_link.book
+    JOIN authors ON authors.id = books_authors_link.author
+    GROUP BY books.id
+),
+SeriesInfo AS (
+    SELECT books.id AS bookId, series.name AS series_name
+    FROM books
+    JOIN books_series_link ON books.id = books_series_link.book
+    JOIN series ON series.id = books_series_link.series
+),
+FilteredBooks AS (
+    SELECT books.*
+    FROM books
+    JOIN books_tags_link ON books.id = books_tags_link.book
+    WHERE books_tags_link.tag = ` + tagIdString + `
+)
+SELECT ROW_NUMBER() OVER (ORDER BY b.timestamp DESC) AS num,
+       b.id AS bookId,
+       b.title,
+       b.sort,
+       b.timestamp,
+       b.pubdate,
+       b.series_index AS seriesIndex,
+       b.path,
+       (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' ||
+            COALESCE(s.series_name, '') || ' ' || b.path) AS search
+FROM FilteredBooks b
+LEFT JOIN AuthorNames a ON b.id = a.bookId
+LEFT JOIN SeriesInfo s ON b.id = s.bookId
+` + searchClause(searchString) + `
+` + (sortArray[sortString] || sortArray['timestamp.desc']) + ` limit ? offset ?`;
 }
 
 function countBooksWithTagsQuery(searchString, tagIdString) {
   return `
-    select count(*) as count from (select t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search
-      from 
-        (select books.*, group_concat(authors.name)name 
-          from authors, books, books_authors_link, tags, books_tags_link 
-          where authors.id = books_authors_link.author and books.id = books_authors_link.book and 
-            books.id = books_tags_link.book and books_tags_link.tag = tags.id and tags.id in (` + tagIdString + `) group by books.id 
-        ) as t1
-        left join 
-        (select books.id as bookId, series.name from books, series, books_series_link 
-          where bookId = books_series_link.book and books_series_link.series = series.id
-        ) as t2 
-        on t1.id = t2.bookId
-      ` + searchClause(searchString) + `
-      group by t1.id )`;
+WITH AuthorNames AS (
+    SELECT books.id AS bookId,
+           GROUP_CONCAT(authors.name, ', ') AS name
+    FROM books
+    JOIN books_authors_link ON books.id = books_authors_link.book
+    JOIN authors ON authors.id = books_authors_link.author
+    GROUP BY books.id
+),
+SeriesInfo AS (
+    SELECT books.id AS bookId, series.name AS series_name
+    FROM books
+    JOIN books_series_link ON books.id = books_series_link.book
+    JOIN series ON series.id = books_series_link.series
+),
+FilteredBooks AS (
+    SELECT DISTINCT books.*
+    FROM books
+    JOIN books_tags_link ON books.id = books_tags_link.book
+    WHERE books_tags_link.tag = ` + tagIdString + `
+)
+SELECT COUNT(*) AS count
+FROM (
+    SELECT (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || 
+            COALESCE(s.series_name, '') || ' ' || b.path) AS search
+    FROM FilteredBooks b
+    LEFT JOIN AuthorNames a ON b.id = a.bookId
+    LEFT JOIN SeriesInfo s ON b.id = s.bookId
+    ` + searchClause(searchString) + `
+)`;
 }
 
 function findBooksWithCCQuery(ccNum, searchString, sortString, ccIdString) {
   return `
-    select row_number() over win as num, ` + bookColumns + `, t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search 
-    from 
-      (select books.*, group_concat(authors.name)name from authors, books, books_authors_link, 
-          custom_column_` + ccNum + ` as cc, books_custom_column_` + ccNum + `_link as ccl 
-        where authors.id = books_authors_link.author and books.id = books_authors_link.book and 
-          books.id = ccl.book and ccl.value = cc.id and cc.id in (` + ccIdString + `) 
-        group by books.id 
-      ) as t1 
-      left join 
-      (select books.id as bookId, series.name from books, series, books_series_link 
-        where bookId = books_series_link.book and books_series_link.series = series.id
-      ) as t2 
-      on t1.id = t2.bookId
-      ` + searchClause(searchString) + `
-      group by t1.id window win as (` + (sortArray[sortString] || sortArray['timestamp.desc']) + `) limit ? offset ?`;
+WITH AuthorNames AS (
+    SELECT books.id AS bookId,
+           GROUP_CONCAT(authors.name, ', ') AS name
+    FROM books
+    JOIN books_authors_link ON books.id = books_authors_link.book
+    JOIN authors ON authors.id = books_authors_link.author
+    GROUP BY books.id
+),
+SeriesInfo AS (
+    SELECT books.id AS bookId, series.name AS series_name
+    FROM books
+    JOIN books_series_link ON books.id = books_series_link.book
+    JOIN series ON series.id = books_series_link.series
+),
+FilteredBooks AS (
+    SELECT books.*
+    FROM books
+    JOIN books_custom_column_` + ccNum + `_link AS ccl ON books.id = ccl.book
+    JOIN custom_column_` + ccNum + ` AS cc ON ccl.value = cc.id
+    WHERE cc.id IN (` + ccIdString + `)  -- Filterung nach Custom Column ID
+)
+SELECT ROW_NUMBER() OVER (` + (sortArray[sortString] || sortArray['timestamp.desc']) + `) AS num,
+       ` + bookColumns + `,
+       (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || 
+            COALESCE(s.series_name, '') || ' ' || b.path) AS search
+FROM FilteredBooks b
+LEFT JOIN AuthorNames a ON b.id = a.bookId
+LEFT JOIN SeriesInfo s ON b.id = s.bookId
+` + searchClause(searchString) + `
+LIMIT ? OFFSET ?;`;
 }
-
 
 function countBooksWithCCQuery(ccNum, searchString, ccIdString) {
   return `
-    select count(*) as count 
-    from 
-      (select t1.name || ' ' || t1.author_sort || ' ' || t1.title || ' ' || coalesce(t2.name, '') || ' ' || t1.path as search from
-        (select books.*, group_concat(authors.name)name 
-          from authors, books, books_authors_link, custom_column_` + ccNum + ` as cc, books_custom_column_` + ccNum + `_link as ccl 
-          where authors.id = books_authors_link.author and books.id = books_authors_link.book and 
-            books.id = ccl.book and ccl.value = cc.id and cc.id in ('` + ccIdString + `') 
-          group by books.id
-        ) as t1 
-      left join 
-      (select books.id as bookId, series.name 
-        from books, series, books_series_link 
-        where bookId = books_series_link.book and books_series_link.series = series.id
-      ) as t2 
-      on t1.id = t2.bookId
-      ` + searchClause(searchString) + `
-      group by t1.id)`;
+WITH AuthorNames AS (
+    SELECT books.id AS bookId,
+           GROUP_CONCAT(authors.name, ', ') AS name
+    FROM books
+    JOIN books_authors_link ON books.id = books_authors_link.book
+    JOIN authors ON authors.id = books_authors_link.author
+    GROUP BY books.id
+),
+SeriesInfo AS (
+    SELECT books.id AS bookId, series.name AS series_name
+    FROM books
+    JOIN books_series_link ON books.id = books_series_link.book
+    JOIN series ON series.id = books_series_link.series
+),
+FilteredBooks AS (
+    SELECT books.*
+    FROM books
+    JOIN books_custom_column_` + ccNum + `_link AS ccl ON books.id = ccl.book
+    JOIN custom_column_` + ccNum + ` AS cc ON ccl.value = cc.id
+    WHERE cc.id IN (` + ccIdString + `)  -- Frühzeitige Filterung nach Custom Column ID
+)
+SELECT COUNT(*) AS count
+FROM (
+    SELECT 1  -- Platzhalter, da wir nur die Zeilenanzahl zählen
+    FROM FilteredBooks b
+    LEFT JOIN AuthorNames a ON b.id = a.bookId
+    LEFT JOIN SeriesInfo s ON b.id = s.bookId
+    WHERE (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || 
+           COALESCE(s.series_name, '') || ' ' || b.path) LIKE '%` + searchString + `%'
+);`
 }
 
 function findBooksByAuthorQuery(sortString) {
   return `
-    select row_number() over win as num, ` + bookColumns + ` 
-      from books as t1, authors, books_authors_link
-      where authors.id = ? and books_authors_link.author = authors.id and books_authors_link.book = bookId 
-      window win as (` + (sortArray[sortString] || sortArray['serie.asc']) + `) 
-      limit ? offset ?`;
+WITH AuthorBooks AS (
+    SELECT books.*
+    FROM books
+    JOIN books_authors_link ON books.id = books_authors_link.book
+    JOIN authors ON books_authors_link.author = authors.id
+    WHERE authors.id = ?
+)
+SELECT ROW_NUMBER() OVER (
+    ` + (sortArray[sortString] || sortArray['serie.asc']) + `
+) AS num, ` + bookColumns + `
+FROM AuthorBooks b
+LIMIT ? OFFSET ?;`
 }
 
-const countBooksByAuthorQuery = `select count(*) as count from authors, books, books_authors_link 
-  where authors.id = ? and books_authors_link.author = authors.id and books_authors_link.book = books.id`;
+const countBooksByAuthorQuery = `SELECT COUNT(*) AS count
+FROM authors a
+JOIN books_authors_link bal ON a.id = bal.author
+JOIN books b ON bal.book = b.id
+WHERE a.id = ?`;
 
 function findBooksBySerieQuery(sortString) {
   return `
-    select row_number() over win as num, ` + bookColumns + `, series.name as seriesName, series.id as seriesId 
-      from books as t1, series, books_series_link where series.id = ? and books_series_link.series = series.id 
-        and books_series_link.book = bookId 
-      window win as (` + (sortArray[sortString] || sortArray['serie.asc']) + `) 
-      limit ? offset ?`;
+WITH SeriesBooks AS (
+    SELECT books.*, series.name AS seriesName, series.id AS seriesId
+    FROM books
+    JOIN books_series_link ON books.id = books_series_link.book
+    JOIN series ON books_series_link.series = series.id
+    WHERE series.id = ?
+)
+SELECT ROW_NUMBER() OVER (
+    ` + (sortArray[sortString] || sortArray['serie.asc']) + `
+) AS num, ` + bookColumns + `, seriesName, seriesId
+FROM SeriesBooks b
+LIMIT ? OFFSET ?;`;
 }
 
-const countBooksBySerieQuery = 'select count(*) as count from books, series, books_series_link '
-  + ' where series.id = ? and books_series_link.series = series.id and books_series_link.book = books.id ';
+const countBooksBySerieQuery = `
+SELECT COUNT(*) AS count
+FROM books b
+JOIN books_series_link bsl ON bsl.book = b.id
+JOIN series s ON s.id = bsl.series
+WHERE s.id = ?;`;
 
 // Global prepared STMTs (for better performance of often used prepared STMTs)
 let COVERDATA_STMT;
@@ -289,8 +414,9 @@ export function unconnectDb() {  // close database
 }
 
 export function findBooks(searchString, sortString, limit, offset) {
-  logger.debug("findBooks: searchString=" + searchString + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset);
-  logger.isLevelEnabled('silly') && logger.silly(findBooksQuery(searchString, sortString));
+  logger.isLevelEnabled('debug')
+    && logger.debug("findBooks: searchString=" + searchString + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset)
+    && logger.isLevelEnabled("silly") && logger.silly(findBooksQuery(searchString, sortString));
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksQuery(searchString, sortString));
     return selectAllStmt.all(limit, offset);
@@ -298,7 +424,9 @@ export function findBooks(searchString, sortString, limit, offset) {
 }
 
 export function countBooks(searchString) {
-  logger.debug("countBooks: searchString=" + searchString);
+  logger.isLevelEnabled('debug')
+    && logger.debug("countBooks: searchString=" + searchString)
+    && logger.isLevelEnabled("silly") && logger.silly("countBooks query=" + countBooksQuery(searchString));
   try {
     const selectOneStmt = METADATA_DB.prepare(countBooksQuery(searchString));
     return selectOneStmt.get().count;
@@ -306,7 +434,9 @@ export function countBooks(searchString) {
 }
 
 export function findBooksWithTags(searchString, sortString, tagIdString, limit, offset) {
-  logger.debug("findBooksWithTags: searchString=" + searchString + ", sortString=" + sortString + ", tagIdString=" + tagIdString + ", limit=" + limit + ", offset=" + offset)
+  logger.isLevelEnabled('debug')
+    && logger.debug("findBooksWithTags: searchString=" + searchString + ", sortString=" + sortString + ", tagIdString=" + tagIdString + ", limit=" + limit + ", offset=" + offset)
+    && logger.isLevelEnabled("silly") && logger.silly("findBooksWithTags query=" + findBooksWithTagsQuery(searchString, sortString, tagIdString));
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksWithTagsQuery(searchString, sortString, tagIdString));
     return selectAllStmt.all(limit, offset);
@@ -314,7 +444,9 @@ export function findBooksWithTags(searchString, sortString, tagIdString, limit, 
 }
 
 export function countBooksWithTags(searchString, tagIdString) {
-  logger.debug("countBooksWithTags: searchString=" + searchString + ", tagIdString=" + tagIdString);
+  logger.isLevelEnabled('debug')
+    && logger.debug("countBooksWithTags: searchString=" + searchString + ", tagIdString=" + tagIdString)
+    && logger.isLevelEnabled("silly") && logger.silly("countBooksWithTags query=" + countBooksWithTagsQuery(searchString, tagIdString));
   try {
     const selectOneStmt = METADATA_DB.prepare(countBooksWithTagsQuery(searchString, tagIdString));
     return selectOneStmt.get().count;
@@ -322,7 +454,9 @@ export function countBooksWithTags(searchString, tagIdString) {
 }
 
 export function findBooksWithCC(ccNum, searchString, sortString, ccIdString, limit, offset) {
-  logger.debug("findBooksWithCC: ccNum=" + ccNum + ", searchString=" + searchString + ", sortString=" + sortString + ", ccIdString=" + ccIdString + ", limit=" + limit + ", offset=" + offset)
+  logger.isLevelEnabled('debug')
+    && logger.debug("findBooksWithCC: ccNum=" + ccNum + ", searchString=" + searchString + ", sortString=" + sortString + ", ccIdString=" + ccIdString + ", limit=" + limit + ", offset=" + offset)
+    && logger.isLevelEnabled("silly") && logger.silly("findBooksWithCC query=" + findBooksWithCCQuery(ccNum, searchString, sortString, ccIdString));
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksWithCCQuery(ccNum, searchString, sortString, ccIdString));
     return selectAllStmt.all(limit, offset);
@@ -330,12 +464,16 @@ export function findBooksWithCC(ccNum, searchString, sortString, ccIdString, lim
 }
 
 export function countBooksWithCC(ccNum, searchString, ccIdString) {
-  logger.debug("countBooksWithCC: ccNum=" + ccNum + ", searchString=" + searchString + ", ccIdString=" + ccIdString);
+  logger.isLevelEnabled('debug')
+    && logger.debug("countBooksWithCC: ccNum=" + ccNum + ", searchString=" + searchString + ", ccIdString=" + ccIdString)
+    && logger.isLevelEnabled("silly") && logger.silly("countBooksWithCC query=" + countBooksWithCCQuery(ccNum, searchString, ccIdString));
   try {
     const selectOneStmt = METADATA_DB.prepare(countBooksWithCCQuery(ccNum, searchString, ccIdString));
     return selectOneStmt.get().count;
   } catch (error) { errorLogger(error); return -1; }
 }
+
+//====
 
 export function findBooksBySerie(seriesId, sortString, limit, offset) {
   logger.debug("findBooksBySerie: seriesId=" + seriesId + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset);
@@ -370,7 +508,7 @@ export function countBooksByAuthor(authorsId) {
 export function getBook(bookId) {
   try {
     const selectOneStmt = METADATA_DB.prepare(queryBook);
-    return selectOneStmt.get(bookId, bookId);
+    return selectOneStmt.get(bookId);
   } catch (error) { errorLogger(error); return null; }
 }
 

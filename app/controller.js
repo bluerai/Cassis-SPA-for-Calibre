@@ -283,7 +283,7 @@ export async function tagsAction(request, response) {
         .map(tag => { tag.class = (tag.tagId === selectedId) ? "selected" : ""; return tag });
 
     const options = { tags };
-    (logger.isLevelEnabled('silly')) && logger.silly("tagsAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
+    (logger.isLevelEnabled('silly')) && logger.silly("tagsAction: appInfo=" + JSON.stringify(appInfo) + ", " + "options=" + JSON.stringify(options));
     response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');

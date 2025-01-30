@@ -139,7 +139,8 @@ function setOptionsSearch() {
 }
 
 function setOptionsTag(newOptions) {
-  //alert(("setOptionsTag: newOptions=" + JSON.stringify(newOptions));
+  //alert("setOptionsTag: tagOptions=" + JSON.stringify(newOptions));
+  let oldOptions = getOptions();
   let options = {
     'target': 'list',
     'type': 'search',
