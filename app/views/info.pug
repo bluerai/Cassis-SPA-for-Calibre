@@ -18,13 +18,15 @@ if options.stats
   table.info
     tr 
       td(style="width: 50%")
-        h1.info Bücher
+        h1.info Bücher/Zeitschriften  
+          i.fa.fa-caret-down(style="font-size: 28px" onclick="showTagsStats()")
         h1.info #{options.stats.books}
         h1.info
           i.fa-solid.fa-book(style="font-size: 30px")
 
       td(style="width: 50%")
         h1.info Serien 
+          i.fa.fa-caret-down(style="font-size: 28px" onclick="showSeriesStats()")
         h1.info #{options.stats.series}
         h1.info
             span 
@@ -36,27 +38,28 @@ if options.stats
     tr 
       td
         h1.info Autoren 
+          i.fa.fa-caret-down(style="font-size: 28px" onclick="showAuthorsStats()")
         h1.info #{options.stats.authors}
         h1.info
           i.fa-solid.fa-people-group(style="font-size: 30px")
       td
-        h1.info Verlage
+        h1.info Verlage 
+          i.fa.fa-caret-down(style="font-size: 28px" onclick="showPublisherStats()")
         h1.info #{options.stats.publishers}
         h1.info
           i.fa-regular.fa-building(style="font-size: 20px")
           i.fa-regular.fa-building(style="font-size: 30px")
           i.fa-regular.fa-building(style="font-size: 20px")
 
+  #info_popup(style="display: none")
 
   table.info
     tr 
       td(style="width: 50%")
         h3.info Datenbank
       td
-        h3.info
-          button.text3(onclick="connectDb(true)" style="padding: 3px 0px; margin: 7px 0px") Verbindung herstellen
-        h3.info
-          button.text3(onclick="connectDb(false)" style="padding: 3px 0px; margin: 7px 0px") Verbindung abbrechen
+        button.text6(onclick="connectDb(true)") Verbindung herstellen
+        button.text6(onclick="connectDb(false)") Verbindung abbrechen
 
     tr 
       td(style="width: 50%; text-align:center")

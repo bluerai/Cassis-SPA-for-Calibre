@@ -8,7 +8,8 @@ import packagejson from '../package.json' with {type: 'json'}
 import {
   findBooks, countBooks, findBooksWithTags, countBooksWithTags, findBooksWithCC, countBooksWithCC, findBooksBySerie, countBooksBySerie,
   findBooksByAuthor, countBooksByAuthor, getSeriesOfBooks, getAuthorsOfBooks, getFormatsOfBooks, getPublisherOfBooks, getTagsOfBooks, getBook,
-  getCoverData, getFileData, getStatistics, connectDb, unconnectDb, getCustomColumnOfBooks, getTags, getCustomColumns
+  getCoverData, getFileData, getStatistics, connectDb, unconnectDb, getCustomColumnOfBooks, getTags, getCustomColumns, getTagsStatistics,
+  getAuthorsStatistics, getSeriesStatistics, getPublishersStatistics
 } from './model.js';
 
 const appInfo = {
@@ -424,6 +425,67 @@ export async function infoAction(request, response) {
     });
   }
   catch (error) { errorHandler(error, response, 'infoAction') }
+}
+
+export async function tagsCountAction(request, response) {
+  try {
+    (logger.isLevelEnabled('debug')) && logger.debug("*** tagsCountAction");
+    const popup = { "type": "tag", "head_name": "Genres", "head_count": "Bücher, Zeitschriften", "content": getTagsStatistics()};
+    response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
+      if (error) {
+        errorHandler(error, response, 'render info page');
+      } else {
+        response.send({ html });
+      }
+    });
+  }
+  catch (error) { errorHandler(error, response, 'tagsCountAction') }
+}
+
+
+export async function authorsCountAction(request, response) {
+  try {
+    (logger.isLevelEnabled('debug')) && logger.debug("*** authorsCountAction");
+    const popup = { "type": "author", "head_name": "Autoren", "head_count": "Bücher, Zeitschriften", "content": getAuthorsStatistics() };
+    response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
+      if (error) {
+        errorHandler(error, response, 'render info page');
+      } else {
+        response.send({ html });
+      }
+    });
+  }
+  catch (error) { errorHandler(error, response, 'tagsCountAction') }
+}
+
+export async function seriesCountAction(request, response) {
+  try {
+    (logger.isLevelEnabled('debug')) && logger.debug("*** seriesCountAction");
+    const popup = { "type": "serie", "head_name": "Serie", "head_count": "Bücher, Zeitschriften", "content": getSeriesStatistics() };
+    response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
+      if (error) {
+        errorHandler(error, response, 'render info page');
+      } else {
+        response.send({ html });
+      }
+    });
+  }
+  catch (error) { errorHandler(error, response, 'tagsCountAction') }
+}
+
+export async function publishersCountAction(request, response) {
+  try {
+    (logger.isLevelEnabled('debug')) && logger.debug("*** publishersCountAction");
+    const popup = { "type": "publisher", "head_name": "Verlag", "head_count": "Bücher, Zeitschriften", "content": getPublishersStatistics() };
+    response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
+      if (error) {
+        errorHandler(error, response, 'render info page');
+      } else {
+        response.send({ html });
+      }
+    });
+  }
+  catch (error) { errorHandler(error, response, 'tagsCountAction') }
 }
 
 export async function logAction(request, response) {

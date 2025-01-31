@@ -57,7 +57,7 @@ function restoreOptions() {
     document.getElementById('forward').classList.add("disabled");
   else
     document.getElementById('forward').classList.remove("disabled");
-  if (options.type !== 'search') 
+  if (options.type !== 'search')
     document.getElementById('authorsort').classList.add("disabled");
   else
     document.getElementById('authorsort').classList.remove("disabled");
@@ -212,6 +212,30 @@ async function setOptionsPage(page) {
   pushOptions(options);
 }
 
+function setOptionsHub(type, id) {
+  //alert(type + ": " + id);
+  switch (type) {
+    case "tag": {
+      setOptionsTag({ "tagId": id })
+      break;
+    }
+    case "author": {
+      setOptionsAuthor({ "authorsId": id })
+      break;
+    }
+    case "serie": {
+      setOptionsSerie({ "serieId": id })
+      break;
+    }
+    case "publisher": {
+      // TODO
+      break;
+    }
+  }
+  document.getElementById('info_popup').style.display = 'none';
+  document.getElementById('transparent').style.display = 'none';
+}
+
 function setSortString(sortType) {
   //alert("setSortString: sortType=" + sortType);
   const oldSortString = getOption('sortString');
@@ -246,8 +270,10 @@ function showDropdownMenu() {
 }
 
 function hideDropdownMenu() {
+  //alert("hideDropdownMenu");
   document.getElementById('transparent').style.display = 'none';
   document.getElementById('dropdown-content').style.display = 'none';
+  if (document.getElementById('info_popup').style.display === 'block') document.getElementById('info_popup').style.display = 'none';
 }
 
 async function connectDb(connect) {
@@ -279,6 +305,42 @@ async function setLogFilTransport() {
   const data = await response.json();
   //alert(JSON.stringify(data));
   document.getElementById('logToFile').checked = data.fileOn;
+}
+
+async function showTagsStats() {
+  //alert("showTagsStats");
+  const response = await fetch("/app/tags/count");
+  const data = await response.json();
+  document.getElementById('info_popup').outerHTML = data.html;
+  document.getElementById('transparent').style.display = 'block';
+  document.getElementById('info_popup').style.display = 'block';
+}
+
+async function showAuthorsStats() {
+  //alert("showAuthorsStats");
+  const response = await fetch("/app/authors/count");
+  const data = await response.json();
+  document.getElementById('info_popup').outerHTML = data.html;
+  document.getElementById('transparent').style.display = 'block';
+  document.getElementById('info_popup').style.display = 'block';
+}
+
+async function showSeriesStats() {
+  //alert("showSeriesStats");
+  const response = await fetch("/app/series/count");
+  const data = await response.json();
+  document.getElementById('info_popup').outerHTML = data.html;
+  document.getElementById('transparent').style.display = 'block';
+  document.getElementById('info_popup').style.display = 'block';
+}
+
+async function showPublisherStats() {
+  //alert("showPublisherStats");
+  const response = await fetch("/app/publishers/count");
+  const data = await response.json();
+  document.getElementById('info_popup').outerHTML = data.html;
+  document.getElementById('transparent').style.display = 'block';
+  document.getElementById('info_popup').style.display = 'block';
 }
 
 function sendMail(authors, title, bookId, tagName) {

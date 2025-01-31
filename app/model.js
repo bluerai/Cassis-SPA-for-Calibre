@@ -103,6 +103,48 @@ SELECT
     (SELECT COUNT(*) FROM publishers) AS publishers,
     (SELECT COUNT(*) FROM tags) AS tags;`
 
+const queryTagsCounts = `
+SELECT
+  ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT btl.book) DESC, t.name ASC) AS num,
+  t.id, t.name, 
+  COUNT(DISTINCT btl.book) AS count
+FROM books_tags_link btl
+JOIN tags t ON btl.tag = t.id
+GROUP BY t.name
+ORDER BY count DESC`;
+
+const queryAuthorsCounts = `
+SELECT
+    ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT bal.book) DESC, a.name ASC) AS num,
+    a.id, a.name,
+    COUNT(DISTINCT bal.book) AS count
+FROM books_authors_link bal
+JOIN authors a ON bal.author = a.id
+GROUP BY a.id, a.name
+ORDER BY count DESC
+LIMIT 100;`
+
+const querySeriesCounts = `
+SELECT
+    ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT bsl.book) DESC) AS num,
+    s.id, s.name,
+    COUNT(DISTINCT bsl.book) AS count
+FROM books_series_link bsl
+JOIN series s ON bsl.series = s.id
+GROUP BY s.name
+ORDER BY count DESC
+LIMIT 100;`
+
+const queryPublisherCounts = `
+SELECT
+    ROW_NUMBER() OVER (ORDER BY COUNT(DISTINCT bpl.book) DESC) AS num,
+    p.id, p.name,
+    COUNT(DISTINCT bpl.book) AS count
+FROM books_publishers_link bpl
+JOIN publishers p ON bpl.publisher = p.id
+GROUP BY p.name
+ORDER BY count DESC
+LIMIT 100;`
 const whitespace_chars = /[\/\,\.\|\ \*\?\!\:\;\(\)\[\]\&\"\+\-\_\%]+/g;  // ohne _ und %
 //whitespace_char01: In der Onleihe Zeichen zur Abtrennung des Artikels am Anfang von Titeln (für die Sortierung):
 const whitespace_char01 = String.fromCharCode(172);
@@ -599,5 +641,29 @@ export function getStatistics() {
   try {
     return METADATA_DB.prepare(queryCounts).get();
   } catch (error) { errorLogger(error); return {}; }
+}
+
+export function getTagsStatistics() {
+  try {
+    return METADATA_DB.prepare(queryTagsCounts).all();
+  } catch (error) { errorLogger(error); return []; }
+}
+
+export function getAuthorsStatistics() {
+  try {
+    return METADATA_DB.prepare(queryAuthorsCounts).all();
+  } catch (error) { errorLogger(error); return []; }
+}
+
+export function getSeriesStatistics() {
+  try {
+    return METADATA_DB.prepare(querySeriesCounts).all();
+  } catch (error) { errorLogger(error); return []; }
+}
+
+export function getPublishersStatistics() {
+  try {
+    return METADATA_DB.prepare(queryPublisherCounts).all();
+  } catch (error) { errorLogger(error); return []; }
 }
 
