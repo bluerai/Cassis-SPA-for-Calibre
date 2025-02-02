@@ -486,7 +486,7 @@ div.itemtxt {
   min-height: 42px;
   /* overflow: hidden; */
   background-color: var(--menu-bg);
-  z-index: 120;
+  z-index: 50;
 }
 
 h3.footer {
@@ -626,12 +626,9 @@ button.text5 {
 
 button.text6 {
   font-size: 16px;
-  padding: 3px 10px;
-  margin-top: 7px;
-  margin-bottom: 7px;
-  margin-left: 20%;
-  margin-right: 20%;
-  width: 60%
+  padding: 3px 15px;
+  margin: 7px 15%;
+  width: 70%
 }
 
 /* Style the dropdown content (hidden by default) */
@@ -644,7 +641,7 @@ button.text6 {
   min-width: 160px;
   box-shadow: var(--shadow);
   border: var(--shadow-border);
-  z-index: 60;
+  z-index: 140;
 }
 
 
@@ -683,7 +680,7 @@ button.text6 {
   position: fixed;
   width: 100%;
   height: 100%;
-  z-Index: 59;
+  z-Index: 60;
 }
 
 /*****************************************************************************/
@@ -946,5 +943,4 @@ div.pageup {
     width: calc(100% - 100px);
     max-width: 400px;
   }
-
 }
