@@ -13,7 +13,7 @@ import {
 } from './model.js';
 
 const appInfo = {
-  "version": packagejson.name.toUpperCase() + ", Version " + packagejson.version + " (2024)",
+  "version": packagejson.name.toUpperCase() + ", Version " + packagejson.version,
   "author": packagejson.author + " (License " + packagejson.license + ")"
 };
 

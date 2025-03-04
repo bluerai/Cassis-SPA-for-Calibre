@@ -1,6 +1,6 @@
 {
   "name": "cassis",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -10,7 +10,7 @@
     "health": "node --env-file=.env.dev healthcheck.js"
   },
   "keywords": [],
-  "author": "GitHub: bluerai, DockerHub: raiblue72",
+  "author": "RaiBlue, 2025",
   "license": "MIT",
   "dependencies": {
     "cookie-parser": "^1.4.7",

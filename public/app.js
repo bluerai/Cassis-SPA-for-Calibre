@@ -12,7 +12,7 @@ const DEF_OPTIONS = {
   'ccNum': 0,
   'num': 0,
   'sortString': 'timestamp.desc',
-  'screenwidth': '0'
+  'screenwidth': '0',
 };
 
 let OPTIONS_COUNTER;
@@ -29,7 +29,7 @@ function pushOptions(options) {
     do {
       optionsString = sessionStorage.getItem("cassis" + ++n);
       optionsString && sessionStorage.removeItem("cassis" + n);
-    }
+    } 
     while (optionsString);
   }
 }
@@ -258,6 +258,8 @@ async function getPage(url) {
   const response = await fetch(url);
   const data = await response.json();
   document.getElementById("books").innerHTML = data.html;
+  if (document.getElementById("info_url")) document.getElementById("info_url").innerHTML = location.protocol + "//" + location.host;
+
   setTimeout(() => {
     hideDropdownMenu();
     document.body.scrollIntoView();
