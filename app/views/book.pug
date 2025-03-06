@@ -29,7 +29,7 @@
               i.fa.fa-envelope(aria-hidden="true")
             p
               - for(let format of book.formats)
-                    a.action(href="/app/file/" + format + "/" + book.bookId download=book.title)
+                    a.action(href="/app/file/" + format + "/" + book.bookId + "?" + signatur  download=book.title)
                       i.fa.fa-download(aria-hidden="true"  style="margin-top: 30px")=" " + format.toUpperCase()
 
             if !book.comment

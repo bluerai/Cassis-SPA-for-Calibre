@@ -3,6 +3,7 @@
 import fs from 'fs-extra';
 import sharp from 'sharp';
 
+import { createSignatur, verifySignatur } from '../auth/index.js'
 import { logger, consoleTransport, fileTransport, errorLogger, log_levels } from '../log.js';
 import packagejson from '../package.json' with {type: 'json'}
 import {
@@ -84,6 +85,7 @@ function addFields(books) {
   return (books);
 }
 
+
 // Actions **************************
 
 export async function startAction(request, response) {
@@ -162,7 +164,8 @@ export async function listAction(request, response) {
       && logger.silly("listAction: books=" + JSON.stringify(books))
       && logger.silly("listAction: pageNav=" + JSON.stringify(pageNav));
 
-    response.render(import.meta.dirname + '/views/booklist', { books, pageNav }, function (error, html) {
+    const signatur = createSignatur();
+    response.render(import.meta.dirname + '/views/booklist', { books, pageNav, signatur }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render booklist page');
       } else {
@@ -263,7 +266,8 @@ export async function bookAction(request, response) {
       && logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook))
       && logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
 
-    response.render(import.meta.dirname + '/views/book', { book, prevBook, nextBook }, function (error, html) {
+    const signatur = createSignatur();
+    response.render(import.meta.dirname + '/views/book', { book, prevBook, nextBook, signatur }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render book page');
       } else {
@@ -390,22 +394,24 @@ export async function coverBookAction(request, response) {
 
 export async function fileAction(request, response) {
   try {
-    let fileData = getFileData(parseInt(request.params.id, 10), request.params.format);
-    (logger.isLevelEnabled('debug')) && logger.debug("*** fileAction: fileData=" + JSON.stringify(fileData));
-    const options = {
-      root: CASSIS_BOOKS + "/" + fileData.path,
-      dotfiles: 'deny',
-      headers: {
-        'x-timestamp': Date.now(),
-        'x-sent': true
+    if (verifySignatur(request)) {
+      let fileData = getFileData(parseInt(request.params.id, 10), request.params.format);
+      (logger.isLevelEnabled('debug')) && logger.debug("*** fileAction: fileData=" + JSON.stringify(fileData));
+      const options = {
+        root: CASSIS_BOOKS + "/" + fileData.path,
+        dotfiles: 'deny',
+        headers: {
+          'x-timestamp': Date.now(),
+          'x-sent': true
+        }
       }
+      response.sendFile(fileData.filename, options, function (error) {
+        if (error)
+          errorHandler(error, response, 'response.sendFile');
+        else
+          (logger.isLevelEnabled('debug')) && logger.debug('response.sendFile: filename=' + fileData.filename);
+      })
     }
-    response.sendFile(fileData.filename, options, function (error) {
-      if (error)
-        errorHandler(error, response, 'response.sendFile');
-      else
-        (logger.isLevelEnabled('debug')) && logger.debug('response.sendFile: filename=' + fileData.filename);
-    })
   }
   catch (error) { errorHandler(error, 'fileAction') }
 }
@@ -509,27 +515,6 @@ export async function logAction(request, response) {
     (logger.isLevelEnabled('debug')) && logger.debug("Logging level: " + logger.level + ", logging to console: " + !consoleTransport.silent + ", logging to file: " + !fileTransport.silent);
   }
   catch (error) { errorHandler(error, response, 'logLevelAction') }
-}
-
-// externe API-Funktionen:
-
-export async function countAction(request, response) {
-  try {
-    (logger.isLevelEnabled('debug')) && logger.debug("countAction: request.query=" + JSON.stringify(request.query));
-    const searchString = request.query.search || "";
-    const count = countBooks(searchString);
-    response.json({ count, healthy: true });
-  }
-  catch (error) { errorHandler(error, response, 'countAction') }
-}
-
-export async function dbAction(request, response) {
-  try {
-    (logger.isLevelEnabled('debug')) && logger.debug("dbAction: request.url=" + request.url);
-    const result = (request.url === "/unconnectdb") ? unconnectDb() : connectDb();
-    response.json(result);
-  }
-  catch (error) { errorHandler(error, response, 'dbAction') }
 }
 
 // Helper functions ***********************

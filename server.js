@@ -6,6 +6,7 @@ import morgan from 'morgan';
 import fs from 'fs-extra';
 import { join } from 'path';
 
+import { verifyAction, loginAction, protect } from './auth/index.js';
 import { appRouter } from './app/index.js';
 import { logger } from './log.js';
 
@@ -21,9 +22,20 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(express.json());
 
-app.use('/get', morgan('combined', { immediate: true }));
+app.use(morgan('common', {
+  immediate: true,
+  skip: (req, res) => req.url.startsWith('/app/cover')
+}));
+/* 'tiny': Gibt minimale Informationen aus(z.B.GET / 200 10 - 1.234 ms).
+'combined': Gibt detaillierte Informationen im Apache - Combined - Format aus.
+'common': Gibt Informationen im Apache - Common - Format aus.
+'dev': Farbige Ausgabe für die Entwicklung(Statuscodes werden farblich hervorgehoben).
+'short': Kürzere Ausgabe als 'common'. */
 
-app.use('/app', appRouter);
+app.get('/verify', verifyAction);
+app.post('/login', loginAction);
+
+app.use('/app', protect, appRouter);
 
 app.use((request, response) => response.redirect('/app'));
 
@@ -38,14 +50,14 @@ if (HTTPS_PORT >= 0) {
       cert: fs.readFileSync(certfile),
     };
     https.createServer(options, app).listen(HTTPS_PORT, () => {
-      logger.info(`X: Https-Server is listening to https://${getLocalIp()}:${HTTPS_PORT}`)
+      logger.info(`Https-Server is listening to https://${getLocalIp()}:${HTTPS_PORT}`)
     });
   }
 }
 
 if (HTTP_PORT >= 0) {
   app.listen(HTTP_PORT, () => {
-    logger.info(`X: Http-Server is listening to http://${getLocalIp()}:${HTTP_PORT}`)
+    logger.info(`Http-Server is listening to http://${getLocalIp()}:${HTTP_PORT}`)
   })
 }
 
@@ -63,4 +75,5 @@ const getLocalIp = () => {
   }
   return '127.0.0.1'; // Fallback auf localhost
 };
+
 

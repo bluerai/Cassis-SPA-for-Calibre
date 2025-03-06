@@ -18,7 +18,7 @@
               if (book.formats)
                 - for(let format of book.formats)
                   div(style="margin-bottom: -80px")
-                    a.action(href="/app/file/" + format + "/" + book.bookId download=book.title)
+                    a.action(href="/app/file/" + format + "/" + book.bookId + "?" + signatur download=book.title)
                         i.fa.fa-download(aria-hidden="true")=" " + format.toUpperCase()
         if (book.tags && book.tags[0] != "Zeitschrift")   
           tr.item

@@ -1,4 +1,85 @@
-'use strict';
+'use strict'
+
+let TOKEN = localStorage.getItem('token');
+
+//validate
+async function validate() {
+  try {
+    const response = await fetch("/verify", { headers: { 'Authorization': `Bearer ${TOKEN}` } });
+    const data = await response.json();
+    switch (response.status) {
+      case 200: {
+        console.log("verifyUser: Valid token - user=" + data.user.username + ", expire in: " + data.user.exp);
+        break;
+      }
+      case 401: {
+        console.log(data.error);
+        document.getElementById('books').innerHTML = "";
+        document.getElementById('login').innerHTML = data.html;
+        break;
+      }
+      default: {
+        responseFail_Handler("verifyUser", response);
+      }
+    }
+
+  } catch (error) { console.error('Error:', error); }
+}
+
+async function login() {
+  const loginForm = document.getElementById('loginForm');
+
+  if (loginForm) {
+    const formData = new FormData(loginForm);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      const response = await fetch("/login", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        TOKEN = result.token;
+        localStorage.setItem('token', result.token);
+        document.getElementById('login').innerHTML = "";
+
+        getBooklist(DEF_OPTIONS);
+
+      } else {
+        responseFail_Handler("login", response, 'Credentials not valid. Try again!')
+      }
+    } catch (error) {
+      error_Handler("login", error)
+    }
+  }
+}
+
+let displayMessageTimeoutHandler;
+
+function displayMessage(msg, sec) {
+  document.getElementById('message').innerHTML = "<p>" + msg + "</p";
+  if (displayMessageTimeoutHandler) displayMessageTimeoutHandler.clear;
+  if (sec)
+    displayMessageTimeoutHandler = setTimeout(() => { document.getElementById('message').innerHTML = "" }, sec * 1000);
+}
+
+
+function responseFail_Handler(functionName, response, msg) {
+  msg = msg || (functionName + ": " + response.statusText + " (#" + response.status + ")");
+  console.log(msg);
+  displayMessage(msg, 8);
+}
+
+function error_Handler(functionName, error, msg) {
+  msg = msg || (functionName + ": " + 'Error fetching data: ' + error);
+  console.error(msg);
+  displayMessage(msg, 8);
+}
+
 
 const DEF_OPTIONS = {
   'target': 'list',
@@ -85,7 +166,7 @@ async function getBooklist(options) {
   options.width = window.innerWidth;
   const response = await fetch("/app/list/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
     body: JSON.stringify(options)
   });
   if (response.status === 200) {
@@ -101,7 +182,7 @@ async function getBooklist(options) {
 async function appendToBooklist(options) {
   const response = await fetch("/app/list/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${TOKEN}` },
     body: JSON.stringify(options)
   });
   const data = await response.json();
@@ -113,7 +194,7 @@ async function appendToBooklist(options) {
 async function getBook(options) {
   const response = await fetch("/app/book/", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${TOKEN}` },
     body: JSON.stringify(options)
   })
   const data = await response.json();
@@ -259,7 +340,7 @@ function clearSearchInput() {
 }
 
 async function getPage(url) {
-  const response = await fetch(url);
+  const response = await fetch(url, { headers: { 'Authorization': `Bearer ${TOKEN}` } });
   const data = await response.json();
   document.getElementById("books").innerHTML = data.html;
   if (document.getElementById("info_url")) document.getElementById("info_url").innerHTML = location.protocol + "//" + location.host;
@@ -284,14 +365,14 @@ function hideDropdownMenu() {
 
 async function connectDb(connect) {
   const url = (!connect) ? "/app/unconnectdb" : "/app/connectdb";
-  const response = await fetch(url);
+  const response = await fetch(url, { headers: { 'Authorization': `Bearer ${TOKEN}` } });
   const data = await response.json();
   alert(data.msg);
 }
 
 async function setLogLevel() {
   let loglevel = document.getElementById('loglevel').value;
-  const response = await fetch("/app/log/level/" + loglevel);
+  const response = await fetch("/app/log/level/" + loglevel, { headers: { 'Authorization': `Bearer ${TOKEN}` } });
   const data = await response.json();
   document.getElementById('loglevel-value').innerHTML = data.level;
   document.getElementById('loglevel').value = "0";
@@ -299,7 +380,7 @@ async function setLogLevel() {
 
 async function setLogConTransport() {
   let checked = document.getElementById('logToConsole').checked;
-  const response = await fetch("/app/log/con/" + (checked ? "1" : "0"));
+  const response = await fetch("/app/log/con/" + (checked ? "1" : "0"), { headers: { 'Authorization': `Bearer ${TOKEN}` } });
   const data = await response.json();
   //alert(JSON.stringify(data));
   document.getElementById('logToConsole').checked = data.consoleOn;
@@ -307,7 +388,7 @@ async function setLogConTransport() {
 
 async function setLogFilTransport() {
   let checked = document.getElementById('logToFile').checked;
-  const response = await fetch("/app/log/fil/" + (checked ? "1" : "0"));
+  const response = await fetch("/app/log/fil/" + (checked ? "1" : "0"), { headers: { 'Authorization': `Bearer ${TOKEN}` } });
   const data = await response.json();
   //alert(JSON.stringify(data));
   document.getElementById('logToFile').checked = data.fileOn;
@@ -315,7 +396,7 @@ async function setLogFilTransport() {
 
 async function showTagsStats() {
   //alert("showTagsStats");
-  const response = await fetch("/app/tags/count");
+  const response = await fetch("/app/tags/count", { headers: { 'Authorization': `Bearer ${TOKEN}` } });
   const data = await response.json();
   document.getElementById('info_popup').outerHTML = data.html;
   document.getElementById('transparent').style.display = 'block';
@@ -324,7 +405,7 @@ async function showTagsStats() {
 
 async function showAuthorsStats() {
   //alert("showAuthorsStats");
-  const response = await fetch("/app/authors/count");
+  const response = await fetch("/app/authors/count", { headers: { 'Authorization': `Bearer ${TOKEN}` } });
   const data = await response.json();
   document.getElementById('info_popup').outerHTML = data.html;
   document.getElementById('transparent').style.display = 'block';
@@ -333,7 +414,7 @@ async function showAuthorsStats() {
 
 async function showSeriesStats() {
   //alert("showSeriesStats");
-  const response = await fetch("/app/series/count");
+  const response = await fetch("/app/series/count", { headers: { 'Authorization': `Bearer ${TOKEN}` } });
   const data = await response.json();
   document.getElementById('info_popup').outerHTML = data.html;
   document.getElementById('transparent').style.display = 'block';
@@ -342,7 +423,7 @@ async function showSeriesStats() {
 
 async function showPublisherStats() {
   //alert("showPublisherStats");
-  const response = await fetch("/app/publishers/count");
+  const response = await fetch("/app/publishers/count", { headers: { 'Authorization': `Bearer ${TOKEN}` } });
   const data = await response.json();
   document.getElementById('info_popup').outerHTML = data.html;
   document.getElementById('transparent').style.display = 'block';
@@ -393,3 +474,5 @@ window.onscroll = function () {
     }
   }
 };
+
+validate();
