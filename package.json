@@ -5,18 +5,18 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node --env-file=.env index.js",
-    "dev": "node --env-file=.env.dev index.js",
+    "start2": "node --env-file=.env server.js",
+    "start": "node --env-file=.env.dev server.js",
     "health": "node --env-file=.env.dev healthcheck.js"
   },
   "keywords": [],
   "author": "RaiBlue, 2025",
   "license": "MIT",
   "dependencies": {
-    "cookie-parser": "^1.4.7",
-    "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "fs-extra": "^11.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
     "node": "^23.5.0",
     "npm": "^11.0.0",
     "pug": "^3.0.2",

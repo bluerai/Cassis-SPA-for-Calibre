@@ -4,15 +4,15 @@ import { DatabaseSync } from 'node:sqlite';
 import fs from 'fs-extra';
 import { logger, errorLogger } from '../log.js';
 
-const METADATA_PATH = process.env.METADATA_PATH || process.env.HOME + "/Documents/Calibre/metadata.db"
+const CASSIS_METADATA = process.env.CASSIS_METADATA || process.env.HOME + "/Documents/Calibre/metadata.db"
 
-if (!fs.existsSync(METADATA_PATH)) {
-  logger.error("Calibre-Datenbank nicht gefunden im Pfad: " + METADATA_PATH);
+if (!fs.existsSync(CASSIS_METADATA)) {
+  logger.error("Calibre-Datenbank nicht gefunden im Pfad: " + CASSIS_METADATA);
   process.exit(1);
 }
 
-const METADATA_DB = new DatabaseSync(METADATA_PATH, { open: true });
-if (METADATA_DB) logger.info("Connected to Calibre Database at " + METADATA_PATH)
+const METADATA_DB = new DatabaseSync(CASSIS_METADATA, { open: true });
+if (METADATA_DB) logger.info("Connected to Calibre Database at " + CASSIS_METADATA)
 
 // SQL 
 const bookColumns = ' b.id as bookId, b.title, b.sort, b.timestamp, b.pubdate, b.timestamp, b.series_index as seriesIndex, b.path ';

@@ -28,7 +28,7 @@ html(lang="en")
 
     #transparent(onclick="hideDropdownMenu()")
 
-    div.menubar
+    #menubar
       button.menu(type="text" onClick="setOptionsHome()" title="Home")
         i.fa.fa-home(aria-hidden="true")
       button.menu(type="button" id="back" onClick="goBack()" title="Zurück")
@@ -49,14 +49,14 @@ html(lang="en")
         i.fa.fa-user(aria-hidden="true")
         i.fa.fa-arrows-v(aria-hidden="true")
         
-      div.menubar-sub(id='searchInputGroup')
+      #searchInputGroup
         input(type="text" id="searchInput" placeholder="Autor / Titel / Serie" value=searchString autofocus title="Eingabe der Suchbegriffe")
         button.menu(type="button" id="clearInput" onClick="clearSearchInput()" title="Eingabe löschen")
           i.fa.fa-times(aria-hidden="true")
         button.menu(type="text" id="submitSearch" onClick="setOptionsSearch()" title="Suche starten")
           i.fa.fa-search(aria-hidden="true")
           
-    div#dropdown-content
+    #dropdown-content
       p(onClick="getPage('/app/tags/' + getOption('tagId'))" title="Auswahl des Genres") Genre
       p(onClick="getPage('/app/cc/5/' + getOption('ccId'))" title="Reiseführer: Auswahl des Landes") Reiseführer
       p(onClick="getPage('/app/cc/6/' + getOption('ccId'))" title="Sachbücher: Auswahl der Sachgebiets") Sachbücher
@@ -71,7 +71,11 @@ html(lang="en")
 
       #books
 
-        script(type='text/javascript').
-          docReady("#{type}", "#{id}");
+    #login
+
+    #message
+
+    script(type='text/javascript').
+      docReady("#{type}", "#{id}");
 
         

@@ -17,19 +17,19 @@ const appInfo = {
   "author": packagejson.author + " (License " + packagejson.license + ")"
 };
 
-const BOOKDIR = process.env.BOOKDIR || process.env.HOME + "/Documents/Calibre"
-const IMGCACHE = process.env.IMGCACHE || "./Cache";
+const CASSIS_BOOKS = process.env.CASSIS_BOOKS || process.env.HOME + "/Documents/Calibre"
+const CASSIS_CACHE = process.env.CASSIS_CACHE || "./Cache";
 const PAGE_LIMIT = parseInt(process.env.PAGE_LIMIT) || 30;
 
 // Bookdir einrichten:
-logger.info("Calibre e-book directory found at " + BOOKDIR);
-fs.existsSync(BOOKDIR, (error, exists) => {
+logger.info("Calibre e-book directory found at " + CASSIS_BOOKS);
+fs.existsSync(CASSIS_BOOKS, (error, exists) => {
   if (error) { errorLogger(error); process.exit(1) }
 })
 
 // Image-Cache einrichten:
-logger.info("Cache for bookcovers found at " + IMGCACHE);
-fs.ensureDirSync(IMGCACHE, (error, exists) => {
+logger.info("Cache for bookcovers found at " + CASSIS_CACHE);
+fs.ensureDirSync(CASSIS_CACHE, (error, exists) => {
   if (error) { errorLogger(error); process.exit(1) }
 })
 
@@ -169,7 +169,6 @@ export async function listAction(request, response) {
         response.send({ html });
       }
     });
-
   }
   catch (error) { errorHandler(error, response, 'listAction') }
 }
@@ -260,9 +259,9 @@ export async function bookAction(request, response) {
     if (book.pubdate.substr(0, 1) == "0") { book.pubdate = null };
 
     (logger.isLevelEnabled('silly'))
-    && logger.silly("bookAction: " + JSON.stringify(book))
-    && logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook))
-    && logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
+      && logger.silly("bookAction: " + JSON.stringify(book))
+      && logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook))
+      && logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
 
     response.render(import.meta.dirname + '/views/book', { book, prevBook, nextBook }, function (error, html) {
       if (error) {
@@ -368,8 +367,8 @@ export async function coverListAction(request, response) {
     let fileData = getCoverData(parseInt(request.params.id, 10));
     if (fileData) {
       (logger.isLevelEnabled('silly')) && logger.silly("*** coverListAction: fileData=" + JSON.stringify(fileData));
-      const source = BOOKDIR + "/" + fileData.path + "/cover.jpg";
-      const targetDir = IMGCACHE + "/1" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
+      const source = CASSIS_BOOKS + "/" + fileData.path + "/cover.jpg";
+      const targetDir = CASSIS_CACHE + "/1" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
       fs.ensureDirSync(targetDir);
       sendResizedCover(response, source, targetDir, fileData.bookId + ".jpg", { height: 250 });
     }
@@ -381,8 +380,8 @@ export async function coverBookAction(request, response) {
   try {
     let fileData = getCoverData(parseInt(request.params.id, 10));
     (logger.isLevelEnabled('debug')) && logger.debug("*** coverBookAction: fileData=" + JSON.stringify(fileData));
-    const source = BOOKDIR + "/" + fileData.path + "/cover.jpg";
-    const targetDir = IMGCACHE + "/0" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
+    const source = CASSIS_BOOKS + "/" + fileData.path + "/cover.jpg";
+    const targetDir = CASSIS_CACHE + "/0" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
     fs.ensureDirSync(targetDir);
     sendResizedCover(response, source, targetDir, fileData.bookId + ".jpg", { width: 320 });
   }
@@ -394,7 +393,7 @@ export async function fileAction(request, response) {
     let fileData = getFileData(parseInt(request.params.id, 10), request.params.format);
     (logger.isLevelEnabled('debug')) && logger.debug("*** fileAction: fileData=" + JSON.stringify(fileData));
     const options = {
-      root: BOOKDIR + "/" + fileData.path,
+      root: CASSIS_BOOKS + "/" + fileData.path,
       dotfiles: 'deny',
       headers: {
         'x-timestamp': Date.now(),
@@ -430,7 +429,7 @@ export async function infoAction(request, response) {
 export async function tagsCountAction(request, response) {
   try {
     (logger.isLevelEnabled('debug')) && logger.debug("*** tagsCountAction");
-    const popup = { "type": "tag", "head_name": "Genres", "head_count": "Bücher, Zeitschriften", "content": getTagsStatistics()};
+    const popup = { "type": "tag", "head_name": "Genres", "head_count": "Bücher, Zeitschriften", "content": getTagsStatistics() };
     response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
@@ -539,10 +538,12 @@ function decode(str) {
   return (str) ? str.toString().replaceAll('|', ',') : "";
 }
 
+// Actions end =============
+
 function errorHandler(error, response, actionName) {
-  const message = "Cassis: Internal server error in '" + actionName + "': " + error.message;
-  logger.error(message);
-  errorLogger(error);
-  response.writeHead(500, message, { 'content-type': 'text/html' });
-  response.end();
+  const message = "CASSIS: Fehler in '" + actionName + "': " + error.message;
+  errorLogger(error, message);
+  if (response) {
+    response.status(500).json({ message: message });
+  }
 }

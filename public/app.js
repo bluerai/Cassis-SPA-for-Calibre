@@ -29,7 +29,7 @@ function pushOptions(options) {
     do {
       optionsString = sessionStorage.getItem("cassis" + ++n);
       optionsString && sessionStorage.removeItem("cassis" + n);
-    } 
+    }
     while (optionsString);
   }
 }
@@ -88,10 +88,14 @@ async function getBooklist(options) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(options)
   });
-  const data = await response.json();
-  document.getElementById("books").innerHTML = data.html;
-  document.body.scrollIntoView();
-  restoreOptions();
+  if (response.status === 200) {
+    const data = await response.json();
+    document.getElementById("books").innerHTML = data.html;
+    document.body.scrollIntoView();
+    restoreOptions();
+  } else {
+    responseFail_Handler("getCategory", response);
+  }
 }
 
 async function appendToBooklist(options) {
@@ -359,6 +363,8 @@ function submitInputOnEnter() {
     event.key === "Enter" && document.getElementById("submitSearch").click();
   });
 }
+
+//===================================================================
 
 async function docReady(type, id) {
   switch (type) {

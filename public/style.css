@@ -477,7 +477,7 @@ div.itemtxt {
   text-align: left;
 }
 
-.menubar {
+#menubar {
   position: fixed;
   top: 0;
   left: 0;
@@ -683,6 +683,27 @@ button.text6 {
   z-Index: 60;
 }
 
+#message {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  background-color: lightgrey;
+}
+
+button_breit {
+  border: none;
+  padding: 12px 16px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  height: 52px;
+  width: 100%;
+}
+
 /*****************************************************************************/
 /********************** Bildschirm: Breite über 1200 px *********************/
 /*****************************************************************************/
@@ -846,10 +867,6 @@ div.pageup {
     z-index: 10;
   }
 
-  /*   .menubar-sub {
-    clear: left;
-  }  */
-
   #searchInput {
     width: calc(32% + 50px);
     max-width: 500px;
@@ -935,7 +952,7 @@ div.pageup {
     position: relative;
   }
 
-  .menubar-sub {
+  #searchInputGroup {
     clear: left;
   }
 

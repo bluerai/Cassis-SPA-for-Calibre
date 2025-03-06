@@ -1,3 +1,5 @@
+'use strict'
+
 import winston from 'winston';
 import 'winston-daily-rotate-file';
 import fs from 'fs-extra';
@@ -6,7 +8,7 @@ export const log_levels = ['error', 'warn', 'info', 'debug', 'silly'];
 
 const { combine, timestamp, printf, colorize } = winston.format;
 
-const LOGDIR = process.env.LOGDIR || "./logs";
+const LOGDIR = process.env.LOGDIR || "./dev_data/logs";
 const consoleSilent = !(process.env.LOG_TO_CONSOLE !== "false") || false;
 const fileSilent = !(process.env.LOG_TO_FILE !== "false") || true;
 
@@ -41,8 +43,8 @@ export const logger = winston.createLogger({
 
 logger.info("Logging level: " + logger.level + ", logging to console: " + !consoleTransport.silent + ", logging to file: " + !fileTransport.silent);
 
-export function errorLogger(error) {
-  logger.error(error.message + " " + JSON.stringify(error));
-  logger.debug(error.stack);
+export function errorLogger(error, message) {
+  logger.error(message);
+  if (error.stack) logger.debug(error.stack);
 }
 

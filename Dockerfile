@@ -15,12 +15,13 @@ ADD --chown=node:node . .
 
 ENV HTTP_PORT=80
 ENV HTTPS_PORT=443
-ENV BOOKDIR=/books
-ENV METADATA_PATH=/books/metadata.db
-ENV LOGDIR=/app/logs 
-ENV IMGCACHE=/app/CACHE
+ENV CASSIS_BOOKS=/books
+ENV CASSIS_METADATA=/books/metadata.db
+ENV CASSIS_CACHE=/app/CACHE
+ENV CASSIS_CONFIG=/app/config
+ENV CASSIS_LOGS=/app/logs 
 
 HEALTHCHECK --interval=5m --timeout=5s --retries=3 \
   CMD ["node", "healthcheck.js"]
 
-CMD [ "node", "index.js" ]
+CMD [ "node", "server.js" ]
