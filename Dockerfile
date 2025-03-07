@@ -1,5 +1,6 @@
 FROM node:23.5-alpine3.20 
 RUN apk add tzdata
+RUN apk add curl
 
 RUN mkdir -p /app;\
   mkdir -p /home/node/apphome;\
@@ -21,6 +22,6 @@ ENV CASSIS_CONFIG=/app/config
 ENV CASSIS_LOGS=/app/logs 
 
 HEALTHCHECK --interval=5m --timeout=5s --retries=3 \
-  CMD ["node", "healthcheck.js"]
+  CMD ["sh", "healthcheck.sh"]
 
 CMD [ "node", "server.js" ]

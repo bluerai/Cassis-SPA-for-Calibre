@@ -8,6 +8,7 @@ import { join } from 'path';
 
 import { verifyAction, loginAction, protect } from './auth/index.js';
 import { appRouter } from './app/index.js';
+import { apiRouter } from './api/index.js';
 import { logger } from './log.js';
 
 const app = express();
@@ -34,6 +35,8 @@ app.use(morgan('common', {
 
 app.get('/verify', verifyAction);
 app.post('/login', loginAction);
+
+app.use('/api', apiRouter);
 
 app.use('/app', protect, appRouter);
 

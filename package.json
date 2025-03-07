@@ -6,8 +6,7 @@
   "type": "module",
   "scripts": {
     "start2": "node --env-file=.env server.js",
-    "start": "node --env-file=.env.dev server.js",
-    "health": "node --env-file=.env.dev healthcheck.js"
+    "start": "node --env-file=.env.dev server.js"
   },
   "keywords": [],
   "author": "RaiBlue, 2025",
