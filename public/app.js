@@ -9,13 +9,16 @@ async function validate() {
     const data = await response.json();
     switch (response.status) {
       case 200: {
-        console.log("verifyUser: Valid token - user=" + data.user.username + ", expire in: " + data.user.exp);
+        console.log("verifyUser: Valid token - user=" + data.user.username + ", expire in: " + new Date(data.user.exp).toLocaleString());
         break;
       }
       case 401: {
         console.log(data.error);
         document.getElementById('books').innerHTML = "";
+        document.querySelectorAll('.menu').forEach(el => el.style.display = 'none');
+        document.getElementById('searchInput').style.display = 'none';
         document.getElementById('login').innerHTML = data.html;
+
         break;
       }
       default: {
@@ -46,7 +49,8 @@ async function login() {
         TOKEN = result.token;
         localStorage.setItem('token', result.token);
         document.getElementById('login').innerHTML = "";
-
+        document.querySelectorAll('.menu').forEach(el => el.style.display = 'block');
+        document.getElementById('searchInput').style.display = 'block';
         getBooklist(DEF_OPTIONS);
 
       } else {
@@ -430,19 +434,28 @@ async function showPublisherStats() {
   document.getElementById('info_popup').style.display = 'block';
 }
 
-function sendMail(authors, title, bookId, tagName) {
-  location.href = 'mailto:?' +
-    'subject=' + encodeURIComponent('"' + title + ((tagName === 'Zeitschrift') ? '"' : '" von ' + authors)) +
-    '&body=' + encodeURIComponent('... mit besten Empfehlungen aus der Cassis-Bibliothek:\n\n'
-      + '"' + title + ((tagName === 'Zeitschrift') ? '"' : '" von ' + authors) + '\n\n'
-      + location.protocol + '//' + location.host + '/app/book/' + bookId + '\n\n'
-      + location.protocol + '//' + location.host + '/app/cover/book/' + bookId);
+async function sendMail(authors, title, bookId, tagName) {
+  const protocol = window.location.origin;
+  const data = { authors, title, bookId, tagName, protocol };
+
+  const response = await fetch("/app/booklink/", { 
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
+    body: JSON.stringify(data)
+  })
+  const result = await response.json();
+  location.href = result.content;
 }
 
 function submitInputOnEnter() {
   document.getElementById("searchInput").addEventListener("keypress", function (event) {
     event.key === "Enter" && document.getElementById("submitSearch").click();
   });
+}
+
+function pageRefresh() {
+  localStorage.removeItem('token');
+  location.reload(true);
 }
 
 //===================================================================

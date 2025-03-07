@@ -13,7 +13,7 @@ try {
     JWT = fs.readJsonSync(authfile)
     logger.info("Authorisation by jwt token");
   } else {
-    logger.warn("No access Authorisation!");
+    logger.warn("No access Authorisation! " + authfile);
   }
 } catch (error) {
   logger.error(error);
@@ -45,7 +45,7 @@ export function verifyAction(req, res) {
       })
 
     } else {
-      logger.info("/verify: " + decoded.username + ", issued at: " + decoded.iat + ", expire at: " + decoded.exp);
+      logger.info("/verify: " + decoded.username + ", expire at: " + new Date(decoded.exp * 1000).toLocaleString());
       res.status(200).json({ message: 'Token is valid', user: decoded });
     }
   })
@@ -55,7 +55,7 @@ export function loginAction(req, res) {
   const { username, password } = req.body;
   if ((username) && (username.length >= 3) && (password) && (password.length >= 12)
     && JWT.credentials[username] == password) {
-    const token = jwt.sign({ username }, JWT_KEY, { expiresIn: JWT.duration });
+    const token = jwt.sign({ username }, JWT_KEY, { expiresIn: "30d" });
     res.status(200).json({ token: token });
 
   } else {
@@ -73,7 +73,8 @@ export function protect(request, response, next) {
   logger.silly("Protected path: " + request.path + "; " + token);
 
   if (!token) {
-    console.log("No Token !!!");
+    logger.debug("No Token !!!");
+    if (verifySignature) { return next(); }
     return response.status(401).json({ error: 'No Authorisation' });
   }
 
@@ -83,66 +84,38 @@ export function protect(request, response, next) {
       response.status(401).json({ error: 'No Authorisation' });
 
     } else {
-      logger.debug("protect: Authorisation ok!");
+      logger.debug("protect: Authorisation ok! - " + decoded.username + ", expires at: " + new Date(decoded.exp * 1000).toLocaleString());
       request.userId = decoded.username;
       next();
     }
   })
 }
 
-// Funktion zum Erstellen einer signierten URL
-const EXPIRES_IN = 3600; //in Sekunden
-export const createSignatur = () => {
-  const expiration = Date.now() + EXPIRES_IN * 1000; // Gültigkeitsdauer in Millisekunden
+// Funktion zum Erstellen einer Signature
+export const createSignature = (identifier, expiresIn) => {
+  const expiration = Date.now() + expiresIn * 1000; // Gültigkeitsdauer in Millisekunden
+
   const signature = crypto
     .createHmac('sha256', JWT_KEY)
-    .update(`${expiration}`)
+    .update(`${identifier}:${expiration}`)
     .digest('hex');
-  return `expires=${expiration}&signature=${signature}`;
+
+  return `?expires=${expiration}&signature=${signature}`;
 };
 
-// Funktion zum Überprüfen einer signierten URL
-export const verifySignatur = (req) => {
-  const { expires, signature } = req.query;
+// Funktion zum Überprüfen einer Signature
+export const verifySignature = (req) => {
 
-  if (!expires || !signature) {
-    return false;
-  }
+  const { expires, signature } = req.query;
+  const identifier = parseInt(req.params.id, 10);
+
+  if (!expires || !signature) { return false; }
 
   const expectedSignature = crypto
     .createHmac('sha256', JWT_KEY)
-    .update(`${expires}`)
+    .update(`${identifier}:${expires}`)
     .digest('hex');
 
+  logger.silly("verifySignature: Book " + identifier + " expires at: " + new Date(Math.round((expires / 1000) * 1000)).toLocaleString());
   return signature === expectedSignature && Date.now() < parseInt(expires, 10);
 };
-
-//********************** */
-/* 
-
-export const authMiddleware = (req, res, next) => {
-
-  const token = req.headers.authorization?.split(' ')[1]; // Token aus dem Authorization-Header
-
-  console.log(req.url, token);
-  if (request.path === '/') {
-    return next();
-  }
-
-  if (!token) {
-    console.log("No Token !!!");
-    //return res.status(401).json({ message: 'Kein Token angegeben' });
-    return res.redirect('/login'); //
-  }
-
-  const decoded = verifyToken(token);
-  if (!decoded) {
-    console.log("Ungültiges oder abgelaufenes Token!!!");
-    //return res.status(401).json({ message: 'Ungültiges oder abgelaufenes Token' });
-    return res.redirect('/login'); //
-  }
-
-  console.log("Token is valid !!!");
-  req.userId = decoded.id;
-  next();
-}; */

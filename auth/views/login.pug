@@ -4,16 +4,16 @@ form(id="loginForm")
       table(style="margin: auto; border-collapse: collapse;")
         tr(style="height: 50px")
           th(colspan="2") Bitte anmelden:
-        tr(style="height: 40px")
+        tr(style="height: 48px")
           td
             label(for="username") Name:
           td
             input(type="text" id="username" name="username" value="", required)
-        tr(style="height: 40px")
+        tr(style="height: 48px")
           td 
             label(for="password") Passwort:
           td
             input(type="password" id="password" name="password" value="", required)
-        tr(style="height: 40px")
+        tr(style="height: 48px")
           td(colspan="2")
-            button_breit.orange(type="submit" onClick="login()") Anmelden
+            button_breit(type="submit" onClick="login()") Anmelden

@@ -15,11 +15,11 @@ html(lang="en")
 
     link(rel="stylesheet" href="/style.css")
     link(href="/assets/fontawesome/css/all.min.css" rel="stylesheet")
-    
+
     link(rel="icon" type="image/x-icon" href="/assets/favicon.ico")
     link(rel="icon" type="image/x-icon" href="/assets/apple-touch-icon.png")
     link(rel="apple-touch-icon" href="/assets/apple-touch-icon.png")
-    
+
     script(src="/app.js")
 
   body
@@ -29,7 +29,9 @@ html(lang="en")
     #transparent(onclick="hideDropdownMenu()")
 
     #menubar
-      button.menu(type="text" onClick="setOptionsHome()" title="Home")
+      img.menu.left(style="height: 30px; width: 30px; margin-top: 7px; margin-left: 7px" src="/assets/apple-touch-icon.png" onclick="pageRefresh()" 
+        title="Neu laden" aria-hidden="true")
+      button.menu(type="text" onClick="setOptionsHome()" title="Neu laden")
         i.fa.fa-home(aria-hidden="true")
       button.menu(type="button" id="back" onClick="goBack()" title="Zurück")
         i.fa.fa-chevron-left(aria-hidden="true")
@@ -48,14 +50,14 @@ html(lang="en")
       button.two.menu.right(type="text" id='authorsort' onClick="setSortString('author')" title="Sortieren nach Autorennamen")
         i.fa.fa-user(aria-hidden="true")
         i.fa.fa-arrows-v(aria-hidden="true")
-        
+
       #searchInputGroup
         input(type="text" id="searchInput" placeholder="Autor / Titel / Serie" value=searchString autofocus title="Eingabe der Suchbegriffe")
         button.menu(type="button" id="clearInput" onClick="clearSearchInput()" title="Eingabe löschen")
           i.fa.fa-times(aria-hidden="true")
         button.menu(type="text" id="submitSearch" onClick="setOptionsSearch()" title="Suche starten")
           i.fa.fa-search(aria-hidden="true")
-          
+
     #dropdown-content
       p(onClick="getPage('/app/tags/' + getOption('tagId'))" title="Auswahl des Genres") Genre
       p(onClick="getPage('/app/cc/5/' + getOption('ccId'))" title="Reiseführer: Auswahl des Landes") Reiseführer
@@ -74,4 +76,3 @@ html(lang="en")
     script(type='text/javascript').
       docReady("#{type}", "#{id}");
 
-        

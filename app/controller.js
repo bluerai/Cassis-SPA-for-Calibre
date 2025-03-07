@@ -3,7 +3,7 @@
 import fs from 'fs-extra';
 import sharp from 'sharp';
 
-import { createSignatur, verifySignatur } from '../auth/index.js'
+import { createSignature, verifySignature } from '../auth/index.js'
 import { logger, consoleTransport, fileTransport, errorLogger, log_levels } from '../log.js';
 import packagejson from '../package.json' with {type: 'json'}
 import {
@@ -81,10 +81,11 @@ function addFields(books) {
       book.tags = tags.filter((tag) => tag.bookId == book.bookId).map((tag) => decode(tag.tagName));
     })
 
+    books.map((book) => { book.signature = createSignature(book.bookId, 1800); });
+
   }
   return (books);
 }
-
 
 // Actions **************************
 
@@ -164,8 +165,7 @@ export async function listAction(request, response) {
       && logger.silly("listAction: books=" + JSON.stringify(books))
       && logger.silly("listAction: pageNav=" + JSON.stringify(pageNav));
 
-    const signatur = createSignatur();
-    response.render(import.meta.dirname + '/views/booklist', { books, pageNav, signatur }, function (error, html) {
+    response.render(import.meta.dirname + '/views/booklist', { books, pageNav }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render booklist page');
       } else {
@@ -266,8 +266,9 @@ export async function bookAction(request, response) {
       && logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook))
       && logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
 
-    const signatur = createSignatur();
-    response.render(import.meta.dirname + '/views/book', { book, prevBook, nextBook, signatur }, function (error, html) {
+    book.signature = createSignature(book.bookId, 1800);
+
+    response.render(import.meta.dirname + '/views/book', { book, prevBook, nextBook }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render book page');
       } else {
@@ -322,34 +323,6 @@ export async function ccAction(request, response) {
   catch (error) { errorHandler(error, response, 'ccAction') }
 }
 
-async function sendResizedCover2(response, source, targetDir, targetFile, resizeOptions) {
-  try {
-    const options = { root: targetDir, headers: { 'Content-Type': 'image/jpeg' } }
-    fs.pathExists(targetDir + "/" + targetFile, async (error, exists) => {
-      if (error) { errorLogger(error) }
-      else {
-        if (exists) {
-          response.sendFile(targetFile, options, function (error) {
-            if (error) { errorLogger(error) }
-          })
-        } else {
-          sharp(source)
-            .resize(resizeOptions)
-            .toFile(targetDir + "/" + targetFile, function (error, info) {
-              if (!error) {
-                response.sendFile(targetFile, options, function (error) {
-                  if (error) { errorLogger(error) }
-                })
-              } else { errorLogger(error) }
-            });
-        }
-      }
-    })
-  }
-  catch (error) { errorHandler(error, response, 'sendResizedCover') }
-}
-
-
 async function sendResizedCover(response, source, targetDir, targetFile, resizeOptions) {
   try {
     const options = { root: targetDir, headers: { 'Content-Type': 'image/jpeg' } }
@@ -368,13 +341,17 @@ async function sendResizedCover(response, source, targetDir, targetFile, resizeO
 
 export async function coverListAction(request, response) {
   try {
-    let fileData = getCoverData(parseInt(request.params.id, 10));
-    if (fileData) {
-      (logger.isLevelEnabled('silly')) && logger.silly("*** coverListAction: fileData=" + JSON.stringify(fileData));
-      const source = CASSIS_BOOKS + "/" + fileData.path + "/cover.jpg";
-      const targetDir = CASSIS_CACHE + "/1" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
-      fs.ensureDirSync(targetDir);
-      sendResizedCover(response, source, targetDir, fileData.bookId + ".jpg", { height: 250 });
+    if (verifySignature(request)) {
+      let fileData = getCoverData(parseInt(request.params.id, 10));
+      if (fileData) {
+        (logger.isLevelEnabled('silly')) && logger.silly("*** coverListAction: fileData=" + JSON.stringify(fileData));
+        const source = CASSIS_BOOKS + "/" + fileData.path + "/cover.jpg";
+        const targetDir = CASSIS_CACHE + "/1" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
+        fs.ensureDirSync(targetDir);
+        sendResizedCover(response, source, targetDir, fileData.bookId + ".jpg", { height: 250 });
+      }
+    } else {
+      response.sendFile("Not authorized");
     }
   }
   catch (error) { errorHandler(error, response, 'coverListAction') }
@@ -382,19 +359,24 @@ export async function coverListAction(request, response) {
 
 export async function coverBookAction(request, response) {
   try {
-    let fileData = getCoverData(parseInt(request.params.id, 10));
-    (logger.isLevelEnabled('debug')) && logger.debug("*** coverBookAction: fileData=" + JSON.stringify(fileData));
-    const source = CASSIS_BOOKS + "/" + fileData.path + "/cover.jpg";
-    const targetDir = CASSIS_CACHE + "/0" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
-    fs.ensureDirSync(targetDir);
-    sendResizedCover(response, source, targetDir, fileData.bookId + ".jpg", { width: 320 });
+    if (verifySignature(request)) {
+      let fileData = getCoverData(parseInt(request.params.id, 10));
+      (logger.isLevelEnabled('debug')) && logger.debug("*** coverBookAction: fileData=" + JSON.stringify(fileData));
+      const source = CASSIS_BOOKS + "/" + fileData.path + "/cover.jpg";
+      const targetDir = CASSIS_CACHE + "/0" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
+      fs.ensureDirSync(targetDir);
+      sendResizedCover(response, source, targetDir, fileData.bookId + ".jpg", { width: 320 });
+    }
+    else {
+      response.send("Not authorized");
+    }
   }
   catch (error) { errorHandler(error, response, 'coverBookAction') }
 }
 
 export async function fileAction(request, response) {
   try {
-    if (verifySignatur(request)) {
+    if (verifySignature(request)) {
       let fileData = getFileData(parseInt(request.params.id, 10), request.params.format);
       (logger.isLevelEnabled('debug')) && logger.debug("*** fileAction: fileData=" + JSON.stringify(fileData));
       const options = {
@@ -411,10 +393,31 @@ export async function fileAction(request, response) {
         else
           (logger.isLevelEnabled('debug')) && logger.debug('response.sendFile: filename=' + fileData.filename);
       })
+    } else {
+      response.send("Not authorized");
     }
   }
   catch (error) { errorHandler(error, 'fileAction') }
 }
+
+export async function bookLinkAction(request, response) {
+  logger.debug("bookLinkAction: " + JSON.stringify(request.body))
+
+  const { authors, title, bookId, tagName, protocol } = request.body;
+  const sign = createSignature(bookId, 3600 * 72);
+  const mail = {
+    "content": ('mailto:?subject=' + encodeURIComponent('"' + title + ((tagName === 'Zeitschrift') ? '"' : '" von ' + authors)) +
+      '&body=' + encodeURIComponent('... mit besten Empfehlungen aus der Cassis-Bibliothek:\n\n'
+        + '"' + title + ((tagName === 'Zeitschrift') ? '"' : '" von ' + authors) + '\n\n'
+        + protocol + "/app/book/" + bookId + sign + '\n\n' + protocol + "/app/cover/book/" + bookId + sign + '\n\n'
+        + 'Der Link zum Herunterladen ist 3 Tage gültig.'))
+  };
+
+  logger.silly(mail.content);
+
+  response.send(mail);
+}
+
 
 export async function infoAction(request, response) {
   try {

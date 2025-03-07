@@ -17,7 +17,7 @@
 
         div.bookbox
 
-          img.bookcover(src="/app/cover/book/" + book.bookId)
+          img#bookcover(src="/app/cover/book/" + book.bookId + book.signature)
           
           p(style="margin-bottom: 12px")
             - for(let author of book.authors)
@@ -29,7 +29,7 @@
               i.fa.fa-envelope(aria-hidden="true")
             p
               - for(let format of book.formats)
-                    a.action(href="/app/file/" + format + "/" + book.bookId + "?" + signatur  download=book.title)
+                    a.action(name="download" href="/app/file/" + format + "/" + book.bookId + book.signature  download=book.title)
                       i.fa.fa-download(aria-hidden="true"  style="margin-top: 30px")=" " + format.toUpperCase()
 
             if !book.comment

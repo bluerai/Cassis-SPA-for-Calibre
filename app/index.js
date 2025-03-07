@@ -3,7 +3,7 @@
 import { Router } from 'express';
 
 import {
-  startAction, listAction, bookAction, fileAction, coverListAction, coverBookAction,
+  startAction, listAction, bookAction, bookLinkAction, fileAction, coverListAction, coverBookAction,
   infoAction, tagsAction, ccAction, logAction, tagsCountAction,
   authorsCountAction, seriesCountAction, publishersCountAction
 } from './controller.js';
@@ -12,11 +12,12 @@ export const appRouter = Router();
 
 appRouter.get('/', startAction);
 
-//APP-Calls
+//APP-Calls - geschützt
 appRouter.post('/list/:type?', listAction);
 appRouter.get('/info', infoAction);
 
 appRouter.post('/book/', bookAction);
+appRouter.post('/booklink/', bookLinkAction);
 appRouter.get('/tags/count', tagsCountAction);
 appRouter.get('/authors/count', authorsCountAction);
 appRouter.get('/series/count', seriesCountAction);

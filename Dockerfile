@@ -2,7 +2,6 @@ FROM node:23.5-alpine3.20
 RUN apk add tzdata
 
 RUN mkdir -p /app;\
-  mkdir -p /app/cert;\
   mkdir -p /home/node/apphome;\
   chown -R node:node /app /home/node
 
