@@ -20,5 +20,5 @@ fi
 if [ "$exitcode1" -eq 0 ] && [ "$exitcode2" -eq 0 ]; then
     exit 0  # Erfolg
 else
-    exit 1  # Fehler, wenn beide fehlschlagen
+    exit 1  # Fehler, wenn einer fehlschlägt
 fi

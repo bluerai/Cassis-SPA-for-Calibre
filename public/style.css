@@ -644,7 +644,6 @@ button.text6 {
   z-index: 140;
 }
 
-
 /* Style the links inside the dropdown */
 #dropdown-content p {
   float: none;
@@ -667,12 +666,6 @@ button.text6 {
   background-color: var(--menu-bg);
 }
 
-.message {
-  width: 100%;
-  text-align: center;
-  margin-top: 48px;
-}
-
 #transparent {
   opacity: 0.3;
   display: none;
@@ -687,8 +680,8 @@ button.text6 {
   position: fixed;
   bottom: 0px;
   left: 0px;
-  width: 100%;
   background-color: lightgrey;
+  z-Index: 100;
 }
 
 button_breit {
@@ -892,6 +885,12 @@ div.pageup {
 
   #app {
     top: 80px;
+
+    /*für Swipe*/
+    user-select: none;
+    touch-action: pan-y;
+    /* Verhindert vertikales Scrollen */
+    cursor: grab;
   }
 
 

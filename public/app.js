@@ -15,7 +15,7 @@ async function validate() {
       case 401: {
         console.log(data.error);
         document.getElementById('books').innerHTML = "";
-        document.querySelectorAll('.menu').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('button.menu').forEach(el => el.style.display = 'none');
         document.getElementById('searchInput').style.display = 'none';
         document.getElementById('login').innerHTML = data.html;
 
@@ -438,7 +438,7 @@ async function sendMail(authors, title, bookId, tagName) {
   const protocol = window.location.origin;
   const data = { authors, title, bookId, tagName, protocol };
 
-  const response = await fetch("/app/booklink/", { 
+  const response = await fetch("/app/booklink/", {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${TOKEN}` },
     body: JSON.stringify(data)
@@ -458,6 +458,70 @@ function pageRefresh() {
   location.reload(true);
 }
 
+
+//===== swipe ==============================================================
+
+
+let startX = 0;
+let endX = 0;
+
+function handleSwipe() {
+  const diff = endX - startX;
+  if (Math.abs(diff) > 50) { // Mindest-Swipe-Distanz
+    let clickfun;
+    if (diff > 0) {
+      clickfun = document.getElementById("prev_book")
+    } else {
+      clickfun = document.getElementById("next_book")
+    }
+    (clickfun) && (clickfun.click());
+  }
+}
+
+function initSwipe() {
+  let isMouseDown = false;
+
+  const swipeArea = document.getElementById("app");
+
+  // TOUCH-EVENTS (für mobile Geräte)
+  swipeArea.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+  });
+
+  swipeArea.addEventListener("touchend", (e) => {
+    endX = e.changedTouches[0].clientX;
+    handleSwipe();
+  });
+
+  // MAUS-EVENTS (klassische Maus)
+  swipeArea.addEventListener("mousedown", (e) => {
+    startX = e.clientX;
+    isMouseDown = true;
+  });
+
+  swipeArea.addEventListener("mouseup", (e) => {
+    if (!isMouseDown) return;
+    endX = e.clientX;
+    isMouseDown = false;
+    handleSwipe();
+  });
+
+  swipeArea.addEventListener("mouseleave", () => {
+    isMouseDown = false; // Falls die Maus das Element verlässt
+  });
+
+  // MAGIC MOUSE Wischgesten (wheel-Event)
+  /*   swipeArea.addEventListener("wheel", (e) => {
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { // Prüfen, ob es eine horizontale Bewegung ist
+        if (e.deltaX > 0) {
+          displayMessage("Nach rechts geswiped (Magic Mouse)!");
+        } else {
+          displayMessage("Nach links geswiped (Magic Mouse)!");
+        }
+      }
+    }); */
+
+}
 //===================================================================
 
 async function docReady(type, id) {

@@ -19,7 +19,7 @@ const appInfo = {
 };
 
 const CASSIS_BOOKS = process.env.CASSIS_BOOKS || process.env.HOME + "/Documents/Calibre"
-const CASSIS_CACHE = process.env.CASSIS_CACHE || "./Cache";
+const CASSIS_CACHE = process.env.CASSIS_CACHE || "./CACHE";
 const PAGE_LIMIT = parseInt(process.env.PAGE_LIMIT) || 30;
 
 // Bookdir einrichten:
@@ -531,7 +531,7 @@ function decode(str) {
 function errorHandler(error, response, actionName) {
   const message = "CASSIS: Fehler in '" + actionName + "': " + error.message;
   errorLogger(error, message);
-  if (response) {
+  if (response) { // 500 Internal Server Error
     response.status(500).json({ message: message });
   }
 }
