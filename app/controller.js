@@ -188,7 +188,6 @@ export async function bookAction(request, response) {
     let nextBook;
     let prevBook;
 
-
     if (options.bookId !== undefined && options.num) {
       const rowNum = parseInt(options.num, 10) - 1;
       const sortString = (!options.sortString) ? "" : options.sortString;

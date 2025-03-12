@@ -681,7 +681,7 @@ button.text6 {
   bottom: 0px;
   left: 0px;
   background-color: lightgrey;
-  z-Index: 100;
+  z-Index: 60;
 }
 
 button_breit {

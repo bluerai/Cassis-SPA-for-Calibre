@@ -468,13 +468,16 @@ let endX = 0;
 function handleSwipe() {
   const diff = endX - startX;
   if (Math.abs(diff) > 50) { // Mindest-Swipe-Distanz
-    let clickfun;
+    let clickfunc;
     if (diff > 0) {
-      clickfun = document.getElementById("prev_book")
+      clickfunc = document.getElementById("prev_book")
     } else {
-      clickfun = document.getElementById("next_book")
+      clickfunc = document.getElementById("next_book")
     }
-    (clickfun) && (clickfun.click());
+    if (clickfunc) 
+      clickfunc.click();
+    else
+    displayMessage("keine weiteren Daten", 5);
   }
 }
 
