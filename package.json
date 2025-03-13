@@ -12,6 +12,7 @@
   "author": "RaiBlue, 2025",
   "license": "MIT",
   "dependencies": {
+    "argon2": "^0.41.1",
     "express": "^4.21.1",
     "fs-extra": "^11.2.0",
     "jsonwebtoken": "^9.0.2",

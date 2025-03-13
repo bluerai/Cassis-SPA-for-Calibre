@@ -34,9 +34,10 @@ app.use(morgan('common', {
 'short': Kürzere Ausgabe als 'common'. */
 
 app.get('/verify', verifyAction);
+
 app.post('/login', loginAction);
 
-app.use('/api', apiRouter);
+app.use('/api', lanOnly, apiRouter);
 
 app.use('/app', protect, appRouter);
 
@@ -79,4 +80,14 @@ const getLocalIp = () => {
   return '127.0.0.1'; // Fallback auf localhost
 };
 
+function lanOnly(req, res, next) {
+  const clientIP = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+  if (isPrivateIP(clientIP)) {
+    logger.debug(`LAN access from: ${clientIP}`);
+    return next();
+  } else {
+    logger.warn(`WAN access from ip ${clientIP} blocked`);
+    return res.status(403).json({ message: "No access." });
+  }
+};
 

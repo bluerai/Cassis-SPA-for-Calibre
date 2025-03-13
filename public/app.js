@@ -18,14 +18,12 @@ async function validate() {
         document.querySelectorAll('button.menu').forEach(el => el.style.display = 'none');
         document.getElementById('searchInput').style.display = 'none';
         document.getElementById('login').innerHTML = data.html;
-
         break;
       }
       default: {
         responseFail_Handler("verifyUser", response);
       }
     }
-
   } catch (error) { console.error('Error:', error); }
 }
 
@@ -52,7 +50,6 @@ async function login() {
         document.querySelectorAll('.menu').forEach(el => el.style.display = 'block');
         document.getElementById('searchInput').style.display = 'block';
         getBooklist(DEF_OPTIONS);
-
       } else {
         responseFail_Handler("login", response, 'Credentials not valid. Try again!')
       }
@@ -71,7 +68,6 @@ function displayMessage(msg, sec) {
     displayMessageTimeoutHandler = setTimeout(() => { document.getElementById('message').innerHTML = "" }, sec * 1000);
 }
 
-
 function responseFail_Handler(functionName, response, msg) {
   msg = msg || (functionName + ": " + response.statusText + " (#" + response.status + ")");
   console.log(msg);
@@ -83,7 +79,6 @@ function error_Handler(functionName, error, msg) {
   console.error(msg);
   displayMessage(msg, 8);
 }
-
 
 const DEF_OPTIONS = {
   'target': 'list',
@@ -458,9 +453,7 @@ function pageRefresh() {
   location.reload(true);
 }
 
-
 //===== swipe ==============================================================
-
 
 let startX = 0;
 let endX = 0;
@@ -474,10 +467,10 @@ function handleSwipe() {
     } else {
       clickfunc = document.getElementById("next_book")
     }
-    if (clickfunc) 
+    if (clickfunc)
       clickfunc.click();
     else
-    displayMessage("keine weiteren Daten", 5);
+      displayMessage("keine weiteren Daten", 5);
   }
 }
 

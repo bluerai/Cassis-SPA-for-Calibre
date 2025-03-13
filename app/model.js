@@ -160,7 +160,7 @@ function searchStringToArray(searchString) {
 
 function searchClause(searchString) {
   const searchArray = searchStringToArray(searchString);
-  (logger.isLevelEnabled('silly')) && logger.silly("searchClause: searchString=" + searchString + ", searchArray=" + searchArray);
+  logger.silly("searchClause: searchString=" + searchString + ", searchArray=" + searchArray);
 
   if (searchArray && searchArray.length > 0) {
     let clause = "";
@@ -456,9 +456,7 @@ export function unconnectDb() {  // close database
 }
 
 export function findBooks(searchString, sortString, limit, offset) {
-  logger.isLevelEnabled('debug')
-    && logger.debug("findBooks: searchString=" + searchString + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset)
-    && logger.isLevelEnabled("silly") && logger.silly(findBooksQuery(searchString, sortString));
+  logger.debug("findBooks: searchString=" + searchString + ", sortString=" + sortString + ", limit=" + limit + ", offset=" + offset);
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksQuery(searchString, sortString));
     return selectAllStmt.all(limit, offset);
@@ -466,9 +464,7 @@ export function findBooks(searchString, sortString, limit, offset) {
 }
 
 export function countBooks(searchString) {
-  logger.isLevelEnabled('debug')
-    && logger.debug("countBooks: searchString=" + searchString)
-    && logger.isLevelEnabled("silly") && logger.silly("countBooks query=" + countBooksQuery(searchString));
+  logger.debug("countBooks: searchString=" + searchString);
   try {
     const selectOneStmt = METADATA_DB.prepare(countBooksQuery(searchString));
     return selectOneStmt.get().count;
@@ -476,9 +472,7 @@ export function countBooks(searchString) {
 }
 
 export function findBooksWithTags(searchString, sortString, tagIdString, limit, offset) {
-  logger.isLevelEnabled('debug')
-    && logger.debug("findBooksWithTags: searchString=" + searchString + ", sortString=" + sortString + ", tagIdString=" + tagIdString + ", limit=" + limit + ", offset=" + offset)
-    && logger.isLevelEnabled("silly") && logger.silly("findBooksWithTags query=" + findBooksWithTagsQuery(searchString, sortString, tagIdString));
+  logger.debug("findBooksWithTags: searchString=" + searchString + ", sortString=" + sortString + ", tagIdString=" + tagIdString + ", limit=" + limit + ", offset=" + offset);
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksWithTagsQuery(searchString, sortString, tagIdString));
     return selectAllStmt.all(limit, offset);
@@ -486,9 +480,7 @@ export function findBooksWithTags(searchString, sortString, tagIdString, limit, 
 }
 
 export function countBooksWithTags(searchString, tagIdString) {
-  logger.isLevelEnabled('debug')
-    && logger.debug("countBooksWithTags: searchString=" + searchString + ", tagIdString=" + tagIdString)
-    && logger.isLevelEnabled("silly") && logger.silly("countBooksWithTags query=" + countBooksWithTagsQuery(searchString, tagIdString));
+  logger.debug("countBooksWithTags: searchString=" + searchString + ", tagIdString=" + tagIdString);
   try {
     const selectOneStmt = METADATA_DB.prepare(countBooksWithTagsQuery(searchString, tagIdString));
     return selectOneStmt.get().count;
@@ -496,9 +488,7 @@ export function countBooksWithTags(searchString, tagIdString) {
 }
 
 export function findBooksWithCC(ccNum, searchString, sortString, ccIdString, limit, offset) {
-  logger.isLevelEnabled('debug')
-    && logger.debug("findBooksWithCC: ccNum=" + ccNum + ", searchString=" + searchString + ", sortString=" + sortString + ", ccIdString=" + ccIdString + ", limit=" + limit + ", offset=" + offset)
-    && logger.isLevelEnabled("silly") && logger.silly("findBooksWithCC query=" + findBooksWithCCQuery(ccNum, searchString, sortString, ccIdString));
+  logger.debug("findBooksWithCC: ccNum=" + ccNum + ", searchString=" + searchString + ", sortString=" + sortString + ", ccIdString=" + ccIdString + ", limit=" + limit + ", offset=" + offset);
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksWithCCQuery(ccNum, searchString, sortString, ccIdString));
     return selectAllStmt.all(limit, offset);
@@ -506,9 +496,7 @@ export function findBooksWithCC(ccNum, searchString, sortString, ccIdString, lim
 }
 
 export function countBooksWithCC(ccNum, searchString, ccIdString) {
-  logger.isLevelEnabled('debug')
-    && logger.debug("countBooksWithCC: ccNum=" + ccNum + ", searchString=" + searchString + ", ccIdString=" + ccIdString)
-    && logger.isLevelEnabled("silly") && logger.silly("countBooksWithCC query=" + countBooksWithCCQuery(ccNum, searchString, ccIdString));
+  logger.debug("countBooksWithCC: ccNum=" + ccNum + ", searchString=" + searchString + ", ccIdString=" + ccIdString);
   try {
     const selectOneStmt = METADATA_DB.prepare(countBooksWithCCQuery(ccNum, searchString, ccIdString));
     return selectOneStmt.get().count;

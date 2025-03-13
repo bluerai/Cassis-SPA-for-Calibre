@@ -2,6 +2,7 @@
 
 import fs from 'fs-extra';
 import sharp from 'sharp';
+import { join } from 'path';
 
 import { createSignature, verifySignature } from '../auth/index.js'
 import { logger, consoleTransport, fileTransport, errorLogger, log_levels } from '../log.js';
@@ -90,7 +91,7 @@ function addFields(books) {
 // Actions **************************
 
 export async function startAction(request, response) {
-  (logger.isLevelEnabled('debug')) && logger.debug("*** startAction: request.params=" + JSON.stringify(request.params));
+  logger.debug("*** startAction: request.params=" + JSON.stringify(request.params));
   try {
     const type = request.params.type;
     const id = request.params.id;
@@ -102,10 +103,10 @@ export async function startAction(request, response) {
 export async function listAction(request, response) {
   try {
     const options = request.body;
-    (logger.isLevelEnabled('debug')) && logger.debug("*** listAction: options=" + JSON.stringify(options));
+    logger.debug("*** listAction: options=" + JSON.stringify(options));
 
     const page = (!options.page || isNaN(options.page)) ? 0 : parseInt(options.page, 10);
-    const sortString = (!options.sortString) ? "" : options.sortString;
+    const sortString = options.sortString || "";
     const type = options.type || request.params.type;
 
     let books = {};
@@ -113,41 +114,35 @@ export async function listAction(request, response) {
 
     switch (type) {
       case "serie":
-        const seriesId = (!options.serieId || isNaN(options.serieId)) ? 0 : parseInt(options.serieId, 10);
+        const seriesId = parseInt(options.serieId, 10) || 0;
         count = countBooksBySerie(seriesId);
         if (count !== 0)
           books = findBooksBySerie(seriesId, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
         break;
 
       case "author":
-        const authorsId = (!options.authorsId || isNaN(options.authorsId)) ? 0 : parseInt(options.authorsId, 10);
+        const authorsId = parseInt(options.authorsId, 10) || 0;
         count = countBooksByAuthor(authorsId);
         if (count !== 0)
           books = findBooksByAuthor(authorsId, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
-        break
+        break;
 
       default:
-        const tagId = (!options.tagId || isNaN(options.tagId)) ? 0 : parseInt(options.tagId, 10);
-        const ccNum = (!options.ccNum || isNaN(options.ccNum)) ? 0 : parseInt(options.ccNum, 10);
-        const ccId = (!options.ccId || isNaN(options.ccId)) ? 0 : parseInt(options.ccId, 10);
+        const tagId = parseInt(options.tagId, 10) || 0;
+        const ccNum = parseInt(options.ccNum, 10) || 0;
+        const ccId = parseInt(options.ccId, 10) || 0;
 
-        if (tagId && tagId > 0) {
-          (logger.isLevelEnabled('debug')) && logger.debug("listAction: tagId: " + tagId);
+        if (tagId > 0) {
+          logger.debug("listAction: tagId: " + tagId);
           count = countBooksWithTags(options.searchString, tagId);
           if (count !== 0) books = findBooksWithTags(options.searchString, sortString, tagId, PAGE_LIMIT, page * PAGE_LIMIT);
-
+        } else if (ccNum > 0) {
+          logger.debug("listAction: ccNum: " + ccNum + ", ccId: " + ccId);
+          count = countBooksWithCC(ccNum, options.searchString, ccId);
+          if (count !== 0) books = findBooksWithCC(ccNum, options.searchString, sortString, ccId, PAGE_LIMIT, page * PAGE_LIMIT);
         } else {
-          if (ccNum && ccNum > 0) {
-            (logger.isLevelEnabled('debug')) && logger.debug("listAction: ccNum: " + ccNum + ", ccId: " + ccId);
-            count = countBooksWithCC(ccNum, options.searchString, ccId);
-            if (count !== 0) books = findBooksWithCC(ccNum, options.searchString, sortString, ccId, PAGE_LIMIT, page * PAGE_LIMIT);
-
-          } else {
-            if (tagId === 0 && ccNum === 0) {
-              count = countBooks(options.searchString);
-              if (count && count !== 0) books = findBooks(options.searchString, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
-            }
-          }
+          count = countBooks(options.searchString);
+          if (count !== 0) books = findBooks(options.searchString, sortString, PAGE_LIMIT, page * PAGE_LIMIT);
         }
         break;
     }
@@ -161,11 +156,10 @@ export async function listAction(request, response) {
     books = addFields(books);
     const pageNav = getPageNavigation(page, count);
 
-    (logger.isLevelEnabled('silly'))
-      && logger.silly("listAction: books=" + JSON.stringify(books))
-      && logger.silly("listAction: pageNav=" + JSON.stringify(pageNav));
+    logger.silly("listAction: books=" + JSON.stringify(books));
+    logger.silly("listAction: pageNav=" + JSON.stringify(pageNav));
 
-    response.render(import.meta.dirname + '/views/booklist', { books, pageNav }, function (error, html) {
+    response.render(join(import.meta.dirname, '/views/booklist'), { books, pageNav }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render booklist page');
       } else {
@@ -179,61 +173,54 @@ export async function listAction(request, response) {
 export async function bookAction(request, response) {
   try {
     const options = request.body;
-    (logger.isLevelEnabled('debug')) && logger.debug("*** bookAction: options=" + JSON.stringify(options));
+    logger.debug("*** bookAction: options=" + JSON.stringify(options));
 
     const bookId = parseInt(options.bookId, 10);
     const book = getBook(bookId);
-    (logger.isLevelEnabled('silly')) && logger.silly("*** bookAction: book=" + JSON.stringify(book));
+    logger.silly("*** bookAction: book=" + JSON.stringify(book));
 
     let nextBook;
     let prevBook;
 
     if (options.bookId !== undefined && options.num) {
       const rowNum = parseInt(options.num, 10) - 1;
-      const sortString = (!options.sortString) ? "" : options.sortString;
+      const sortString = options.sortString || "";
       const type = options.type;
       let nextBookArray;
       let prevBookArray;
 
       switch (type) {
         case "serie":
-          const seriesId = (!options.serieId || isNaN(options.serieId)) ? 0 : parseInt(options.serieId, 10);
+          const seriesId = parseInt(options.serieId, 10) || 0;
           prevBookArray = (rowNum === 0) ? [] : findBooksBySerie(seriesId, sortString, 1, rowNum - 1);
           nextBookArray = findBooksBySerie(seriesId, sortString, 1, rowNum + 1);
           break;
 
         case "author":
-          const authorsId = (!options.authorsId || isNaN(options.authorsId)) ? 0 : parseInt(options.authorsId, 10);
+          const authorsId = parseInt(options.authorsId, 10) || 0;
           prevBookArray = (rowNum === 0) ? [] : findBooksByAuthor(authorsId, sortString, 1, rowNum - 1);
           nextBookArray = findBooksByAuthor(authorsId, sortString, 1, rowNum + 1);
-          break
+          break;
 
         default:
-          const tagId = (!options.tagId || isNaN(options.tagId)) ? 0 : parseInt(options.tagId, 10);
-          const ccNum = (!options.ccNum || isNaN(options.ccNum)) ? 0 : parseInt(options.ccNum, 10);
-          const ccId = (!options.ccId || isNaN(options.ccId)) ? 0 : parseInt(options.ccId, 10);
+          const tagId = parseInt(options.tagId, 10) || 0;
+          const ccNum = parseInt(options.ccNum, 10) || 0;
+          const ccId = parseInt(options.ccId, 10) || 0;
 
-          if (tagId && tagId > 0) {
+          if (tagId > 0) {
             prevBookArray = (rowNum === 0) ? [] : findBooksWithTags(options.searchString, sortString, tagId, 1, rowNum - 1);
             nextBookArray = findBooksWithTags(options.searchString, sortString, tagId, 1, rowNum + 1);
-
+          } else if (ccNum > 0) {
+            prevBookArray = (rowNum === 0) ? [] : findBooksWithCC(ccNum, options.searchString, sortString, ccId, 1, rowNum - 1);
+            nextBookArray = findBooksWithCC(ccNum, options.searchString, sortString, ccId, 1, rowNum + 1);
           } else {
-            if (ccNum && ccNum > 0) {
-              prevBookArray = (rowNum == 0) ? [] : findBooksWithCC(ccNum, options.searchString, sortString, ccId, 1, rowNum - 1);
-              nextBookArray = findBooksWithCC(ccNum, options.searchString, sortString, ccId, 1, rowNum + 1);
-
-            } else {
-              if (tagId === 0 && ccNum === 0) {
-                prevBookArray = (rowNum === 0) ? [] : findBooks(options.searchString, sortString, 1, rowNum - 1);
-                nextBookArray = findBooks(options.searchString, sortString, 1, rowNum + 1);
-              }
-            }
+            prevBookArray = (rowNum === 0) ? [] : findBooks(options.searchString, sortString, 1, rowNum - 1);
+            nextBookArray = findBooks(options.searchString, sortString, 1, rowNum + 1);
           }
           break;
       }
       nextBook = nextBookArray[0];
       prevBook = prevBookArray[0];
-
     }
 
     const formats = getFormatsOfBooks(bookId);
@@ -260,10 +247,9 @@ export async function bookAction(request, response) {
     if (series[0]) { series[0].seriesName = decode(series[0].seriesName); book.serie = series[0] }
     if (book.pubdate.substr(0, 1) == "0") { book.pubdate = null };
 
-    (logger.isLevelEnabled('silly'))
-      && logger.silly("bookAction: " + JSON.stringify(book))
-      && logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook))
-      && logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
+    logger.silly("bookAction: " + JSON.stringify(book));
+    logger.silly("bookAction: prevBook=" + JSON.stringify(prevBook));
+    logger.silly("bookAction: nextBook=" + JSON.stringify(nextBook));
 
     book.signature = createSignature(book.bookId, 1800);
 
@@ -280,14 +266,13 @@ export async function bookAction(request, response) {
 
 export async function tagsAction(request, response) {
   try {
-    (logger.isLevelEnabled('debug')) && logger.debug("*** tagsAction: request.params=" + JSON.stringify(request.params));
+    logger.debug("*** tagsAction: request.params=" + JSON.stringify(request.params));
     const selectedId = (!request.params.tagId || isNaN(request.params.tagId)) ? 0 : parseInt(request.params.tagId, 10);
     const tags =
       getTags()
         .map(tag => { tag.class = (tag.tagId === selectedId) ? "selected" : ""; return tag });
 
     const options = { tags };
-    (logger.isLevelEnabled('silly')) && logger.silly("tagsAction: appInfo=" + JSON.stringify(appInfo) + ", " + "options=" + JSON.stringify(options));
     response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
@@ -301,7 +286,7 @@ export async function tagsAction(request, response) {
 
 export async function ccAction(request, response) {
   try {
-    (logger.isLevelEnabled('debug')) && logger.debug("*** ccAction: request.params=" + JSON.stringify(request.params));
+    logger.debug("*** ccAction: request.params=" + JSON.stringify(request.params));
     const ccNum = (!request.params.ccNum || isNaN(request.params.ccNum)) ? 0 : parseInt(request.params.ccNum, 10);
     const selectedId = (!request.params.ccId || isNaN(request.params.ccId)) ? 0 : parseInt(request.params.ccId, 10);
 
@@ -310,7 +295,6 @@ export async function ccAction(request, response) {
         .map(cc => { cc.class = (cc.id === selectedId) ? "selected" : ""; return cc });
 
     const options = { ccNum, custCols };
-    (logger.isLevelEnabled('silly')) && logger.silly("ccAction: appInfo=" + appInfo + ", " + "options=" + JSON.stringify(options));
     response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
@@ -343,7 +327,6 @@ export async function coverListAction(request, response) {
     if (verifySignature(request)) {
       let fileData = getCoverData(parseInt(request.params.id, 10));
       if (fileData) {
-        (logger.isLevelEnabled('silly')) && logger.silly("*** coverListAction: fileData=" + JSON.stringify(fileData));
         const source = CASSIS_BOOKS + "/" + fileData.path + "/cover.jpg";
         const targetDir = CASSIS_CACHE + "/1" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
         fs.ensureDirSync(targetDir);
@@ -360,7 +343,7 @@ export async function coverBookAction(request, response) {
   try {
     if (verifySignature(request)) {
       let fileData = getCoverData(parseInt(request.params.id, 10));
-      (logger.isLevelEnabled('debug')) && logger.debug("*** coverBookAction: fileData=" + JSON.stringify(fileData));
+      logger.debug("*** coverBookAction: fileData=" + JSON.stringify(fileData));
       const source = CASSIS_BOOKS + "/" + fileData.path + "/cover.jpg";
       const targetDir = CASSIS_CACHE + "/0" + ("0000" + fileData.bookId).slice(-5).substring(0, 2);
       fs.ensureDirSync(targetDir);
@@ -377,7 +360,7 @@ export async function fileAction(request, response) {
   try {
     if (verifySignature(request)) {
       let fileData = getFileData(parseInt(request.params.id, 10), request.params.format);
-      (logger.isLevelEnabled('debug')) && logger.debug("*** fileAction: fileData=" + JSON.stringify(fileData));
+      logger.debug("*** fileAction: fileData=" + JSON.stringify(fileData));
       const options = {
         root: CASSIS_BOOKS + "/" + fileData.path,
         dotfiles: 'deny',
@@ -390,7 +373,7 @@ export async function fileAction(request, response) {
         if (error)
           errorHandler(error, response, 'response.sendFile');
         else
-          (logger.isLevelEnabled('debug')) && logger.debug('response.sendFile: filename=' + fileData.filename);
+          logger.debug('response.sendFile: filename=' + fileData.filename);
       })
     } else {
       response.send("Not authorized");
@@ -422,7 +405,7 @@ export async function infoAction(request, response) {
   try {
     const stats = getStatistics();
     const options = { stats, logger: { level: logger.level, levels: log_levels, consoleOn: !consoleTransport.silent, fileOn: !fileTransport.silent } };
-    (logger.isLevelEnabled('debug')) && logger.debug("*** infoAction: appInfo=" + JSON.stringify(appInfo) + ", " + "options=" + JSON.stringify(options));
+    logger.debug("*** infoAction: appInfo=" + JSON.stringify(appInfo) + ", " + "options=" + JSON.stringify(options));
     response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
@@ -436,7 +419,7 @@ export async function infoAction(request, response) {
 
 export async function tagsCountAction(request, response) {
   try {
-    (logger.isLevelEnabled('debug')) && logger.debug("*** tagsCountAction");
+    logger.debug("*** tagsCountAction");
     const popup = { "type": "tag", "head_name": "Genres", "head_count": "Bücher, Zeitschriften", "content": getTagsStatistics() };
     response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
       if (error) {
@@ -452,7 +435,7 @@ export async function tagsCountAction(request, response) {
 
 export async function authorsCountAction(request, response) {
   try {
-    (logger.isLevelEnabled('debug')) && logger.debug("*** authorsCountAction");
+    logger.debug("*** authorsCountAction");
     const popup = { "type": "author", "head_name": "Autoren", "head_count": "Bücher, Zeitschriften", "content": getAuthorsStatistics() };
     response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
       if (error) {
@@ -467,7 +450,7 @@ export async function authorsCountAction(request, response) {
 
 export async function seriesCountAction(request, response) {
   try {
-    (logger.isLevelEnabled('debug')) && logger.debug("*** seriesCountAction");
+    logger.debug("*** seriesCountAction");
     const popup = { "type": "serie", "head_name": "Serie", "head_count": "Bücher, Zeitschriften", "content": getSeriesStatistics() };
     response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
       if (error) {
@@ -482,7 +465,7 @@ export async function seriesCountAction(request, response) {
 
 export async function publishersCountAction(request, response) {
   try {
-    (logger.isLevelEnabled('debug')) && logger.debug("*** publishersCountAction");
+    logger.debug("*** publishersCountAction");
     const popup = { "type": "publisher", "head_name": "Verlag", "head_count": "Bücher, Zeitschriften", "content": getPublishersStatistics() };
     response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
       if (error) {
@@ -514,7 +497,7 @@ export async function logAction(request, response) {
         response.send({ fileOn: !fileTransport.silent });
         break;
     }
-    (logger.isLevelEnabled('debug')) && logger.debug("Logging level: " + logger.level + ", logging to console: " + !consoleTransport.silent + ", logging to file: " + !fileTransport.silent);
+    logger.debug("Logging level: " + logger.level + ", logging to console: " + !consoleTransport.silent + ", logging to file: " + !fileTransport.silent);
   }
   catch (error) { errorHandler(error, response, 'logLevelAction') }
 }

@@ -6,17 +6,6 @@ import { connectDb, unconnectDb, countBooks } from '../app/model.js';
 
 export const apiRouter = Router();
 
-apiRouter.use((req, res, next) => {
-  const clientIP = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
-  if (isPrivateIP(clientIP)) {
-    logger.debug(`LAN access from: ${clientIP}`);
-    return next();
-  } else {
-    logger.warn(`WAN access from ip ${clientIP} blocked`);
-    return res.status(403).json({ message: "No access." });
-  }
-});
-
 apiRouter.get('/count', countAction);
 apiRouter.get('/health/', healthAction);
 apiRouter.get('/connectdb', dbAction);
@@ -27,7 +16,7 @@ apiRouter.get('/unconnectdb', dbAction);
 
 export async function countAction(request, response) {
   try {
-    (logger.isLevelEnabled('debug')) && logger.debug("countAction: request.query=" + JSON.stringify(request.query));
+    logger.debug("countAction: request.query=" + JSON.stringify(request.query));
     const searchString = request.query.search || "";
     const count = countBooks(searchString);
     response.json({ count, healthy: true });
@@ -37,9 +26,8 @@ export async function countAction(request, response) {
 
 export async function healthAction(request, response) {
   try {
-    logger.isLevelEnabled('debug') && logger.debug("healthAction");
+    logger.debug("healthAction");
     const count = countBooks().length;
-
     logger.debug(request.protocol + "-Server still healthy!");
     response.json({ healthy: true, count });
   }
@@ -55,7 +43,7 @@ export async function healthAction(request, response) {
 
 export async function dbAction(request, response) {
   try {
-    (logger.isLevelEnabled('debug')) && logger.debug("dbAction: request.url=" + request.url);
+    logger.debug("dbAction: request.url=" + request.url);
     const result = (request.url === "/unconnectdb") ? unconnectDb() : connectDb();
     response.json(result);
   }
