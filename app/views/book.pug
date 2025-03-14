@@ -25,7 +25,7 @@
                 span #{author.authorsName} 
                   
           p.akzent #{book.title} 
-            button.text5(onclick="sendMail('" + book.authors.map(a => a.authorsName).toString() + "', '" + book.title + "', " + book.bookId + ", '" + book.tags[0].tagName + "')")
+            button.text5(onclick="sendMail(`" + book.authors.map(a => a.authorsName).toString() + "`, `" + book.title + "`, " + book.bookId + ", `" + book.tags[0].tagName + "`)")
               i.fa.fa-envelope(aria-hidden="true")
             p
               - for(let format of book.formats)

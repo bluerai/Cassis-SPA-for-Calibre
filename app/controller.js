@@ -92,10 +92,11 @@ function addFields(books) {
 
 export async function startAction(request, response) {
   logger.debug("*** startAction: request.params=" + JSON.stringify(request.params));
+  logger.debug("*** startAction: request.query=" + JSON.stringify(request.query));
   try {
     const type = request.params.type;
     const id = request.params.id;
-    response.render(import.meta.dirname + '/views/start', { "type": type, "id": id });
+    response.render(join(import.meta.dirname, 'views', 'start'), { "type": type, "id": id, "signature": request.query.signature, "expires": request.query.expires });
   }
   catch (error) { errorHandler(error, response, 'startAction') }
 }
@@ -159,7 +160,7 @@ export async function listAction(request, response) {
     logger.silly("listAction: books=" + JSON.stringify(books));
     logger.silly("listAction: pageNav=" + JSON.stringify(pageNav));
 
-    response.render(join(import.meta.dirname, '/views/booklist'), { books, pageNav }, function (error, html) {
+    response.render(join(import.meta.dirname, 'views', 'booklist'), { books, pageNav }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render booklist page');
       } else {
@@ -253,7 +254,7 @@ export async function bookAction(request, response) {
 
     book.signature = createSignature(book.bookId, 1800);
 
-    response.render(import.meta.dirname + '/views/book', { book, prevBook, nextBook }, function (error, html) {
+    response.render(join(import.meta.dirname, 'views', 'book'), { book, prevBook, nextBook }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render book page');
       } else {
@@ -273,15 +274,14 @@ export async function tagsAction(request, response) {
         .map(tag => { tag.class = (tag.tagId === selectedId) ? "selected" : ""; return tag });
 
     const options = { tags };
-    response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
+    response.render(join(import.meta.dirname, 'views', 'info'), { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
       } else {
         response.send({ html });
       }
     });
-  }
-  catch (error) { errorHandler(error, response, 'tagsAction') }
+  } catch (error) { errorHandler(error, response, 'tagsAction') }
 }
 
 export async function ccAction(request, response) {
@@ -295,15 +295,14 @@ export async function ccAction(request, response) {
         .map(cc => { cc.class = (cc.id === selectedId) ? "selected" : ""; return cc });
 
     const options = { ccNum, custCols };
-    response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
+    response.render(join(import.meta.dirname, 'views', 'info'), { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
       } else {
         response.send({ html });
       }
     });
-  }
-  catch (error) { errorHandler(error, response, 'ccAction') }
+  } catch (error) { errorHandler(error, response, 'ccAction') }
 }
 
 async function sendResizedCover(response, source, targetDir, targetFile, resizeOptions) {
@@ -317,8 +316,7 @@ async function sendResizedCover(response, source, targetDir, targetFile, resizeO
         .toFile(targetDir + "/" + targetFile);
     }
     response.sendFile(targetFile, options);
-  }
-  catch (error) { errorHandler(error, response, 'sendResizedCover') }
+  } catch (error) { errorHandler(error, response, 'sendResizedCover') }
 }
 
 
@@ -335,8 +333,7 @@ export async function coverListAction(request, response) {
     } else {
       response.sendFile("Not authorized");
     }
-  }
-  catch (error) { errorHandler(error, response, 'coverListAction') }
+  } catch (error) { errorHandler(error, response, 'coverListAction') }
 }
 
 export async function coverBookAction(request, response) {
@@ -352,8 +349,7 @@ export async function coverBookAction(request, response) {
     else {
       response.send("Not authorized");
     }
-  }
-  catch (error) { errorHandler(error, response, 'coverBookAction') }
+  } catch (error) { errorHandler(error, response, 'coverBookAction') }
 }
 
 export async function fileAction(request, response) {
@@ -378,8 +374,7 @@ export async function fileAction(request, response) {
     } else {
       response.send("Not authorized");
     }
-  }
-  catch (error) { errorHandler(error, 'fileAction') }
+  } catch (error) { errorHandler(error, 'fileAction') }
 }
 
 export async function bookLinkAction(request, response) {
@@ -406,7 +401,7 @@ export async function infoAction(request, response) {
     const stats = getStatistics();
     const options = { stats, logger: { level: logger.level, levels: log_levels, consoleOn: !consoleTransport.silent, fileOn: !fileTransport.silent } };
     logger.debug("*** infoAction: appInfo=" + JSON.stringify(appInfo) + ", " + "options=" + JSON.stringify(options));
-    response.render(import.meta.dirname + '/views/info', { appInfo, options }, function (error, html) {
+    response.render(join(import.meta.dirname, 'views', 'info'), { appInfo, options }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
       } else {
@@ -421,7 +416,7 @@ export async function tagsCountAction(request, response) {
   try {
     logger.debug("*** tagsCountAction");
     const popup = { "type": "tag", "head_name": "Genres", "head_count": "Bücher, Zeitschriften", "content": getTagsStatistics() };
-    response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
+    response.render(join(import.meta.dirname, 'views', 'info_popup'), { popup }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
       } else {
@@ -437,7 +432,7 @@ export async function authorsCountAction(request, response) {
   try {
     logger.debug("*** authorsCountAction");
     const popup = { "type": "author", "head_name": "Autoren", "head_count": "Bücher, Zeitschriften", "content": getAuthorsStatistics() };
-    response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
+    response.render(join(import.meta.dirname, 'views', 'info_popup'), { popup }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
       } else {
@@ -452,7 +447,7 @@ export async function seriesCountAction(request, response) {
   try {
     logger.debug("*** seriesCountAction");
     const popup = { "type": "serie", "head_name": "Serie", "head_count": "Bücher, Zeitschriften", "content": getSeriesStatistics() };
-    response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
+    response.render(join(import.meta.dirname, 'views', 'info_popup'), { popup }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
       } else {
@@ -467,7 +462,7 @@ export async function publishersCountAction(request, response) {
   try {
     logger.debug("*** publishersCountAction");
     const popup = { "type": "publisher", "head_name": "Verlag", "head_count": "Bücher, Zeitschriften", "content": getPublishersStatistics() };
-    response.render(import.meta.dirname + '/views/info_popup', { popup }, function (error, html) {
+    response.render(join(import.meta.dirname, 'views', 'info_popup'), { popup }, function (error, html) {
       if (error) {
         errorHandler(error, response, 'render info page');
       } else {

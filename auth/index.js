@@ -31,13 +31,17 @@ const usersFile = join(process.env.CASSIS_CONFIG, "users.json");
 //==== Actions ==================================================
 
 export function verifyAction(req, res) {
+  //console.log("verifyAction: ", req.url, req.body, req.params);
 
   const token = req.headers.authorization?.split(' ')[1]
-
-  if (!token || token == "null") {
+  if (!token || token == null) {
+    if (verifySignature(req)) {
+      logger.debug("/verify: signature is valid");
+      return res.status(200).json({ message: 'Signature is valid' });
+    };
     return res.render(join(import.meta.dirname, 'views', 'login'), function (error, html) {
       if (error) { logger.error(error); logger.debug(error.stack); return }
-      logger.info("/verify: No token");
+      logger.debug("/verify: No token");
       res.status(401).json({ error: 'No token', html: html });
     })
   }
@@ -46,12 +50,12 @@ export function verifyAction(req, res) {
     if (err) {
       res.render(join(import.meta.dirname, 'views', 'login'), function (error, html) {
         if (error) { logger.error(error); logger.debug(error.stack); return }
-        logger.info("/verify: Invalid token");
+        logger.debug("/verify: Invalid token");
         res.status(401).json({ error: 'Invalid token', html: html });
       })
 
     } else {
-      logger.info("/verify: " + decoded.username + ", expire at: " + new Date(decoded.exp * 1000).toLocaleString());
+      logger.debug("/verify: " + decoded.username + ", expire at: " + new Date(decoded.exp * 1000).toLocaleString());
       res.status(200).json({ message: 'Token is valid', user: decoded });
     }
   })
@@ -81,7 +85,7 @@ export function loginAction(req, res) {
     }
 
     if (users[username].startsWith("$argon2id$")) {  //bereits gehasht
-      argon2.verify(username +":" + users[username], password)
+      argon2.verify(users[username], username + ":" + password)
         .then(match => {
           if (match) {
             const token = jwt.sign({ username }, JWT_KEY, { expiresIn: JWT.duration });
@@ -91,7 +95,7 @@ export function loginAction(req, res) {
           }
         })
     } else { //erstmalige Benutzung - wird geprüft und gehasht
-      if (password === users[username]) { 
+      if (password === users[username]) {
         const token = jwt.sign({ username }, JWT_KEY, { expiresIn: JWT.duration });
         savePasswordAsHash(username, password, users);
         return res.status(200).json({ token: token });
@@ -116,17 +120,19 @@ function savePasswordAsHash(username, password, users) {
 
 
 export function protect(request, response, next) {
+  //logger.debug("protect: ", request.url, request.body);
+
   if ((request.path.startsWith('/cover/')) ||
     (request.path.startsWith('/file/')) ||
-    request.path === '/') {
+    request.path === '/' ||
+    (verifySignature(request))) {
     return next();
   }
   const token = request.headers.authorization?.split(' ')[1];
-  logger.silly("Protected path: " + request.path + "; " + token);
+  logger.debug("Protected path: " + request.path + "; " + token);
 
   if (!token) {
     logger.debug("No Token !!!");
-    if (verifySignature) { return next(); }
     return response.status(401).json({ error: 'No Authorisation' });
   }
 
@@ -144,7 +150,7 @@ export function protect(request, response, next) {
 }
 
 // Funktion zum Erstellen einer Signature
-export const createSignature = (identifier, expiresIn) => {
+export function createSignature(identifier, expiresIn) {
   const expiration = Date.now() + expiresIn * 1000; // Gültigkeitsdauer in Millisekunden
 
   const signature = crypto
@@ -156,22 +162,28 @@ export const createSignature = (identifier, expiresIn) => {
 };
 
 // Funktion zum Überprüfen einer Signature
-export const verifySignature = (req) => {
+export function verifySignature(req) {
+  try {
 
-  const { expires, signature } = req.query;
-  const identifier = parseInt(req.params.id, 10);
+    const { expires, signature } = req.query;
+    if (!expires || !signature) { return false; }
+    
+    const identifier = parseInt(req.path.split('/').pop(), 10);
 
-  if (!expires || !signature) { return false; }
+    //console.log("verifySignature: ", req.query, identifier);
 
-  const expectedSignature = crypto
-    .createHmac('sha256', JWT_KEY)
-    .update(`${identifier}:${expires}`)
-    .digest('hex');
+    const expectedSignature = crypto
+      .createHmac('sha256', JWT_KEY)
+      .update(`${identifier}:${expires}`)
+      .digest('hex');
 
-  logger.silly("verifySignature: Book " + identifier + " expires at: " + new Date(Math.round((expires / 1000) * 1000)).toLocaleString());
-  return signature === expectedSignature && Date.now() < parseInt(expires, 10);
+    logger.debug("verifySignature: Book " + identifier + " expires at: " + new Date(Math.round((expires / 1000) * 1000)).toLocaleString());
+    return signature === expectedSignature && Date.now() < parseInt(expires, 10);
+  } catch (error) {
+    logger.error("verifySignature: " + error);
+    return false;
+  }
 };
-
 
 function generateSecureRandomString(length = 32) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

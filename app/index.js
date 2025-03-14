@@ -4,8 +4,7 @@ import { Router } from 'express';
 
 import {
   startAction, listAction, bookAction, bookLinkAction, fileAction, coverListAction, coverBookAction,
-  infoAction, tagsAction, ccAction, logAction, tagsCountAction,
-  authorsCountAction, seriesCountAction, publishersCountAction
+  infoAction, tagsAction, ccAction, logAction, tagsCountAction, authorsCountAction, seriesCountAction, publishersCountAction
 } from './controller.js';
 
 export const appRouter = Router();
@@ -16,8 +15,8 @@ appRouter.get('/', startAction);
 appRouter.post('/list/:type?', listAction);
 appRouter.get('/info', infoAction);
 
-appRouter.post('/book/', bookAction);
-appRouter.post('/booklink/', bookLinkAction);
+appRouter.post('/book/:id', bookAction);
+appRouter.post('/booklink', bookLinkAction);
 appRouter.get('/tags/count', tagsCountAction);
 appRouter.get('/authors/count', authorsCountAction);
 appRouter.get('/series/count', seriesCountAction);
@@ -27,12 +26,13 @@ appRouter.get('/tags/:tagId', tagsAction);
 appRouter.get('/cc/:ccNum/:ccId', ccAction);
 appRouter.get('/log/:key/:value', logAction);
 
-appRouter.get('/:type/:id', startAction);
-
-// mit signatur geschützt
+// mit Signatur geschützt
 appRouter.get('/cover/book/:id', coverBookAction);
 appRouter.get('/cover/list/:id', coverListAction);
 appRouter.get('/file/:format/:id', fileAction);
+
+//special
+appRouter.get('/:type/:id', startAction);
 
 
 

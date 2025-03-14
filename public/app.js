@@ -191,12 +191,13 @@ async function appendToBooklist(options) {
 }
 
 async function getBook(options) {
-  const response = await fetch("/app/book/", {
+  const response = await fetch("/app/book/" + options.bookId + `?expires=${options.expires}&signature=${options.signature}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${TOKEN}` },
     body: JSON.stringify(options)
   })
   const data = await response.json();
+  document.getElementById('login').innerHTML = "";
   document.getElementById("books").innerHTML = data.html;
   document.body.scrollIntoView();
   document.getElementById('searchInput').value = "";
@@ -450,7 +451,9 @@ function submitInputOnEnter() {
 
 function pageRefresh() {
   localStorage.removeItem('token');
-  location.reload(true);
+  //alert(`${location.protocol}//${location.hostname}:${location.port}`);
+  //location.reload(true);
+  location.href = `${location.protocol}//${location.hostname}:${location.port}`
 }
 
 //===== swipe ==============================================================
@@ -520,10 +523,10 @@ function initSwipe() {
 }
 //===================================================================
 
-async function docReady(type, id) {
+async function docReady(type, id, signature, expires) {
   switch (type) {
     case 'book': {
-      getBook({ "bookId": id });
+      getBook({ "bookId": id, "signature": signature || "", "expires": expires|| "" });
       break;
     }
     default: {
