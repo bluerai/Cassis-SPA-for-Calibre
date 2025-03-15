@@ -191,6 +191,9 @@ async function appendToBooklist(options) {
 }
 
 async function getBook(options) {
+  if (options.oldNum) {
+    document.getElementById("books").classList.add((options.oldNum > options.num) ? "swipe-right-transition" : "swipe-left-transition");
+  }
   const response = await fetch("/app/book/" + options.bookId + `?expires=${options.expires}&signature=${options.signature}`, {
     method: "POST",
     headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${TOKEN}` },
@@ -199,9 +202,26 @@ async function getBook(options) {
   const data = await response.json();
   document.getElementById('login').innerHTML = "";
   document.getElementById("books").innerHTML = data.html;
-  document.body.scrollIntoView();
   document.getElementById('searchInput').value = "";
+  document.body.scrollIntoView();
   restoreOptions();
+
+  if (options.oldNum) {
+    document.getElementById("books").classList.remove((options.oldNum > options.num) ? "swipe-right-transition" : "swipe-left-transition");
+ 
+    document.getElementById("books").classList.add((options.oldNum < options.num) ? "trans-right" : "trans-left");
+    setTimeout(() => {
+      document.getElementById("books").classList.add("swipe-null-transition");
+    }, 0);
+  }
+  setTimeout(() => {
+    document.getElementById("footer").style.display = "block";
+    if (options.oldNum) {
+      document.getElementById("books").classList.remove((options.oldNum < options.num) ? "trans-right" : "trans-left");
+      document.getElementById("books").classList.remove("swipe-null-transition");
+    }
+
+  }, 500)
 }
 
 function setOptionsHome() {
@@ -283,12 +303,16 @@ function setOptionsAuthor(newOptions) {
 async function setOptionsBook(newOptions) {
   //alert("setOptionsBook: " + JSON.stringify(newOptions));
   let options = getOptions();
-  options.target = 'book';
+  options.target = 'books';
   options.bookId = newOptions.bookId;
+  options.oldNum = options.num;
   options.num = newOptions.num;
   getBook(options);
   pushOptions(options);
 }
+
+
+
 
 async function setOptionsPage(page) {
   let options = getOptions();
@@ -451,8 +475,6 @@ function submitInputOnEnter() {
 
 function pageRefresh() {
   localStorage.removeItem('token');
-  //alert(`${location.protocol}//${location.hostname}:${location.port}`);
-  //location.reload(true);
   location.href = `${location.protocol}//${location.hostname}:${location.port}`
 }
 
@@ -460,20 +482,22 @@ function pageRefresh() {
 
 let startX = 0;
 let endX = 0;
+let diff;
 
 function handleSwipe() {
-  const diff = endX - startX;
+  diff = endX - startX;
   if (Math.abs(diff) > 50) { // Mindest-Swipe-Distanz
     let clickfunc;
     if (diff > 0) {
-      clickfunc = document.getElementById("prev_book")
+      clickfunc = document.getElementById("prev_book");
     } else {
-      clickfunc = document.getElementById("next_book")
+      clickfunc = document.getElementById("next_book");
     }
-    if (clickfunc)
+    if (clickfunc) {
       clickfunc.click();
-    else
+    } else {
       displayMessage("keine weiteren Daten", 5);
+    }
   }
 }
 
@@ -521,12 +545,13 @@ function initSwipe() {
     }); */
 
 }
+
 //===================================================================
 
 async function docReady(type, id, signature, expires) {
   switch (type) {
     case 'book': {
-      getBook({ "bookId": id, "signature": signature || "", "expires": expires|| "" });
+      getBook({ "bookId": id, "signature": signature || "", "expires": expires || "" });
       break;
     }
     default: {

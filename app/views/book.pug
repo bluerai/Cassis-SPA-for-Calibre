@@ -1,4 +1,4 @@
-.bookview 
+.bookview
 
   div.bookcontainer
 
@@ -50,9 +50,9 @@
               if book.publisher
                 span #{book.publisher.name}
               if book.pubdate
-                span=" (" + book.pubdate.substr(0,4) + ")"
+                span=" (" + book.pubdate.substr(0,4) + ")"         
 
-  h3.footer
+  h3#footer
     div.tag
       - for(let tag of book.tags)
         span.enum #{tag.tagName}
@@ -69,7 +69,8 @@
     if (nextBook)
       button.text3(id="next_book" type="text" onclick="setOptionsBook({bookId: " + nextBook.bookId + ", num: " + nextBook.num + "});")
         div.chevrons(style="opacity: 0.3; position: fixed; right: 10px; top: 40%")
-          i.fa.fa-chevron-right(style="font-size: 60px" aria-hidden="true")
+          i.fa.fa-chevron-right(style="font-size: 60px" aria-hidden="true")       
+
 
 
 
