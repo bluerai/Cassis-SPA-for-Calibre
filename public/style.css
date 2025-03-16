@@ -697,11 +697,11 @@ button_breit {
 }
 
 .trans-left {
-  transform: translateX(-75%);
+  transform: translateX(-100%);
 }
 
 .trans-right {
-  transform: translateX(75%);
+  transform: translateX(100%);
 }
 
 .trans-null {
@@ -709,7 +709,7 @@ button_breit {
 }
 
 .swipe-left-transition {
-  transition: transform 0.5s ease;
+  transition: transform 0.5s ease-out;
   transform: translateX(-100%);
 }
 
@@ -920,8 +920,8 @@ div.pageup {
     top: 80px;
 
     /*für Swipe*/
-    user-select: none;
-    touch-action: pan-y;
+    /* user-select: none;
+    touch-action: pan-y; */
     /* Verhindert vertikales Scrollen */
     cursor: grab;
   }

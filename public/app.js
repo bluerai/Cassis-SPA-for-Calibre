@@ -192,7 +192,7 @@ async function appendToBooklist(options) {
 
 async function getBook(options) {
   if (options.oldNum) {
-    document.getElementById("books").classList.add((options.oldNum > options.num) ? "swipe-right-transition" : "swipe-left-transition");
+    document.getElementById("app").classList.add((options.oldNum > options.num) ? "swipe-right-transition" : "swipe-left-transition");
   }
   const response = await fetch("/app/book/" + options.bookId + `?expires=${options.expires}&signature=${options.signature}`, {
     method: "POST",
@@ -207,18 +207,18 @@ async function getBook(options) {
   restoreOptions();
 
   if (options.oldNum) {
-    document.getElementById("books").classList.remove((options.oldNum > options.num) ? "swipe-right-transition" : "swipe-left-transition");
+    document.getElementById("app").classList.remove((options.oldNum > options.num) ? "swipe-right-transition" : "swipe-left-transition");
  
-    document.getElementById("books").classList.add((options.oldNum < options.num) ? "trans-right" : "trans-left");
+    document.getElementById("app").classList.add((options.oldNum < options.num) ? "trans-right" : "trans-left");
     setTimeout(() => {
-      document.getElementById("books").classList.add("swipe-null-transition");
+      document.getElementById("app").classList.add("swipe-null-transition");
     }, 0);
   }
   setTimeout(() => {
     document.getElementById("footer").style.display = "block";
     if (options.oldNum) {
-      document.getElementById("books").classList.remove((options.oldNum < options.num) ? "trans-right" : "trans-left");
-      document.getElementById("books").classList.remove("swipe-null-transition");
+      document.getElementById("app").classList.remove((options.oldNum < options.num) ? "trans-right" : "trans-left");
+      document.getElementById("app").classList.remove("swipe-null-transition");
     }
 
   }, 500)
