@@ -81,7 +81,7 @@ export function loginAction(req, res) {
     }
 
     if (!users[username]) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Invalid credentials.' });
     }
 
     if (users[username].startsWith("$argon2id$")) {  //bereits gehasht
@@ -98,7 +98,7 @@ export function loginAction(req, res) {
       if (password === users[username]) {
         const token = jwt.sign({ username }, JWT_KEY, { expiresIn: JWT.duration });
         savePasswordAsHash(username, password, users);
-        return res.status(200).json({ token: token });
+        return res.status(200).json({ token: token, username, expiresIn });
       }
     }
 

@@ -9,7 +9,8 @@ async function validate() {
     const data = await response.json();
     switch (response.status) {
       case 200: {
-        console.log("verifyUser: Valid token - user=" + data.user.username + ", expire in: " + new Date(data.user.exp).toLocaleString());
+        console.log("verifyUser: Valid token - user=" + data.user.username + ", expires at: " + (new Date(data.user.exp * 1000).toLocaleString()));
+        displayMessage(': Login "' + data.user.username + '" gültig bis ' + (new Date(data.user.exp * 1000).toLocaleDateString()), 5);
         break;
       }
       case 401: {
@@ -49,6 +50,7 @@ async function login() {
         document.getElementById('login').innerHTML = "";
         document.querySelectorAll('.menu').forEach(el => el.style.display = 'block');
         document.getElementById('searchInput').style.display = 'block';
+
         getBooklist(DEF_OPTIONS);
       } else {
         responseFail_Handler("login", response, 'Credentials not valid. Try again!')
@@ -208,7 +210,7 @@ async function getBook(options) {
 
   if (options.oldNum) {
     document.getElementById("app").classList.remove((options.oldNum > options.num) ? "swipe-right-transition" : "swipe-left-transition");
- 
+
     document.getElementById("app").classList.add((options.oldNum < options.num) ? "trans-right" : "trans-left");
     setTimeout(() => {
       document.getElementById("app").classList.add("swipe-null-transition");
@@ -534,15 +536,29 @@ function initSwipe() {
   });
 
   // MAGIC MOUSE Wischgesten (wheel-Event)
-  /*   swipeArea.addEventListener("wheel", (e) => {
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { // Prüfen, ob es eine horizontale Bewegung ist
-        if (e.deltaX > 0) {
-          displayMessage("Nach rechts geswiped (Magic Mouse)!");
-        } else {
-          displayMessage("Nach links geswiped (Magic Mouse)!");
-        }
+  let wheelrunning = false;
+
+  swipeArea.addEventListener("wheel", (e) => {
+    if (wheelrunning) return;
+    let clickfunc;
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) { // Prüfen, ob es eine horizontale Bewegung ist
+      if (e.deltaX < 0) {
+        //displayMessage("Nach rechts geswiped (Magic Mouse)!");
+        clickfunc = document.getElementById("prev_book");
+        wheelrunning = true;
+      } else {
+        //displayMessage("Nach links geswiped (Magic Mouse)!");
+        clickfunc = document.getElementById("next_book");
+        wheelrunning = true;
       }
-    }); */
+      if (clickfunc) {
+        clickfunc.click();
+      } else {
+        displayMessage("keine weiteren Daten", 5);
+      }
+    }
+    setTimeout(() => (wheelrunning = false), 1450)
+  });
 
 }
 
