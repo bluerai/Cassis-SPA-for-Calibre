@@ -17,11 +17,11 @@ try {
     JWT.key = generateSecureRandomString(32);
     JWT.duration = "30d";
     fs.writeJsonSync(authfile, JWT);
-    logger.warn("New JWT file saved: " + authfile);
+    logger.warn("Authorisation by jwt token: New jwt key generated!");
   }
 } catch (error) {
   logger.error(error);
-  logger.warn("No access authorisation!");
+  logger.warn("No authorisation!");
 }
 
 export const JWT_KEY = JWT.key;
