@@ -7,8 +7,14 @@ import crypto from 'crypto';
 import { join } from 'path';
 import { logger } from '../log.js';
 
+const CASSIS_CONFIG = process.env.CASSIS_CONFIG || "../config";
+fs.ensureDirSync(CASSIS_CONFIG, (error, exists) => {
+  console.log(21);
+  if (error) { errorLogger(error); process.exit(1) }
+})
+
 export let JWT = {};
-const authfile = join(process.env.CASSIS_CONFIG, "jwt.json");
+const authfile = join(CASSIS_CONFIG, "jwt.json");
 try {
   if (fs.existsSync(authfile)) {
     JWT = fs.readJsonSync(authfile)
@@ -16,30 +22,33 @@ try {
   } else {
     JWT.key = generateSecureRandomString(32);
     JWT.duration = "30d";
+    console.log(JWT.duration);
     fs.writeJsonSync(authfile, JWT);
-    logger.warn("Authorisation by jwt token: New jwt key generated!");
+    logger.warn("Authorisation by jwt token: New jwt key generated!" + authfile);
   }
 } catch (error) {
-  logger.error(error);
-  logger.warn("No authorisation!");
+  console.error(error);
+  logger.warn("No authorisation installed!");
 }
 
 export const JWT_KEY = JWT.key;
+export const JWT_DURATION = JWT.duration;
 
-const usersFile = join(process.env.CASSIS_CONFIG, "users.json");
+const USERSFILE = join(CASSIS_CONFIG, "users.json");
 
 //==== Actions ==================================================
 
 export function verifyAction(req, res) {
-  //console.log("verifyAction: ", req.url, req.body, req.params);
+  console.log("verifyAction: ", req.url, req.body, req.params);
 
   const token = req.headers.authorization?.split(' ')[1]
-  if (!token || token == null) {
+
+  if (!token || token === "null") {
     if (verifySignature(req)) {
       logger.debug("/verify: signature is valid");
       return res.status(200).json({ message: 'Signature is valid' });
     };
-    return res.render(join(import.meta.dirname, 'views', 'login'), function (error, html) {
+    return res.render(join(import.meta.dirname, 'views', 'login'), { first_login: (!fs.existsSync(USERSFILE)) }, function (error, html) {
       if (error) { logger.error(error); logger.debug(error.stack); return }
       logger.debug("/verify: No token");
       res.status(401).json({ error: 'No token', html: html });
@@ -48,7 +57,7 @@ export function verifyAction(req, res) {
 
   jwt.verify(token, JWT_KEY, (err, decoded) => {
     if (err) {
-      res.render(join(import.meta.dirname, 'views', 'login'), function (error, html) {
+      res.render(join(import.meta.dirname, 'views', 'login'), { first_login: (!fs.existsSync(USERSFILE)) }, function (error, html) {
         if (error) { logger.error(error); logger.debug(error.stack); return }
         logger.debug("/verify: Invalid token");
         res.status(401).json({ error: 'Invalid token', html: html });
@@ -72,8 +81,13 @@ export function loginAction(req, res) {
 
     let users = {};
     try {
-      if (fs.existsSync(usersFile)) {
-        users = fs.readJsonSync(usersFile);
+      if (fs.existsSync(USERSFILE)) {
+        users = fs.readJsonSync(USERSFILE);
+      } else {
+        console.log("No users file");
+        users[username] = password;
+        fs.writeJsonSync(USERSFILE, users);
+        logger.info(`User ${username}: Password saved`);
       }
     } catch (error) {
       logger.error(error);
@@ -88,7 +102,7 @@ export function loginAction(req, res) {
       argon2.verify(users[username], username + ":" + password)
         .then(match => {
           if (match) {
-            const token = jwt.sign({ username }, JWT_KEY, { expiresIn: JWT.duration });
+            const token = jwt.sign({ username }, JWT_KEY, { expiresIn: JWT_DURATION });
             res.status(200).json({ token: token });
           } else {
             res.status(401).json({ error: 'Invalid credentials' });
@@ -96,13 +110,14 @@ export function loginAction(req, res) {
         })
     } else { //erstmalige Benutzung - wird geprüft und gehasht
       if (password === users[username]) {
-        const token = jwt.sign({ username }, JWT_KEY, { expiresIn: JWT.duration });
+        const token = jwt.sign({ username }, JWT_KEY, { expiresIn: JWT_DURATION });
         savePasswordAsHash(username, password, users);
-        return res.status(200).json({ token: token, username, expiresIn });
+        return res.status(200).json({ token: token, username: username, expiresIn: JWT_DURATION });
       }
     }
 
   } catch (err) {
+    console.error(err);
     logger.error(err);
     res.status(500).json({ error: 'Internal server error' });
   };
@@ -112,7 +127,7 @@ function savePasswordAsHash(username, password, users) {
   argon2.hash(username + ":" + password)
     .then(hash => {
       users[username] = hash;
-      fs.writeJsonSync(usersFile, users);
+      fs.writeJsonSync(USERSFILE, users);
       logger.info(`User ${username}: Password hashed`);
       return true;
     })
@@ -167,7 +182,7 @@ export function verifySignature(req) {
 
     const { expires, signature } = req.query;
     if (!expires || !signature) { return false; }
-    
+
     const identifier = parseInt(req.path.split('/').pop(), 10);
 
     //console.log("verifySignature: ", req.query, identifier);

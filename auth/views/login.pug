@@ -2,18 +2,32 @@ form(id="loginForm")
   div(style="margin-left: auto;margin-right: auto; margin-top: 50px;")
     table(style="margin: auto; border-collapse: collapse;")
       tr(style="height: 50px")
-        th(colspan="2") Bitte anmelden:
+        th(colspan="2") 
+          if (first_login)
+            p Please register:
+          else
+            p Please login:
       tr(style="height: 48px")
         td
           label(for="username") Name:
         td
-          input(type="text" id="username" name="username" value="", required)
+          if (first_login) 
+            input(type="text" id="username" name="username" value="", required)
+          else
+            input(type="text" id="username" name="username" value="", required)
       tr(style="height: 48px")
         td 
-          label(for="password") Passwort:
+          label(for="password") Password:
         td
           input(type="password" id="password" name="password" value="", required)
+
+      if (first_login)
+        tr(style="height: 48px")
+          td 
+            label(for="password2") Confirm password:
+          td
+            input(type="password" id="password2" name="password2" value="", required)
       tr(style="height: 48px")
         td(colspan="2")
-          button_breit(type="submit" onClick="login()") Anmelden
+          button_breit(type="submit" onClick="login(" + first_login + ")") Anmelden
       

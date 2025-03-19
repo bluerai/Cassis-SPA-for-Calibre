@@ -28,12 +28,19 @@ async function validate() {
   } catch (error) { console.error('Error:', error); }
 }
 
-async function login() {
+async function login(first_login) {
   const loginForm = document.getElementById('loginForm');
 
   if (loginForm) {
     const formData = new FormData(loginForm);
     const data = Object.fromEntries(formData.entries());
+
+    if (first_login) {
+      if (data.password !== data.password2) {
+        displayMessage('Passwords do not match. Try again!', 5);
+        return;
+      }
+    }
 
     try {
       const response = await fetch("/login", {
