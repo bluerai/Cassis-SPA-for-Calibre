@@ -9,7 +9,6 @@ import { logger } from '../log.js';
 
 const CASSIS_CONFIG = process.env.CASSIS_CONFIG || "../config";
 fs.ensureDirSync(CASSIS_CONFIG, (error, exists) => {
-  console.log(21);
   if (error) { errorLogger(error); process.exit(1) }
 })
 
@@ -22,7 +21,6 @@ try {
   } else {
     JWT.key = generateSecureRandomString(32);
     JWT.duration = "30d";
-    console.log(JWT.duration);
     fs.writeJsonSync(authfile, JWT);
     logger.warn("Authorisation by jwt token: New jwt key generated!" + authfile);
   }
@@ -39,7 +37,6 @@ const USERSFILE = join(CASSIS_CONFIG, "users.json");
 //==== Actions ==================================================
 
 export function verifyAction(req, res) {
-  console.log("verifyAction: ", req.url, req.body, req.params);
 
   const token = req.headers.authorization?.split(' ')[1]
 
@@ -84,7 +81,7 @@ export function loginAction(req, res) {
       if (fs.existsSync(USERSFILE)) {
         users = fs.readJsonSync(USERSFILE);
       } else {
-        console.log("No users file");
+        logger.warn("loginAction: No users file");
         users[username] = password;
         fs.writeJsonSync(USERSFILE, users);
         logger.info(`User ${username}: Password saved`);
@@ -184,8 +181,6 @@ export function verifySignature(req) {
     if (!expires || !signature) { return false; }
 
     const identifier = parseInt(req.path.split('/').pop(), 10);
-
-    //console.log("verifySignature: ", req.query, identifier);
 
     const expectedSignature = crypto
       .createHmac('sha256', JWT_KEY)

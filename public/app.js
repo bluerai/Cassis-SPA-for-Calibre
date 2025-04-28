@@ -9,12 +9,10 @@ async function validate() {
     const data = await response.json();
     switch (response.status) {
       case 200: {
-        console.log("verifyUser: Valid token - user=" + data.user.username + ", expires at: " + (new Date(data.user.exp * 1000).toLocaleString()));
         displayMessage(': Login "' + data.user.username + '" gültig bis ' + (new Date(data.user.exp * 1000).toLocaleDateString()), 5);
         break;
       }
       case 401: {
-        console.log(data.error);
         document.getElementById('books').innerHTML = "";
         document.querySelectorAll('button.menu').forEach(el => el.style.display = 'none');
         document.getElementById('searchInput').style.display = 'none';
@@ -79,7 +77,6 @@ function displayMessage(msg, sec) {
 
 function responseFail_Handler(functionName, response, msg) {
   msg = msg || (functionName + ": " + response.statusText + " (#" + response.status + ")");
-  console.log(msg);
   displayMessage(msg, 8);
 }
 
