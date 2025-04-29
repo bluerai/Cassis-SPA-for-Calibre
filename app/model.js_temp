@@ -213,37 +213,6 @@ LEFT JOIN SeriesInfo  s ON b.id = s.bookId
 limit ? offset ?`;
 };
 
-
-function searchForBooksQuery(searchString, sortString) {
-  return `
-  WITH AuthorNames AS (
-    SELECT books.id AS bookId,
-           GROUP_CONCAT(authors.name, ', ') AS name
-    FROM books
-    JOIN books_authors_link ON books.id = books_authors_link.book
-    JOIN authors ON authors.id = books_authors_link.author
-    GROUP BY books.id
-),
-SeriesInfo AS (
-    SELECT books.id AS bookId, series.sort
-    FROM books
-    JOIN books_series_link ON books.id = books_series_link.book
-    JOIN series ON series.id = books_series_link.series
-)
-SELECT
-    b.id AS bookId,
-    b.timestamp,
-    (COALESCE(a.name, '') || '; ' || b.title) AS search_string,
-    (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || COALESCE(s.sort, '') || ' ' || b.path) AS search
-FROM books b
-LEFT JOIN AuthorNames a ON b.id = a.bookId
-LEFT JOIN SeriesInfo s ON b.id = s.bookId
-${searchClause(searchString)} 
-order by bookId desc 
-LIMIT ?
-  `;
-};
-
 function countBooksQuery(searchString) {
   return `
 WITH AuthorNames AS (
@@ -491,15 +460,6 @@ export function findBooks(searchString, sortString, limit, offset) {
   try {
     const selectAllStmt = METADATA_DB.prepare(findBooksQuery(searchString, sortString));
     return selectAllStmt.all(limit, offset);
-  } catch (error) { errorLogger(error); return [] }
-}
-
-
-export function searchForBooks(searchString, limit) {
-  logger.debug(`searchForBooks: searchString=${searchString}, limit=${limit}`);
-  try {
-    const selectAllStmt = METADATA_DB.prepare(searchForBooksQuery(searchString, limit));
-    return selectAllStmt.all(limit);
   } catch (error) { errorLogger(error); return [] }
 }
 
