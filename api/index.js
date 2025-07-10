@@ -30,7 +30,7 @@ export async function searchAction(request, response) {
     logger.debug("searchAction: request.query=" + JSON.stringify(request.query));
     const searchString = request.query.search || "";
     const books = searchForBooks(searchString, 24);
-    response.json({ books});
+    response.json({ books });
   }
   catch (error) { errorHandler(error, response, 'findAction') }
 }
