@@ -204,7 +204,8 @@ SELECT ROW_NUMBER() OVER (ORDER BY b.timestamp DESC) AS num,
        b.pubdate,
        b.series_index AS seriesIndex,
        b.path,
-       (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || COALESCE(s.sort, '') || ' ' || b.path) AS search
+       (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || 
+       COALESCE(s.sort, '') || ' ' || SUBSTR(b.path, 1, INSTR(b.path, '(') - 1)) AS search
 FROM books b
 LEFT JOIN AuthorNames a ON b.id = a.bookId
 LEFT JOIN SeriesInfo  s ON b.id = s.bookId 
@@ -235,7 +236,7 @@ SELECT
     b.timestamp,
     (COALESCE(a.name, '') || '; ' || b.title) AS search_string,
     (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || 
-     COALESCE(s.sort, '') || ' ' ||  SUBSTR(b.path, 1, INSTR(b.path, '(') - 1))) AS search
+     COALESCE(s.sort, '') || ' ' ||  SUBSTR(b.path, 1, INSTR(b.path, '(') - 1)) AS search
 FROM books b
 LEFT JOIN AuthorNames a ON b.id = a.bookId
 LEFT JOIN SeriesInfo s ON b.id = s.bookId
@@ -264,7 +265,7 @@ SeriesInfo AS (
 SELECT COUNT(*) AS count
 FROM (
     SELECT (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' ||
-            COALESCE(s.series_name, '') || ' ' ||  SUBSTR(b.path, 1, INSTR(b.path, '(') - 1)) AS search
+      COALESCE(s.series_name, '') || ' ' ||  SUBSTR(b.path, 1, INSTR(b.path, '(') - 1)) AS search
     FROM books b
     LEFT JOIN AuthorNames a ON b.id = a.bookId
     LEFT JOIN SeriesInfo s ON b.id = s.bookId
@@ -303,7 +304,7 @@ SELECT ROW_NUMBER() OVER (ORDER BY b.timestamp DESC) AS num,
        b.series_index AS seriesIndex,
        b.path,
        (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' ||
-            COALESCE(s.series_name, '') || ' ' || b.path) AS search
+          COALESCE(s.series_name, '') || ' ' ||  SUBSTR(b.path, 1, INSTR(b.path, '(') - 1)) AS search
 FROM FilteredBooks b
 LEFT JOIN AuthorNames a ON b.id = a.bookId
 LEFT JOIN SeriesInfo s ON b.id = s.bookId
@@ -336,7 +337,7 @@ FilteredBooks AS (
 SELECT COUNT(*) AS count
 FROM (
     SELECT (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || 
-            COALESCE(s.series_name, '') || ' ' || b.path) AS search
+      COALESCE(s.series_name, '') || ' ' ||  SUBSTR(b.path, 1, INSTR(b.path, '(') - 1)) AS search
     FROM FilteredBooks b
     LEFT JOIN AuthorNames a ON b.id = a.bookId
     LEFT JOIN SeriesInfo s ON b.id = s.bookId
@@ -369,8 +370,8 @@ FilteredBooks AS (
 )
 SELECT ROW_NUMBER() OVER (` + (sortArray[sortString] || sortArray['timestamp.desc']) + `) AS num,
        ` + bookColumns + `,
-       (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || 
-            COALESCE(s.series_name, '') || ' ' || b.path) AS search
+      (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || 
+        COALESCE(s.series_name, '') || ' ' || SUBSTR(b.path, 1, INSTR(b.path, '(') - 1)) AS search
 FROM FilteredBooks b
 LEFT JOIN AuthorNames a ON b.id = a.bookId
 LEFT JOIN SeriesInfo s ON b.id = s.bookId
