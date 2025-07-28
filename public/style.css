@@ -1,6 +1,6 @@
 :root {
   /*Farbe: Schrift, Linien bzw. Hintergrund*/
-  --body: #23527c;
+  /*  --body: #23527c;
   --body-bg: #e0ded2;
 
   --link: #23527c;
@@ -17,17 +17,102 @@
 
   --action: #e0ded2;
   --action-bg: #337ab7;
+ */
+  --col01: #000000;
+  --col02: #ffffff;
+  --col03: #e7e7e7;
+  --col04: #337ab7;
 
-  --border: 3px solid #337ab7;
+  /*    --col01: #ffffff;
+  --col02: #cb4848;
+  --col03: #cb4848;
+  --col04: #ffcb6b;  */
 
-  --fontlight: 400;
-  --fontnormal: 1200;
+  /*     --col01: #ffffff;
+  --col02: #000;
+  --col03: #000;
+  --col04: #fac39c;  */
+
+  --body: var(--col01);
+  --body-bg: var(--col02);
+
+  --link: var(--col01);
+  --link-bg: var(--col03);
+
+  --akzent: var(--col03);
+  --akzent-bg: var(--col04);
+
+  --menu: var(--col02);
+  --menu-bg: var(--col04);
+
+  --nav: var(--col04);
+  --nav-bg: var(--col03);
+
+  --action: var(--col02);
+  --action-bg: var(--col04);
+
+  --border01: 2px solid var(--col01);
+  --border02: 2px solid var(--col02);
+  --border03: 2px solid var(--col03);
+  --border04: 2px solid var(--col04);
+
+  --fontnormal: 540;
+  --fontbold: 780;
 
   --shadow-border: 2px solid hsla(200, 3%, 64%, 0.66);
   --shadow: -12px 12px 5px 0px hsla(200, 3%, 64%, 0.66);
+
   /* -12px 12px 5px 0px hsla(198, 6%, 60%, 0.66); */
   /* -12px 12px 5px 0px hsla(200, 3%, 64%, 0.66); */
   /* 0px 8px 16px 0px rgba(0, 0, 0, 0.2); */
+}
+
+.color01 {
+  color: var(--col01)
+}
+
+.color02 {
+  color: var(--col02)
+}
+
+.color03 {
+  color: var(--col03)
+}
+
+.color04 {
+  color: var(--col04)
+}
+
+.background-color01 {
+  background-color: var(--col01)
+}
+
+.background-color02 {
+  background-color: var(--col02)
+}
+
+.background-color03 {
+  background-color: var(--col03)
+}
+
+.background-color04 {
+  background-color: var(--col04)
+}
+
+.border01 {
+  border: var(--border01)
+}
+
+.border012 {
+  border: var(--border02)
+}
+
+.border03 {
+  border: var(--border03)
+}
+
+.border04 {
+  border: var(--border04)
 }
 
 path {
@@ -63,8 +148,7 @@ li {
   margin: 0px;
   line-height: 120%;
   text-decoration: none;
-  color: var(--body);
-  font-weight: var(--fontlight);
+  font-weight: var(--fontnormal);
 }
 
 h1 {
@@ -80,9 +164,10 @@ h2 {
 }
 
 h3 {
-  font-weight: var(--fontlight);
+  font-weight: var(--fontnormal);
   margin-top: 12px;
   margin-bottom: 12px;
+  color: var(--body-bg);
 }
 
 h4 {
@@ -92,7 +177,7 @@ h4 {
 
   padding: 5px;
   width: 100%;
-  border-bottom: 3px solid var(--menu-bg);
+  border-bottom: 2px solid var(--menu-bg);
 }
 
 h5 {
@@ -100,14 +185,9 @@ h5 {
 }
 
 h6 {
-  font-weight: var(--fontlight);
+  font-weight: var(--fontnormal);
   margin-top: 0px;
   margin-bottom: 4px;
-}
-
-p {
-  font-weight: var(--fontlight);
-  margin: 0px;
 }
 
 h1,
@@ -146,8 +226,9 @@ button.menu:visited {
 
 button.menu:hover,
 button.menu:active {
-  color: var(--menu-bg);
-  background-color: var(--akzent-bg);
+  border: var(--border02);
+  /*   color: var(--menu-bg);
+  background-color: var(--menu); */
 }
 
 
@@ -160,12 +241,13 @@ button.nav:visited {
 
 button.nav:hover,
 button.nav:active {
-  color: var(--nav-bg);
-  background-color: var(--akzent-bg);
+  border: var(--border04);
+  /*   color: var(--nav-bg);
+  background-color: var(--nav); */
 }
 
 .akzent {
-  color: var(--akzent);
+  color: var(--akzent-bg);
 }
 
 .action,
@@ -177,8 +259,7 @@ a.action:visited {
 
 a.action:hover,
 a.action:active {
-  color: var(--action-bg);
-  background-color: var(--menu-bg);
+  background-color: var(--body);
 }
 
 .disabled {
@@ -218,10 +299,6 @@ a.action:active {
   margin-right: 10px;
 }
 
-.info {
-  color: var(--action);
-}
-
 .flex {
   display: flex;
   flex-direction: row
@@ -233,7 +310,7 @@ button {
   float: left;
   border-radius: 0px;
   border: none;
-  font-size: 22px;
+  font-size: 20px;
   cursor: pointer;
 }
 
@@ -276,13 +353,14 @@ button.info:visited {
 
 button.info:hover,
 button.info:active {
+  border: var(--border04);
+  /* 
   background-color: var(--body);
-  color: var(--body-bg);
+  color: var(--body-bg); */
 }
 
-select.info,
-input.info {
-  font-size: 18px;
+table.info select {
+  font-size: 16px;
   color: var(--body);
   width: 125px;
   margin: 10px;
@@ -299,45 +377,56 @@ input[type=checkbox] {
 }
 
 table.info {
-  background-color: var(--action-bg);
-  border: 3px solid var(--action-bg);
-  margin-top: 20px;
+  color: var(--col01);
+  background-color: var(--col02);
+  border: var(--border03);
 
+  box-shadow: var(--shadow);
+  border: var(--shadow-border);
+
+  margin-top: 20px;
   margin-left: 25%;
   margin-right: 25%;
   width: 50%;
 }
 
+table.info td {
+  text-align: center;
+  border: var(--border03);
+  padding: 5px;
+}
+
 table.popup {
   position: absolute;
-  top: 80px;
-  color: var(--action-bg);
-  background-color: var(--action);
-  border: 3px solid var(--action-bg);
-  box-shadow: var(--shadow);
+
+  color: var(--col01);
+  background-color: var(--col02);
   border: var(--shadow-border);
+
+  top: 80px;
   margin-left: 35%;
   margin-right: 35%;
   z-index: 70;
 }
 
-table.info td {
-  text-align: center;
-  border: 3px solid var(--action);
-  padding: 10px;
-}
 
 table.popup td,
 table.popup th {
+  font-size: 16px;
   text-align: center;
-  padding: 0px 10px;
+  padding: 5px 10px;
   margin: 0px;
   width: 50%;
 }
 
 table.popup th {
-  background: var(--menu-bg);
+  background-color: var(--col03);
 }
+
+table.popup td {
+  font-weight: var(--fontnormal);
+}
+
 
 .tags {
   position: absolute;
@@ -347,24 +436,26 @@ table.popup th {
   border: var(--shadow-border);
   width: 320px;
   margin-top: 20px;
+  padding-bottom: 20px;
 }
 
 .tags p {
   color: var(--body);
   padding: 8px 12px;
-  border: 3px solid var(--body-bg);
+  border: var(--border02);
   text-decoration: none;
   display: block;
   text-align: left;
 }
 
 .tags p:hover {
-  background-color: var(--akzent-bg);
-  color: var(--body-bg);
+  border: var(--border04);
+  /*   background-color: var(--akzent-bg);
+  color: var(--akzent); */
 }
 
-.tags .selected {
-  background-color: var(--menu-bg);
+.tags .selected p {
+  border: var(--border04);
 }
 
 tr.item,
@@ -408,8 +499,6 @@ div.item {
   margin-left: 3px;
   margin-right: 3px;
   padding: 0px;
-
-  /* border: 1px solid black; */
 }
 
 div.itemgrid {
@@ -420,7 +509,6 @@ div.itemgrid {
 img.itemcover {
   position: absolute;
   border: 9px solid transparent;
-  /* var(--body-bg); */
 }
 
 img.itemcover:hover {
@@ -541,7 +629,6 @@ div.itemtxt {
   padding-right: 30px;
 }
 
-
 .left {
   float: left;
 }
@@ -551,16 +638,11 @@ div.itemtxt {
 }
 
 button.text {
-  background-color: var(--body-bg);
-  border: 3px solid var(--menu-bg);
-}
+  color: var(--akzent-bg);
+  background-color: var(--akzent);
+  border: var(--border02);
+  font-weight: var(--fontnormal);
 
-button.text:hover {
-  background-color: var(--menu-bg);
-  border: 3px solid var(--menu-bg);
-}
-
-button.text {
   padding: 0px 5px;
   text-align: center;
   text-decoration: none;
@@ -573,14 +655,20 @@ button.text {
 button.text2,
 button.text3,
 button.text6 {
-  color: var(--body);
-  background-color: var(--body-bg);
+  color: var(--col01);
+  background-color: var(--col02);
 }
 
+button.text2.akzent {
+  color: var(--menu-bg);
+  font-weight: bold;
+}
+
+button.text:hover,
 button.text2:hover,
 button.text3:hover,
 button.text6:hover {
-  background-color: var(--menu-bg);
+  border: var(--border04);
 }
 
 button.text2 {
@@ -612,7 +700,8 @@ button.text4 {
 
 button.text5 {
   background-color: transparent;
-  color: var(--akzent-bg);
+  font-size: 24px;
+  font-weight: var(--font-light);
   float: none;
   border: none;
   padding: 0px;
@@ -621,7 +710,12 @@ button.text5 {
   cursor: pointer;
 }
 
+button.text5:hover {
+  border: var(--border04);
+}
+
 button.text6 {
+  background-color: var(--col03);
   font-size: 16px;
   padding: 3px 10px;
   margin: 7px 15%;
@@ -646,15 +740,16 @@ button.text6 {
   float: none;
   color: var(--body);
   padding: 12px 16px;
-  border: 3px solid var(--body-bg);
+  border: var(--border02);
   text-decoration: none;
   display: block;
   text-align: left;
 }
 
 #dropdown-content p:hover {
-  background-color: var(--akzent-bg);
-  color: var(--body-bg);
+  border: var(--border04);
+  /*   color: var(--akzent);
+  background-color: var(--akzent-bg); */
 }
 
 #pagedown {
@@ -722,6 +817,7 @@ button_breit {
   transition: transform 0.5s ease-in-out;
   transform: translateX(0%);
 }
+
 
 /* The transition-timing-function property can have the following values: 
 

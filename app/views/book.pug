@@ -21,16 +21,19 @@
           
           p(style="margin-bottom: 12px")
             - for(let author of book.authors)
-              button.text3(onclick="setOptionsAuthor({authorsId: " + author.authorsId + "});")
+              button.text5.color04(onclick="setOptionsAuthor({authorsId: " + author.authorsId + "});")
                 span #{author.authorsName} 
                   
-          p.akzent #{book.title} 
-            button.text5(onclick="sendMail(`" + book.authors.map(a => a.authorsName).toString() + "`, `" + book.title + "`, " + book.bookId + ", `" + book.tags[0].tagName + "`)")
-              i.fa.fa-envelope(aria-hidden="true")
-            p
-              - for(let format of book.formats)
-                    a.action(name="download" href="/app/file/" + format + "/" + book.bookId + book.signature  download=book.title)
-                      i.fa.fa-download(aria-hidden="true"  style="margin-top: 30px")=" " + format.toUpperCase()
+          p
+            button.text5.color01.border00= book.title
+            if book && book.tags[0] && book.authors && book.title && book.bookId
+              button.text5.color01(onclick="sendMail(`" + book.authors.map(a => a.authorsName).toString() + "`, `" + book.title + "`, " + book.bookId + ", `" + book.tags[0].tagName + "`)")
+                i.fa.fa-envelope(aria-hidden="true" style="margin-left: 10px")
+
+          p
+            - for(let format of book.formats)
+              a.action(name="download" href="/app/file/" + format + "/" + book.bookId + book.signature  download=book.title)
+                i.fa.fa-download(aria-hidden="true"  style="margin-top: 30px")=" " + format.toUpperCase()
 
             if !book.comment
               h3(style="margin-top:30px")
@@ -43,7 +46,7 @@
         div.columnspace
 
         div.bookcolumn
-          div
+          div#bookcontent
             h4(style="margin-top: 0px") Inhalt
             p !{book.comment} 
             h3.center

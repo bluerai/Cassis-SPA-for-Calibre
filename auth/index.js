@@ -173,21 +173,28 @@ export function createSignature(identifier, expiresIn) {
   return `?expires=${expiration}&signature=${signature}`;
 };
 
+function isValidDate(date) {
+  return date instanceof Date && !isNaN(date.getTime());
+}
+
 // Funktion zum Überprüfen einer Signature
 export function verifySignature(req) {
   try {
-
     const { expires, signature } = req.query;
-    if (!expires || !signature) { return false; }
+
+    if (!expires || expires === 'undefined' || !signature || signature === 'undefined') { return false; }
+    const expDate = new Date(Math.round((expires / 1000) * 1000));
+    if (!isValidDate(expDate)) { return false; }
 
     const identifier = parseInt(req.path.split('/').pop(), 10);
+    if (identifier.isNaN) { return false; }
 
     const expectedSignature = crypto
       .createHmac('sha256', JWT_KEY)
       .update(`${identifier}:${expires}`)
       .digest('hex');
 
-    logger.debug("verifySignature: Book " + identifier + " expires at: " + new Date(Math.round((expires / 1000) * 1000)).toLocaleString());
+    logger.debug("verifySignature: Book " + identifier + " expires at: " + expDate.toLocaleString());
     return signature === expectedSignature && Date.now() < parseInt(expires, 10);
   } catch (error) {
     logger.error("verifySignature: " + error);

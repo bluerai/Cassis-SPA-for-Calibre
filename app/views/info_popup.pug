@@ -1,14 +1,10 @@
 
 table.popup#info_popup
   tr 
-    th 
-      h3= popup.head_name
-    th 
-      h3= popup.head_count
+    th=popup.head_name
+    th=popup.head_count
 
   - for(let item of popup.content)
     tr.pointer(onClick="setOptionsHub('" + popup.type + "', " + item.id + ")")
-      td(style="text-align: left")
-        h3 #{item.num}. #{item.name}
-      td 
-        h3= item.count
+      td(style="text-align: left")=`${item.num}. ${item.name}`
+      td=item.count
