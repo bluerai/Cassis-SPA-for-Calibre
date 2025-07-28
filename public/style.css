@@ -730,6 +730,19 @@ button.text6 {
   transform: translateX(0%);
 }
 
+#bookcontent div h4 {
+  position: relative;
+  color: transparent;
+  /* versteckt Originalinhalt */
+}
+
+#bookcontent div h4::before {
+  content: "Autoren-Info";
+  color: var(--col01);  /* hebt die Transparenz auf */
+  position: absolute;
+  left: 0;
+  top: 0;
+}
 
 /* The transition-timing-function property can have the following values: 
 
