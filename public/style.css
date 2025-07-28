@@ -1,23 +1,5 @@
 :root {
   /*Farbe: Schrift, Linien bzw. Hintergrund*/
-  /*  --body: #23527c;
-  --body-bg: #e0ded2;
-
-  --link: #23527c;
-  --link-bg: #e0ded2;
-
-  --akzent: #444;
-  --akzent-bg: #337ab7;
-
-  --menu: #23527c;
-  --menu-bg: #b7b7ab;
-
-  --nav: #23527c;
-  --nav-bg: #9b928d;
-
-  --action: #e0ded2;
-  --action-bg: #337ab7;
- */
   --col01: #000000;
   --col02: #ffffff;
   --col03: #e7e7e7;
@@ -32,24 +14,6 @@
   --col02: #000;
   --col03: #000;
   --col04: #fac39c;  */
-
-  --body: var(--col01);
-  --body-bg: var(--col02);
-
-  --link: var(--col01);
-  --link-bg: var(--col03);
-
-  --akzent: var(--col03);
-  --akzent-bg: var(--col04);
-
-  --menu: var(--col02);
-  --menu-bg: var(--col04);
-
-  --nav: var(--col04);
-  --nav-bg: var(--col03);
-
-  --action: var(--col02);
-  --action-bg: var(--col04);
 
   --border01: 2px solid var(--col01);
   --border02: 2px solid var(--col02);
@@ -83,19 +47,19 @@
   color: var(--col04)
 }
 
-.background-color01 {
+.background01 {
   background-color: var(--col01)
 }
 
-.background-color02 {
+.background02 {
   background-color: var(--col02)
 }
 
-.background-color03 {
+.background03 {
   background-color: var(--col03)
 }
 
-.background-color04 {
+.background04 {
   background-color: var(--col04)
 }
 
@@ -126,8 +90,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0px;
-  color: var(--body);
-  background-color: var(--body-bg);
+  color: var(--col01);
+  background-color: var(--col02);
   overflow-x: hidden;
   overflow-y: scroll;
 }
@@ -167,7 +131,7 @@ h3 {
   font-weight: var(--fontnormal);
   margin-top: 12px;
   margin-bottom: 12px;
-  color: var(--body-bg);
+  color: var(--col02);
 }
 
 h4 {
@@ -177,7 +141,7 @@ h4 {
 
   padding: 5px;
   width: 100%;
-  border-bottom: 2px solid var(--menu-bg);
+  border-bottom: 2px solid var(--col04);
 }
 
 h5 {
@@ -185,7 +149,6 @@ h5 {
 }
 
 h6 {
-  font-weight: var(--fontnormal);
   margin-top: 0px;
   margin-bottom: 4px;
 }
@@ -209,66 +172,32 @@ a {
   font-size: 18px !important;
 }
 
-button.nav i {
-  margin-left: -9px;
-}
-
-.navbar button {
-  font-size: 26px;
-}
-
 .menu,
 button.menu:link,
 button.menu:visited {
-  color: var(--menu);
-  background-color: var(--menu-bg);
+  color: var(--col02);
+  background-color: var(--col04);
 }
 
 button.menu:hover,
 button.menu:active {
   border: var(--border02);
-  /*   color: var(--menu-bg);
-  background-color: var(--menu); */
-}
-
-
-.nav,
-button.nav:link,
-button.nav:visited {
-  color: var(--nav);
-  background-color: var(--nav-bg);
-}
-
-button.nav:hover,
-button.nav:active {
-  border: var(--border04);
-  /*   color: var(--nav-bg);
-  background-color: var(--nav); */
 }
 
 .akzent {
-  color: var(--akzent-bg);
+  color: var(--col04);
 }
 
 .action,
 a.action:link,
 a.action:visited {
-  color: var(--action);
-  background-color: var(--action-bg);
+  color: var(--col02);
+  background-color: var(--col04);
 }
 
 a.action:hover,
 a.action:active {
-  background-color: var(--body);
-}
-
-.disabled {
-  pointer-events: none;
-  opacity: 0.3;
-}
-
-.center {
-  text-align: center;
+  background-color: var(--col01);
 }
 
 .vertical-center {
@@ -314,10 +243,6 @@ button {
   cursor: pointer;
 }
 
-.pointer {
-  cursor: pointer;
-}
-
 input {
   cursor: text;
   margin-top: 5px;
@@ -328,14 +253,23 @@ input {
   padding: 10px;
 }
 
+input[type=checkbox] {
+  position: relative;
+  bottom: 8px
+}
+
+input[type=text],
+input[type=password] {
+  border: var(--border03);
+}
+
 button {
   margin: 0px;
   padding: 10px;
 }
 
 button.menu,
-button.info,
-button.nav {
+button.info {
   width: 40px;
   height: 40px;
 }
@@ -347,34 +281,22 @@ button.two {
 button.info,
 button.info:link,
 button.info:visited {
-  background-color: var(--body-bg);
-  color: var(--body);
+  background-color: var(--col02);
+  color: var(--col01);
 }
 
 button.info:hover,
 button.info:active {
   border: var(--border04);
   /* 
-  background-color: var(--body);
-  color: var(--body-bg); */
-}
-
-table.info select {
-  font-size: 16px;
-  color: var(--body);
-  width: 125px;
-  margin: 10px;
-  float: unset;
+  background-color: var(--col01);
+  color: var(--col02); */
 }
 
 button.info {
   margin-top: 10px;
 }
 
-input[type=checkbox] {
-  position: relative;
-  bottom: 8px
-}
 
 table.info {
   color: var(--col01);
@@ -394,6 +316,14 @@ table.info td {
   text-align: center;
   border: var(--border03);
   padding: 5px;
+}
+
+table.info select {
+  font-size: 16px;
+  color: var(--col01);
+  width: 125px;
+  margin: 10px;
+  float: unset;
 }
 
 table.popup {
@@ -440,7 +370,7 @@ table.popup td {
 }
 
 .tags p {
-  color: var(--body);
+  color: var(--col01);
   padding: 8px 12px;
   border: var(--border02);
   text-decoration: none;
@@ -450,8 +380,8 @@ table.popup td {
 
 .tags p:hover {
   border: var(--border04);
-  /*   background-color: var(--akzent-bg);
-  color: var(--akzent); */
+  /*   background-color: var(--col04);
+  color: var(--col03); */
 }
 
 .tags .selected p {
@@ -513,7 +443,7 @@ img.itemcover {
 
 img.itemcover:hover {
   box-shadow: var(--shadow);
-  background-color: var(--menu-bg);
+  background-color: var(--col04);
   border: 0px;
   z-index: 20;
 }
@@ -555,12 +485,6 @@ div.itemtxt {
   margin-bottom: 32px;
 }
 
-.ellipsis {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
-
 #comment {
   text-align: left;
 }
@@ -573,7 +497,7 @@ div.itemtxt {
   min-width: 320px;
   min-height: 42px;
   /* overflow: hidden; */
-  background-color: var(--menu-bg);
+  background-color: var(--col04);
   z-index: 50;
 }
 
@@ -588,7 +512,7 @@ div.itemtxt {
   /*min-width: 320px; */
   z-index: 50;
 
-  background-color: var(--menu-bg);
+  background-color: var(--col04);
   text-align: center;
 }
 
@@ -596,50 +520,9 @@ div.itemtxt {
   padding-top: 12px;
 }
 
-.navbar {
-  position: fixed;
-  bottom: 0px;
-  left: 0px;
-  height: 48px;
-  width: 100%;
-  z-index: 50;
-  background-color: var(--nav-bg);
-  min-width: 320px;
-}
-
-.navbar-sub {
-  width: 42%;
-}
-
-.navbar-center {
-  float: none;
-  position: absolute;
-  top: 24px;
-  left: 50%;
-  transform: translate(-50%, -50%)
-}
-
-
-.navbar button {
-  text-align: center;
-  border-radius: 0px;
-  border: none;
-  padding-top: 6px;
-  padding-left: 30px;
-  padding-right: 30px;
-}
-
-.left {
-  float: left;
-}
-
-.right {
-  float: right;
-}
-
 button.text {
-  color: var(--akzent-bg);
-  background-color: var(--akzent);
+  color: var(--col04);
+  background-color: var(--col03);
   border: var(--border02);
   font-weight: var(--fontnormal);
 
@@ -660,7 +543,7 @@ button.text6 {
 }
 
 button.text2.akzent {
-  color: var(--menu-bg);
+  color: var(--col04);
   font-weight: bold;
 }
 
@@ -722,13 +605,29 @@ button.text6 {
   width: 70%
 }
 
+.button_breit {
+  border: none;
+  padding: 8px 16px;
+  margin-top: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  height: 40px;
+  width: 100%;
+  color: var(--col02);
+  background-color: var(--col04);
+}
+
 /* Style the dropdown content (hidden by default) */
 #dropdown-content {
   display: none;
   position: fixed;
   right: 50px;
   top: 50px;
-  background-color: var(--link-bg);
+  background-color: var(--col03);
   min-width: 160px;
   box-shadow: var(--shadow);
   border: var(--shadow-border);
@@ -738,7 +637,7 @@ button.text6 {
 /* Style the links inside the dropdown */
 #dropdown-content p {
   float: none;
-  color: var(--body);
+  color: var(--col01);
   padding: 12px 16px;
   border: var(--border02);
   text-decoration: none;
@@ -748,20 +647,20 @@ button.text6 {
 
 #dropdown-content p:hover {
   border: var(--border04);
-  /*   color: var(--akzent);
-  background-color: var(--akzent-bg); */
+  /*   color: var(--col03);
+  background-color: var(--col04); */
 }
 
 #pagedown {
   width: 100%;
   text-align: center;
-  background-color: var(--menu-bg);
+  background-color: var(--col04);
 }
 
 #transparent {
   opacity: 0.3;
   display: none;
-  background-color: var(--akzent-bg);
+  background-color: var(--col04);
   position: fixed;
   width: 100%;
   height: 100%;
@@ -776,19 +675,32 @@ button.text6 {
   z-Index: 60;
 }
 
-button_breit {
-  border: none;
-  padding: 8px 16px;
-  margin-top: 16px;
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+.pointer {
   cursor: pointer;
-  height: 40px;
-  width: 100%;
-  background-color: var(--menu-bg);
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.center {
+  text-align: center;
+}
+
+.ellipsis {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .trans-left {
@@ -937,7 +849,7 @@ div.pageup {
   padding-top: 36px;
   padding-bottom: 0px;
   text-align: center;
-  background-color: var(--menu-bg);
+  background-color: var(--col04);
   height: 84px;
 }
 
