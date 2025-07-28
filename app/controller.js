@@ -305,16 +305,41 @@ export async function ccAction(request, response) {
   } catch (error) { errorHandler(error, response, 'ccAction') }
 }
 
+async function newer(file1_path, file2_path) {
+  try {
+    // Stat-Objekte beider Dateien abrufen (mit Fehlerbehandlung)
+    const [stats1, stats2] = await Promise.all([
+      fs.stat(file1_path),
+      fs.stat(file2_path).catch(() => null) // Falls file2 nicht existiert
+    ]);
+
+    // Wenn file2 nicht existiert, ist file1 automatisch neuer
+    if (!stats2) return true;
+
+    // Vergleich der mtime-Werte (Modifikationszeit)
+    return stats1.mtimeMs > stats2.mtimeMs;
+
+  } catch (error) {
+    if (error.code === 'ENOENT' && error.path === file1_path) {
+      // Wenn file1 nicht existiert, kann es nicht neuer sein
+      return false;
+    }
+    throw error; // Andere Fehler weiterwerfen
+  }
+}
+
 async function sendResizedCover(response, source, targetDir, targetFile, resizeOptions) {
   try {
-    const options = { root: targetDir, headers: { 'Content-Type': 'image/jpeg' } }
-    const exists = await fs.pathExists(targetDir + "/" + targetFile);
+    const target = targetDir + "/" + targetFile;
 
-    if (!exists) {
+    const isNewer = await newer(source, target);
+
+    if (isNewer) {
       await sharp(source)
         .resize(resizeOptions)
-        .toFile(targetDir + "/" + targetFile);
+        .toFile(target);
     }
+    const options = { root: targetDir, headers: { 'Content-Type': 'image/jpeg' } }
     response.sendFile(targetFile, options);
   } catch (error) { errorHandler(error, response, 'sendResizedCover') }
 }
