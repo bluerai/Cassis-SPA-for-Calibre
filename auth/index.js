@@ -141,7 +141,7 @@ export function protect(request, response, next) {
     return next();
   }
   const token = request.headers.authorization?.split(' ')[1];
-  logger.debug("Protected path: " + request.path + "; " + token);
+  //logger.debug("protect: path=" + request.path + "; token=" + token);
 
   if (!token) {
     logger.debug("No Token !!!");
@@ -194,7 +194,7 @@ export function verifySignature(req) {
       .update(`${identifier}:${expires}`)
       .digest('hex');
 
-    logger.debug("verifySignature: Book " + identifier + " expires at: " + expDate.toLocaleString());
+    //logger.debug("verifySignature: Book " + identifier + " expires at: " + expDate.toLocaleString());
     return signature === expectedSignature && Date.now() < parseInt(expires, 10);
   } catch (error) {
     logger.error("verifySignature: " + error);

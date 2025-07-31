@@ -1,39 +1,40 @@
 .bookview
 
-  div.bookcontainer
+  .bookcontainer
 
     if book.serie
-      div.bookhead
-        button.text(onclick="setOptionsSerie({serieId: " + book.serie.seriesId + "})")
+      .bookhead
+
+        button.textbox(onclick="setOptionsSerie({serieId: " + book.serie.seriesId + "})")
           h6(style="padding: 5px;")
-            span.akzent Serie: 
+            span.color04 Serie: 
             span #{book.serie.seriesName}, 
             span=(book.tags[0].tagName === "Zeitschrift") ? "Nr. " : "Band " 
             span #{book.seriesIndex}
-      
-    div.book
 
-      div.bookcolumn
+    .bookpage
 
-        div.bookbox
+      .bookcolumn
+
+        .bookbox
 
           img#bookcover(src="/app/cover/book/" + book.bookId + book.signature)
-          
-          p(style="margin-bottom: 12px")
+
+          p.center(style="margin-bottom: 12px")
             - for(let author of book.authors)
-              button.text5.color04(onclick="setOptionsAuthor({authorsId: " + author.authorsId + "});")
+              button.text.color04(onclick="setOptionsAuthor({authorsId: " + author.authorsId + "});")
                 span #{author.authorsName} 
-                  
-          p
-            button.text5.color01.border00= book.title
+
+          p.center
+            button.text.border00=book.title
             if book && book.tags[0] && book.authors && book.title && book.bookId
-              button.text5.color01(onclick="sendMail(`" + book.authors.map(a => a.authorsName).toString() + "`, `" + book.title + "`, " + book.bookId + ", `" + book.tags[0].tagName + "`)")
+              button.text(onclick="sendMail(`" + book.authors.map(a => a.authorsName).toString() + "`, `" + book.title + "`, " + book.bookId + ", `" + book.tags[0].tagName + "`)")
                 i.fa.fa-envelope(aria-hidden="true" style="margin-left: 10px")
 
           p
             - for(let format of book.formats)
               a.action(name="download" href="/app/file/" + format + "/" + book.bookId + book.signature  download=book.title)
-                i.fa.fa-download(aria-hidden="true"  style="margin-top: 30px")=" " + format.toUpperCase()
+                i.fa.fa-download(aria-hidden="true" style="margin-top: 30px")=" " + format.toUpperCase()
 
             if !book.comment
               h3(style="margin-top:30px")
@@ -43,20 +44,20 @@
                   span=" (" + book.pubdate.substr(0,4) + ")"
 
       if book.comment
-        div.columnspace
+        .columnspace
 
-        div.bookcolumn
-          div#bookcontent
+        .bookcolumn
+          #bookcontent
             h4 Inhalt
             p !{book.comment} 
             h3.center
               if book.publisher
                 span #{book.publisher.name}
               if book.pubdate
-                span=" (" + book.pubdate.substr(0,4) + ")"         
+                span=" (" + book.pubdate.substr(0,4) + ")" 
 
   h3#footer
-    div.tag
+    .tag
       - for(let tag of book.tags)
         span.enum #{tag.tagName}
           if tag.subTags
@@ -64,16 +65,9 @@
               - for(let sub of tag.subTags)
                 span.enum #{sub}
 
-    if (prevBook)
-      button.text3(id="prev_book" type="text" onclick="setOptionsBook({bookId: " + prevBook.bookId + ", num: " + prevBook.num + "});")
-        div.chevrons(style="opacity: 0.3; position: fixed; left: 10px; top: 40%")
-          i.fa.fa-chevron-left(style="font-size: 60px" aria-hidden="true")
+    button.chevrons(id="prev_book" type="text" style="left: 10px" onclick=`setOptionsBook({bookId: this.value, direction: -1})`)
+      i.fa.fa-chevron-left(aria-hidden="true")
 
-    if (nextBook)
-      button.text3(id="next_book" type="text" onclick="setOptionsBook({bookId: " + nextBook.bookId + ", num: " + nextBook.num + "});")
-        div.chevrons(style="opacity: 0.3; position: fixed; right: 10px; top: 40%")
-          i.fa.fa-chevron-right(style="font-size: 60px" aria-hidden="true")       
-
-
-
+    button.chevrons(id="next_book" type="text" style="right: 10px" onclick=`setOptionsBook({bookId: this.value, direction: 1})`)
+      i.fa.fa-chevron-right(aria-hidden="true")
 

@@ -29,43 +29,45 @@ html(lang="en")
     #menubar
       img.menu.left(style="height: 30px; width: 30px; margin-top: 7px; margin-left: 7px" src="/assets/apple-touch-icon.png" onclick="pageRefresh()" 
         title="Neu laden" aria-hidden="true")
-      button.menu(type="text" onClick="setOptionsHome()" title="Neu laden")
+      button.menu.left(type="text" onClick="setOptionsHome()" title="Neu laden")
         i.fa.fa-home(aria-hidden="true")
-      button.menu(type="button" id="back" onClick="goBack()" title="Zurück")
+      button.menu.left(type="button" id="back" onClick="goBack()" title="Zurück")
         i.fa.fa-chevron-left(aria-hidden="true")
-      button.menu(type="button" id="forward" onClick="goForward()" title="Vorwärts")
+      button.menu.left(type="button" id="forward" onClick="goForward()" title="Vorwärts")
         i.fa.fa-chevron-right(aria-hidden="true")
 
-      div#dropdown.menu.right
-        button.menu.right(type="button" title="Menü" onClick="showDropdownMenu()")
-          i.fa.fa-bars(aria-hidden="true")
-      button.two.menu.right(type="text" onClick="setSortString('timestamp')" title="Sortieren nach Zeitstempel")
+      button.menu.right(type="button" title="Menü" onClick="showDropdownMenu()")
+        i.fa.fa-bars(aria-hidden="true")
+      button.menu.right(type="text" onClick="setSortString('timestamp')" title="Sortieren nach Zeitstempel")
         i.fa.fa-clock(aria-hidden="true")
         i.fa.fa-arrows-v(aria-hidden="true")
-      button.two.menu.right(type="text" onClick="setSortString('title')" title="Sortieren nach Buchtitel")
+      button.menu.right(type="text" onClick="setSortString('title')" title="Sortieren nach Buchtitel")
         i.fa.fa-book(aria-hidden="true")
         i.fa.fa-arrows-v(aria-hidden="true")
-      button.two.menu.right(type="text" id='authorsort' onClick="setSortString('author')" title="Sortieren nach Autorennamen")
+      button.menu.right(type="text" id='authorsort' onClick="setSortString('author')" title="Sortieren nach Autorennamen")
         i.fa.fa-user(aria-hidden="true")
         i.fa.fa-arrows-v(aria-hidden="true")
 
       #searchInputGroup
-        input(type="text" id="searchInput" placeholder="Autor / Titel / Serie" value=searchString autofocus title="Eingabe der Suchbegriffe")
-        button.menu(type="button" id="clearInput" onClick="clearSearchInput()" title="Eingabe löschen")
+        input.left(type="text" id="searchInput" placeholder="Autor / Titel / Serie" value=searchString autofocus title="Eingabe der Suchbegriffe")
+        button.menu.left(type="button" id="clearInput" onClick="clearSearchInput()" title="Eingabe löschen")
           i.fa.fa-times(aria-hidden="true")
-        button.menu(type="text" id="submitSearch" onClick="setOptionsSearch()" title="Suche starten")
+        button.menu.left(type="text" id="submitSearch" onClick="setOptionsSearch()" title="Suche starten")
           i.fa.fa-search(aria-hidden="true")
 
-    #dropdown-content
+    #dropdown
       p(onClick="getPage('/app/tags/' + getOption('tagId'))" title="Auswahl des Genres") Genre
       p(onClick="getPage('/app/cc/5/' + getOption('ccId'))" title="Reiseführer: Auswahl des Landes") Reiseführer
       p(onClick="getPage('/app/cc/6/' + getOption('ccId'))" title="Sachbücher: Auswahl der Sachgebiets") Sachbücher
-      p(onClick="getPage('/app/info')" title="Info") Info
+      p(onClick="getPage('/app/stats')" title="Statistik") Statistik
+      p(onClick="getPage('/app/settings')" title="Einstellungen") Einstellungen
 
     #app
 
       //- Inserted here: booklist / single book view / info page 
-      #books
+      #book.panel
+      #booklist.panel
+      #info.panel
 
     #login
 

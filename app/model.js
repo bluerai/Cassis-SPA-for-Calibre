@@ -88,7 +88,7 @@ JOIN data d ON b.id = d.book
 WHERE b.id = ?;`
 
 const queryFileData = `
-SELECT b.path, LOWER(d.name || '.' || d.format) AS filename
+SELECT b.path, d.name || '.' || LOWER(d.format) AS filename
 FROM books b
 JOIN data d ON b.id = d.book
 WHERE b.id = ? AND d.format = ?;`
@@ -120,9 +120,10 @@ SELECT
     COUNT(DISTINCT bal.book) AS count
 FROM books_authors_link bal
 JOIN authors a ON bal.author = a.id
+WHERE NOT (a.name like '%20%')
 GROUP BY a.id, a.name
 ORDER BY count DESC
-LIMIT 100;`
+LIMIT 100;` //Hack: Authors without year in name (= without ePapers and eMagazines)
 
 const querySeriesCounts = `
 SELECT
@@ -131,9 +132,10 @@ SELECT
     COUNT(DISTINCT bsl.book) AS count
 FROM books_series_link bsl
 JOIN series s ON bsl.series = s.id
+WHERE NOT (s.name like '%20%')
 GROUP BY s.name
 ORDER BY count DESC
-LIMIT 100;`
+LIMIT 100;` //Hack: Series without year in name (= without ePapers and eMagazines)
 
 const queryPublisherCounts = `
 SELECT

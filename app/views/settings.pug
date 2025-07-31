@@ -1,0 +1,31 @@
+table.info#settings
+  tr 
+    td(style="min-width: 160px") Datenbank
+    td
+      button.textbox(style="max-width: 200px" onclick="connectDb(true)") Verbindung herstellen
+      br
+      button.textbox(style="max-width: 200px" onclick="connectDb(false)") Verbindung abbrechen
+
+  tr
+    td
+      span Log-Ausgabe auf: 
+    td
+      .checkbox
+        input(type="checkbox" id="logToConsole" value="Console" checked=options.logger.consoleOn onClick="setLogConTransport()")
+        label(for="logToConsole") Console
+      .checkbox
+        input(type="checkbox" id="logToFile" value="Datei" checked=options.logger.fileOn  onClick="setLogFilTransport()")
+        label(for="logToFile") Datei
+              
+  tr
+    td Log-Level: 
+    td
+      select(id="loglevel" size="1" onchange="setLogLevel()")
+        each loglevel in options.logger.levels
+          option(value=loglevel selected=(options.logger.level === loglevel))= loglevel
+        
+  tr
+    td(colspan=2)
+      span=`${appInfo.version}, ${appInfo.author}, `
+      span#info_url
+

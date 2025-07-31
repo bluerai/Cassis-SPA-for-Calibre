@@ -4,7 +4,8 @@ import { Router } from 'express';
 
 import {
   startAction, listAction, bookAction, bookLinkAction, fileAction, coverListAction, coverBookAction,
-  infoAction, tagsAction, ccAction, logAction, tagsCountAction, authorsCountAction, seriesCountAction, publishersCountAction
+  statsAction, settingsAction, tagsAction, ccAction, logAction, tagsCountAction, authorsCountAction, 
+  seriesCountAction, publishersCountAction
 } from './controller.js';
 
 export const appRouter = Router();
@@ -13,7 +14,8 @@ appRouter.get('/', startAction);
 
 //APP-Calls - geschützt
 appRouter.post('/list/:type?', listAction);
-appRouter.get('/info', infoAction);
+appRouter.get('/stats', statsAction);
+appRouter.get('/settings', settingsAction);
 
 appRouter.post('/book/:id', bookAction);
 appRouter.post('/booklink', bookLinkAction);

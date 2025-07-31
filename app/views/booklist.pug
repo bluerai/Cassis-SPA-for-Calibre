@@ -1,37 +1,35 @@
 - for(let book of books)
 
-  div.item
-    div.itemgrid
+  .item(id=book.bookId)
+    .itemgrid
       table.container
-        tr.item
-          td.item.serie
+        tr
+          td.serie
             if book.serie
-              button.text(onclick="setOptionsSerie({ serieId: " + book.serie.seriesId + "})")
-                p.text.serie.ellipsis(title=book.serie.seriesName + "[" + book.seriesIndex + "]") #{book.serie.seriesName}
-                p.text=(book.tags[0] === "Zeitschrift") ? "Nr. " : "Band "
+              button.textbox(onclick="setOptionsSerie({ serieId: " + book.serie.seriesId + "})")
+                p.serie.ellipsis(title=book.serie.seriesName + "[" + book.seriesIndex + "]") #{book.serie.seriesName}
+                p=(book.tags[0] === "Zeitschrift") ? "Nr. " : "Band "
                   span #{book.seriesIndex}
-        tr.item
+        tr
           td.img
             img.itemcover(src="/app/cover/list/" + book.bookId + book.signature
-              onclick="setOptionsBook({bookId: " + book.bookId + ", num: " + book.num + "});")
-            div.containerbox
+              onclick="dis(this); setOptionsBook({bookId: " + book.bookId + "});")
+            .containerbox
               if (book.formats)
                 - for(let format of book.formats)
                   div(style="margin-bottom: -80px")
                     a.action(href="/app/file/" + format + "/" + book.bookId + book.signature download=book.title)
                         i.fa.fa-download(aria-hidden="true")=" " + format.toUpperCase()
         if (book.tags && book.tags[0] != "Zeitschrift")   
-          tr.item
-            td.item
+          tr
+            td.center
               p
                 - for(let author of book.authors)
-                  button.text2.akzent(onclick="setOptionsAuthor({authorsId: " + author.authorsId + "})")
-                    p.center(style="margin-bottom:0px;") #{author.authorsName}
-        tr.item
-          td.item 
-            button.text2(onclick="setOptionsBook({bookId: " + book.bookId + ", num: " + book.num + "});")
-              p.center #{book.title}
+                  button.text.color04(onclick="setOptionsAuthor({authorsId: " + author.authorsId + "})" style="margin-bottom:0px;") #{author.authorsName}
+        tr
+          td.center
+            button.text(onclick="setOptionsBook({bookId: " + book.bookId + "});") #{book.title}
 
 if pageNav && pageNav.currentpage !== pageNav.lastpage
-  div#pagedown(value=pageNav.nextpage onClick="setOptionsPage(" + pageNav.nextpage + ")" style="display: none")
+  #pagedown(value=pageNav.nextpage onClick="setOptionsPage(" + pageNav.nextpage + ")" style="display: none")
     i.fa.fa-caret-down(aria-hidden="true" style="font-size: 60px") 

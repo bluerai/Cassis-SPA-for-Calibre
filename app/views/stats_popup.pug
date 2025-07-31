@@ -1,8 +1,8 @@
 
-table.popup#info_popup
+table.popup#stats_popup
   tr 
-    th=popup.head_name
-    th=popup.head_count
+    th(style="width: 70%")=popup.head_name
+    th(style="width: 30%")=popup.head_count
 
   - for(let item of popup.content)
     tr.pointer(onClick="setOptionsHub('" + popup.type + "', " + item.id + ")")

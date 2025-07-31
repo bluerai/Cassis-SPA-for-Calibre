@@ -1,0 +1,44 @@
+if options.tags
+  .tags
+    h3.center#tags.color04 Genre
+      - for(let tag of options.tags)
+        button.text(type="button" class=tag.class id="tag" onClick="setOptionsTag({'tagId':" + tag.tagId + "})")
+          p #{tag.tagName} 
+
+
+if options.ccNum && options.custCols
+  .tags
+    h3.color04.center#tags=(options.ccNum == 6) ? "Sachbuch" : "Reiseführer"
+      - for(let col of options.custCols)
+        button.text(type="button" class=col.class id="cc5" name="cc" value="5" onClick="setOptionsCC({'ccNum': " + options.ccNum + ", 'ccId': " + col.id + "})")
+          p #{col.value} 
+
+
+if options.stats
+  table.info#stats
+    tr 
+      td Bücher, Zeitschriften
+          i.fa-solid.fa-book.pointer(style="margin-left: 10px;font-size: 30px" onclick="showTagsStats()")
+      td.center
+        span #{options.stats.books}
+    tr
+      td Serien 
+        span.pointer(style="margin-left: 10px" onclick="showSeriesStats()")
+          i.fa-solid.fa-book(style="font-size: 20px")  
+          i.fa-solid.fa-book(style="font-size: 20px")  
+          i.fa-solid.fa-book(style="font-size: 20px")
+      td.center #{options.stats.series}
+    tr 
+      td Autoren 
+        i.fa-solid.fa-people-group.pointer(style="margin-left: 10px;font-size: 30px" onclick="showAuthorsStats()")
+      td.center #{options.stats.authors}
+    tr
+      td Verlage 
+          span.pointer(style="margin-left: 10px" onclick="showPublisherStats()")
+            i.fa-regular.fa-building(style="font-size: 20px")
+            i.fa-regular.fa-building(style="font-size: 30px")
+            i.fa-regular.fa-building(style="font-size: 20px")
+      td.center #{options.stats.publishers}
+
+
+  #stats_popup(style="display: none")
