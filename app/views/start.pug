@@ -56,15 +56,15 @@ html(lang="en")
           i.fa.fa-search(aria-hidden="true")
 
     #dropdown
-      p(onClick="getPage('/app/tags/' + getOption('tagId'))" title="Auswahl des Genres") Genre
-      p(onClick="getPage('/app/cc/5/' + getOption('ccId'))" title="Reiseführer: Auswahl des Landes") Reiseführer
-      p(onClick="getPage('/app/cc/6/' + getOption('ccId'))" title="Sachbücher: Auswahl der Sachgebiets") Sachbücher
-      p(onClick="getPage('/app/stats')" title="Statistik") Statistik
-      p(onClick="getPage('/app/settings')" title="Einstellungen") Einstellungen
+      p.pointer(onClick="getPage('/app/tags/' + getOption('tagId'))" title="Auswahl des Genres") Genre
+      p.pointer(onClick="getPage('/app/cc/5/' + getOption('ccId'))" title="Reiseführer: Auswahl des Landes") Reiseführer
+      p.pointer(onClick="getPage('/app/cc/6/' + getOption('ccId'))" title="Sachbücher: Auswahl der Sachgebiets") Sachbücher
+      p.pointer(onClick="getPage('/app/stats')" title="Statistik") Statistik
+      p.pointer(onClick="getPage('/app/settings')" title="Einstellungen") Einstellungen
 
     #app
 
-      //- Inserted here: booklist / single book view / info page 
+      //- Inserted here: booklist / single book view / statistik + settings pages
       #book.panel
       #booklist.panel
       #info.panel
