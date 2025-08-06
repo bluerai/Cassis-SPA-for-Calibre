@@ -238,7 +238,9 @@ SELECT
     b.timestamp,
     (COALESCE(a.name, '') || '; ' || b.title) AS search_string,
     (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || 
-     COALESCE(s.sort, '') || ' ' ||  SUBSTR(b.path, 1, INSTR(b.path, '(') - 1)) AS search
+     COALESCE(s.sort, '') || ' ' ||  SUBSTR(b.path, 1, INSTR(b.path, '(') - 1)) AS search,
+     s.sort as series_name,
+     series_index
 FROM books b
 LEFT JOIN AuthorNames a ON b.id = a.bookId
 LEFT JOIN SeriesInfo s ON b.id = s.bookId
@@ -499,9 +501,10 @@ export function findBooks(searchString, sortString, limit, offset) {
 }
 
 
-export function searchForBooks(searchString, limit) {
+export function searchForBooks(searchString, limit=25) {
   logger.debug(`searchForBooks: searchString=${searchString}, limit=${limit}`);
   try {
+    console.log(searchForBooksQuery(searchString, limit));
     const selectAllStmt = METADATA_DB.prepare(searchForBooksQuery(searchString, limit));
     return selectAllStmt.all(limit);
   } catch (error) { errorLogger(error); return [] }

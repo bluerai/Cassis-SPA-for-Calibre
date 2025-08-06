@@ -29,7 +29,8 @@ export async function searchAction(request, response) {
   try {
     logger.debug("searchAction: request.query=" + JSON.stringify(request.query));
     const searchString = request.query.search || "";
-    const books = searchForBooks(searchString, 24);
+    const books = searchForBooks(searchString, 100);
+    console.log(books);
     response.json({ books });
   }
   catch (error) { errorHandler(error, response, 'findAction') }
