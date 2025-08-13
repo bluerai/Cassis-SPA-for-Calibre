@@ -25,7 +25,10 @@
             td.center
               p
                 - for(let author of book.authors)
-                  button.text.color04(onclick="setOptionsAuthor({authorsId: " + author.authorsId + "})" style="margin-bottom:0px;") #{author.authorsName}
+                  span.enum
+                    button.text.color04(style="margin-bottom:0px;"
+                      onclick="setOptionsAuthor({authorsId: " + author.authorsId + "})" 
+                    )= author.authorsName
         tr
           td.center
             button.text(onclick="setOptionsBook({bookId: " + book.bookId + "});") #{book.title}

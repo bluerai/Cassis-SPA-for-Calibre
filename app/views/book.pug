@@ -22,8 +22,10 @@
 
           p.center(style="margin-bottom: 12px")
             - for(let author of book.authors)
-              button.text.color04(onclick="setOptionsAuthor({authorsId: " + author.authorsId + "});")
-                span #{author.authorsName} 
+              span.enum
+                button.text.color04(style="margin-bottom:0px;"
+                  onclick="setOptionsAuthor({authorsId: " + author.authorsId + "});"
+                )= author.authorsName 
 
           p.center
             button.text.border00=book.title
