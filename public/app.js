@@ -622,6 +622,33 @@ function initSwipe() {
 
 const isBooklist = () => (document.getElementById("booklist").style.display !== 'none')
 
+const toClipboard = async (text, feedbackId) => {
+  const feedbackElement = document.getElementById(feedbackId);
+  try {
+    if (navigator.clipboard) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      // Fallback für ältere Safari
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+    // Feedback (z. B. Tooltip)
+    if (feedbackElement) {
+      feedbackElement.style.display = '';
+      setTimeout(() => feedbackElement.style.display = 'none', 2000);
+    }
+  } catch (err) {
+    console.error("Copy failed:", err);
+    if (feedbackElement) {
+      feedbackElement.textContent = "Fehler!";
+    }
+  }
+};
+
 //===================================================================
 
 async function docReady(type, id, signature, expires) {
@@ -653,5 +680,6 @@ window.onscroll = function () {
     }
   }
 };
+
 
 validate();

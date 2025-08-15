@@ -29,9 +29,14 @@
 
           p.center
             button.text.border00=book.title
+            if book && book.authors && book.title
+              button.text(onclick=`toClipboard('${book.authors.map(a => a.authorsName).toString()}, ${book.title}', 'clipfeedback')`)
+                i.fa.fa-clone(aria-hidden="true" style="margin-left: 12px")
+              span#clipfeedback(style="display:none;position:absolute; background-color:yellow; z-index: 100; padding: 10px" ) Kopiert!
             if book && book.tags[0] && book.authors && book.title && book.bookId
               button.text(onclick="sendMail(`" + book.authors.map(a => a.authorsName).toString() + "`, `" + book.title + "`, " + book.bookId + ", `" + book.tags[0].tagName + "`)")
-                i.fa.fa-envelope(aria-hidden="true" style="margin-left: 10px")
+                i.fa.fa-envelope(aria-hidden="true" style="margin-left: 12px")
+
 
           p
             - for(let format of book.formats)
