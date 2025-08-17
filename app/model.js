@@ -240,7 +240,8 @@ SELECT
     (COALESCE(a.name, '') || ' ' || b.author_sort || ' ' || b.title || ' ' || 
      COALESCE(s.sort, '') || ' ' ||  SUBSTR(b.path, 1, INSTR(b.path, '(') - 1)) AS search,
      s.sort as series_name,
-     series_index
+     series_index,
+     b.title as title
 FROM books b
 LEFT JOIN AuthorNames a ON b.id = a.bookId
 LEFT JOIN SeriesInfo s ON b.id = s.bookId
