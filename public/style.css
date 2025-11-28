@@ -32,6 +32,16 @@
   /* 0px 8px 16px 0px rgba(0, 0, 0, 0.2); */
 }
 
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
 .color01 {
   color: var(--col01) !important;
 }
