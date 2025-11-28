@@ -357,19 +357,48 @@ export async function fileAction(request, response) {
 export async function bookLinkAction(request, response) {
   logger.debug("bookLinkAction: " + JSON.stringify(request.body))
 
-  const { authors, title, bookId, tagName, protocol } = request.body;
+  const { to, authors, title, bookId, tagName, protocol, cc, bcc } = request.body;
   const sign = createSignature(bookId, 3600 * 72);
-  const mail = {
-    "content": ('mailto:?subject=' + encodeURIComponent('"' + title + ((tagName === 'Zeitschrift') ? '"' : '" von ' + authors)) +
-      '&body=' + encodeURIComponent('... mit besten Empfehlungen aus der Cassis-Bibliothek:\n\n'
-        + '"' + title + ((tagName === 'Zeitschrift') ? '"' : '" von ' + authors) + '\n\n'
-        + protocol + "/app/book/" + bookId + sign + '\n\n' + protocol + "/app/cover/book/" + bookId + sign + '\n\n'
-        + 'Der Link zum Herunterladen ist 3 Tage gültig.'))
-  };
 
-  logger.silly(mail.content);
+  const subject = '"' + title + ((tagName === 'Zeitschrift') ? '"' : '" von ' + authors);
+  const bookLink = protocol + "/app/book/" + bookId + sign;
+  const coverLink = protocol + "/app/cover/book/" + bookId + sign;
 
-  response.send(mail);
+  const body = '...mit besten Empfehlungen aus der Cassis-Bibliothek: \n\n'
+    + subject + '\n\n' + bookLink + '\n\n' + coverLink + '\n\n'
+    + 'Der Link zum Herunterladen ist 3 Tage gültig.';
+
+  let mailtoLink = 'mailto:';
+
+  if (to) {
+    mailtoLink += encodeURIComponent(to);
+  }
+
+  const params = [];
+
+  if (cc) {
+    params.push(`cc=${encodeURIComponent(cc)}`);
+  }
+
+  if (bcc) {
+    params.push(`bcc=${encodeURIComponent(bcc)}`);
+  }
+
+  if (subject) {
+    params.push(`subject=${encodeURIComponent(subject)}`); 
+  }
+
+  if (body) {
+    params.push(`body=${encodeURIComponent(body)}`);
+  }
+
+  if (params.length > 0) {
+    mailtoLink += '?' + params.join('&');
+  }
+
+  logger.silly(mailtoLink);
+
+  response.send({content: mailtoLink});
 }
 
 

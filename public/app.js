@@ -512,8 +512,11 @@ async function showPublisherStats() {
 }
 
 async function sendMail(authors, title, bookId, tagName) {
+  const to = "Marlies Wilkes <marlies@wilkes1.de>";
+  const cc = null;
+  const bc = null;
   const protocol = window.location.origin;
-  const data = { authors, title, bookId, tagName, protocol };
+  const data = {to, authors, title, bookId, tagName, protocol, cc, bc };
 
   const response = await fetch("/app/booklink/", {
     method: 'POST',
@@ -539,14 +542,19 @@ function pageRefresh() {
 
 let startX = 0;
 let endX = 0;
-let diff;
+let startY = 0;
+let endY = 0;
+let diffX;
+let diffY;
 
 function handleSwipe() {
   if (isBooklist()) return;
-  diff = endX - startX;
-  if (Math.abs(diff) > 50) { // Mindest-Swipe-Distanz
+  diffX = endX - startX;
+  diffY = endY - startY;
+  if (Math.abs(diffX) > Math.max(50, Math.abs(diffY))) { // 50=Mindest-Horitontal-Swipe-Distanz
+    //console.log("Swiped: diffX=" + diffX + ", diffY=" + diffY);
     let clickfunc;
-    if (diff > 0) {
+    if (diffX > 0) {
       clickfunc = document.getElementById("prev_book");
     } else {
       clickfunc = document.getElementById("next_book");
@@ -556,7 +564,8 @@ function handleSwipe() {
     } else {
       displayMessage("keine weiteren Daten", 5);
     }
-  }
+  } 
+    //else console.log("Notwiped: diffX=" + diffX + ", diffY=" + diffY);
 }
 
 function initSwipe() {
@@ -567,10 +576,12 @@ function initSwipe() {
   // TOUCH-EVENTS (für mobile Geräte)
   swipeArea.addEventListener("touchstart", (e) => {
     startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
   });
 
   swipeArea.addEventListener("touchend", (e) => {
     endX = e.changedTouches[0].clientX;
+    endY = e.changedTouches[0].clientY;
     handleSwipe();
   });
 
