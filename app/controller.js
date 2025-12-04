@@ -343,9 +343,9 @@ export async function fileAction(request, response) {
         }
       }
       response.sendFile(fileData.filename, options, function (error) {
-        if (error)
-          errorHandler(error, response, 'response.sendFile');
-        else
+        if (error) {
+          errorHandler(error, null, 'response.sendFile');
+        } else
           logger.debug('response.sendFile: filename=' + fileData.filename);
       })
     } else {
@@ -385,7 +385,7 @@ export async function bookLinkAction(request, response) {
   }
 
   if (subject) {
-    params.push(`subject=${encodeURIComponent(subject)}`); 
+    params.push(`subject=${encodeURIComponent(subject)}`);
   }
 
   if (body) {
@@ -398,7 +398,7 @@ export async function bookLinkAction(request, response) {
 
   logger.silly(mailtoLink);
 
-  response.send({content: mailtoLink});
+  response.send({ content: mailtoLink });
 }
 
 

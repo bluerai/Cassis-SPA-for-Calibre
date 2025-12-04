@@ -26,7 +26,7 @@ ENV CASSIS_LOGS=/app/logs
 ENV CASSIS_KEYFILE=key.pem
 ENV CASSIS_CERTFILE=cert.pem
 
-HEALTHCHECK --interval=5m --timeout=5s --retries=3 \
+HEALTHCHECK --interval=60m --timeout=5s --retries=3 \
   CMD ["sh", "healthcheck.sh"]
 
 CMD [ "node", "server.js" ]
